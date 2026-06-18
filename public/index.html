@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard PENDEKAR</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="modal-sambutan" class="modal-overlay">
+        <div class="modal-box">
+            <button class="tombol-close" onclick="tutupModal()">&#10005;</button>
+            
+            <img src="logo.png" alt="Logo PENDEKAR" style="height: 60px; margin-bottom: 15px;">
+            
+            <h2 style="margin: 0 0 10px 0; color: #1a233a; font-size: 22px;">Selamat Datang di Dashboard PENDEKAR</h2>
+            <p style="margin: 0 0 25px 0; color: #666; font-size: 14px; line-height: 1.6;">
+                Peningkatan Disiplin dan Evaluasi Kehadiran melalui Monitoring Absensi Rutin
+            </p>
+            
+            <button class="tombol-masuk-modal" onclick="tutupModal()">Masuk Dashboard</button>
+        </div>
+    </div>
+
+    <div class="menu-kiri">
+        <button class="ikon-menu ikon-aktif" onclick="window.location.href='/'">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M12 3L4 9V21H9V14H15V21H20V9L12 3Z"/></svg>
+        </button>
+        <button class="ikon-menu" onclick="window.location.href='/admin.html'">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"/></svg>
+        </button>
+    </div>
+
+    <div class="area-kanan" id="wadah-konten"></div>
+
+    <script>
+        function tutupModal() {
+            document.getElementById('modal-sambutan').classList.add('modal-sembunyi');
+            // Menyimpan ingatan di browser agar tidak muncul lagi saat di-refresh
+            sessionStorage.setItem('sudahDisambut', 'ya');
+        }
+
+        // Jalankan pengecekan status sambutan dan muat konten
+        document.addEventListener('DOMContentLoaded', () => {
+            if (sessionStorage.getItem('sudahDisambut') === 'ya') {
+                document.getElementById('modal-sambutan').classList.add('modal-sembunyi');
+            }
+        });
+
+        // Sedot kerangka konten dashboard
+        fetch('/konten-dashboard.html')
+            .then(response => response.text())
+            .then(data => { 
+                // 1. Tempelkan kerangka ke layar
+                document.getElementById('wadah-konten').innerHTML = data; 
+                
+                // 2. Setelah html terpasang, panggil otak data app.js
+                const script = document.createElement('script');
+                script.src = 'app.js';
+                document.body.appendChild(script);
+            })
+            .catch(error => console.error('Gagal memuat konten:', error));
+    </script>
+</body>
+</html>

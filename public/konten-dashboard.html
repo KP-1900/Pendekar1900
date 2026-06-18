@@ -1,0 +1,97 @@
+<div class="baris-atas">
+    <!-- KELOMPOK KIRI: Logo PENDEKAR dan Judul -->
+    <div class="header-judul" style="display: flex; align-items: center; gap: 12px;">
+        <img src="logo.png" alt="Logo PENDEKAR" style="height: 45px; width: auto; object-fit: contain;">
+        <div>
+            <h1 style="margin: 0; color: #1a233a; font-size: 24px; font-weight: 800;">PENDEKAR</h1>
+            <p style="margin: 4px 0 0 0; color: #555; font-size: 13px;">Peningkatan Disiplin dan Evaluasi Kehadiran melalui Monitoring Absensi Rutin</p>
+        </div>
+    </div>
+    
+    <!-- KELOMPOK KANAN: Area Filter dan Logo BPS -->
+    <div style="display: flex; align-items: center; gap: 20px;">
+        <!-- Area Filter -->
+        <div class="area-filter">
+            <div class="kotak-filter">
+                <label>Tahun</label>
+                <select id="filter-tahun">
+                    <option value="2024">2024</option>
+                    <option value="2025" selected>2025</option>
+                </select>
+            </div>
+            <div class="kotak-filter">
+                <label>Bulan</label>
+                <select id="filter-bulan">
+                    <option value="Semua">Semua</option>
+                    <option value="Januari">Januari</option>
+                    <option value="Februari">Februari</option>
+                    <option value="Maret">Maret</option>
+                    <option value="April">April</option>
+                    <option value="Mei">Mei</option>
+                    <option value="Juni">Juni</option>
+                    <option value="Juli">Juli</option>
+                    <option value="Agustus">Agustus</option>
+                    <option value="September">September</option>
+                    <option value="Oktober">Oktober</option>
+                    <option value="November">November</option>
+                    <option value="Desember">Desember</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Logo BPS di paling kanan -->
+        <img src="logobps.png" alt="Logo BPS" style="height: 38px; width: auto; object-fit: contain;">
+    </div>
+</div>
+
+<div class="grid-kartu">
+    <div class="kartu"><div class="bungkus-ikon ikon-hijau">👥</div><div class="info-kartu"><h3>Jumlah Pegawai</h3><h2 id="angka-pegawai">0</h2><p>Total tahun terpilih</p></div></div>
+    <div class="kartu"><div class="bungkus-ikon ikon-biru">💼</div><div class="info-kartu"><h3>Hari Kerja</h3><h2 id="angka-harikerja">0</h2><p>Total tahun terpilih</p></div></div>
+    <div class="kartu"><div class="bungkus-ikon ikon-ungu">⏱️</div><div class="info-kartu"><h3>Rata-rata PSW</h3><h2 id="angka-psw">0.00%</h2><p>Rata-rata tahun terpilih</p></div></div>
+    <div class="kartu"><div class="bungkus-ikon ikon-kuning">📉</div><div class="info-kartu"><h3>Rata-rata HT</h3><h2 id="angka-ht">0.00%</h2><p>Rata-rata tahun terpilih</p></div></div>
+</div>
+
+<div class="grid-grafik">
+    <div class="kotak-grafik">
+        <h3 class="judul-grafik">Tren Persentase per Bulan (PSW)</h3>
+        <div style="position: relative; height: 120px; width: 100%;"><canvas id="grafikPSW"></canvas></div>
+    </div>
+    <div class="kotak-grafik">
+        <h3 class="judul-grafik">Tren Persentase per Bulan (HT)</h3>
+        <div style="position: relative; height: 120px; width: 100%;"><canvas id="grafikHT"></canvas></div>
+    </div>
+</div>
+
+<div class="grid-bawah">
+    <div class="kotak-bawah">
+        <h3 class="judul-grafik">Rata-rata Persentase per Kategori</h3>
+        <div class="wadah-grafik-bawah"><canvas id="grafikBatang"></canvas></div>
+    </div>
+    <div class="kotak-bawah">
+        <h3 class="judul-grafik">Ringkasan per Bulan</h3>
+        <div class="wadah-tabel">
+            <table width="100%" style="font-size: 12.5px; text-align: left; border-collapse: collapse; white-space: nowrap;">
+                <thead style="position: sticky; top: 0; background-color: #f4f7fe; z-index: 1;">
+                    <tr>
+                        <th style="padding: 6px;">Bulan</th>
+                        <th style="padding: 6px;">Pegawai</th>
+                        <th style="padding: 6px;">Hari Kerja</th>
+                        <th style="padding: 6px;">PSW</th>
+                        <th style="padding: 6px;">HT</th>
+                        <th style="padding: 6px;">PSW 1</th>
+                        <th style="padding: 6px;">PSW 2</th>
+                        <th style="padding: 6px;">PSW 3</th>
+                        <th style="padding: 6px;">PSW 4</th>
+                        <th style="padding: 6px;">TL 1</th>
+                        <th style="padding: 6px;">TL 2</th>
+                        <th style="padding: 6px;">TL 3</th>
+                        <th style="padding: 6px;">TL 4</th>
+                    </tr>
+                </thead>
+                <tbody id="badan-tabel">
+                    <tr><td colspan="13" style="padding: 6px; text-align: center; color: #999;">Data akan muncul di sini...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
