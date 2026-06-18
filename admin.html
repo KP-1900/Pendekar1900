@@ -152,7 +152,9 @@
                         tl4: baris['TL4'] || baris['TL 4'] || 0
                     })).filter(baris => baris.tahun && baris.bulan && baris.bulan.toString().toUpperCase() !== 'JUMLAH'); 
 
-                    const { error } = await db.from('absensi').insert(dataSiapKirim);
+                    const { error } = await db.from('absensi').upsert(dataSiapKirim, {
+                        onConflict: 'tahun,bulan'
+                    });
 
                     if (error) throw error;
 
