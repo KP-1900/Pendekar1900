@@ -1,0 +1,189 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; background-color: #f4f7fe; overflow: hidden; }
+
+/* === SIDEBAR KIRI (Gaya Floating Full Rounded) === */
+.menu-kiri { 
+    width: 80px; 
+    height: calc(100vh - 30px); /* Memotong tinggi agar ada jarak atas dan bawah */
+    margin: 15px 0 15px 15px; /* Memberikan jarak dari tepi layar */
+    background-color: #1a233a; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    padding-top: 20px; 
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+    border-radius: 24px; /* Sudut melengkung penuh di semua sisi */
+    z-index: 10; 
+}
+.ikon-menu { width: 45px; height: 45px; margin-bottom: 15px; background-color: transparent; border: none; cursor: pointer; border-radius: 12px; display: flex; justify-content: center; align-items: center; transition: all 0.3s ease; }
+.ikon-menu:hover { background-color: rgba(255,255,255,0.2); transform: scale(1.05); }
+.ikon-aktif { background-color: #2b6cb0; box-shadow: 0 0 10px rgba(43,108,176,0.5); } 
+
+/* === AREA KANAN UMUM === */
+/* === AREA KANAN UMUM === */
+.area-kanan { 
+    flex: 1; 
+    height: calc(100vh - 30px); 
+    margin: 15px 0; 
+    padding: 0 25px; 
+    display: flex; 
+    flex-direction: column; 
+    overflow: hidden; 
+}
+
+/* === CSS KHUSUS DASHBOARD === */
+.baris-atas { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-shrink: 0; }
+.header-judul h1 { margin: 0; color: #1a233a; font-size: 24px; font-weight: 800; }
+.header-judul p { margin: 2px 0 0 0; color: #555; font-size: 13px; }
+.area-filter { display: flex; gap: 15px; }
+
+/* Kotak utama dibuat lebih lega dan elegan */
+.kotak-filter { 
+    background: white; 
+    padding: 8px 16px; 
+    border-radius: 12px; 
+    border: 1px solid #edf2f9; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03); 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    position: relative;
+    min-width: 120px;
+    transition: all 0.3s ease;
+}
+
+/* Efek nyala biru saat disorot */
+.kotak-filter:hover { 
+    border-color: #2b6cb0; 
+    box-shadow: 0 4px 12px rgba(43,108,176,0.1); 
+}
+
+.kotak-filter label { font-size: 12px; color: #555; margin-bottom: 4px; font-weight: bold; }
+
+/* Menyembunyikan panah kaku bawaan browser */
+.kotak-filter select { 
+    border: none; 
+    font-size: 15px; 
+    font-weight: 900; 
+    color: #1a233a; 
+    outline: none; 
+    cursor: pointer; 
+    background: transparent; 
+    padding: 0 15px 0 0; 
+    appearance: none; 
+    -webkit-appearance: none;
+    width: 100%;
+}
+
+/* Memasang ikon panah custom modern (SVG) */
+.kotak-filter::after { 
+    content: url('data:image/svg+xml;utf8,<svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L5 5L9 1" stroke="%231a233a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'); 
+    position: absolute; 
+    right: 15px; 
+    bottom: 10px; 
+    pointer-events: none; 
+}
+
+.grid-kartu { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px; flex-shrink: 0; }
+.kartu { background: white; padding: 10px 15px; border-radius: 10px; display: flex; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #edf2f9; }
+.bungkus-ikon { width: 40px; height: 40px; border-radius: 8px; display: flex; justify-content: center; align-items: center; margin-right: 12px; font-size: 20px; flex-shrink: 0; }
+.ikon-hijau { background-color: #e6f6ee; color: #28a745; }
+.ikon-biru { background-color: #e6f0fa; color: #007bff; }
+.ikon-ungu { background-color: #f0e6fa; color: #6f42c1; }
+.ikon-kuning { background-color: #fdf6e3; color: #f5a623; }
+
+.info-kartu { overflow: hidden; }
+.info-kartu h3 { margin: 0 0 4px 0; font-size: 13px; color: #444; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.info-kartu h2 { margin: 0; font-size: 24px; color: #1a233a; font-weight: 900; }
+.info-kartu p { margin: 4px 0 0 0; font-size: 12px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.grid-grafik { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; flex-shrink: 0; }
+.kotak-grafik { background: white; padding: 10px 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #edf2f9; }
+.judul-grafik { font-size: 15px; color: #1a233a; margin-top: 0; margin-bottom: 8px; font-weight: 900; }
+
+.grid-bawah { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1; min-height: 0; }
+.kotak-bawah { background: white; padding: 10px 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #edf2f9; display: flex; flex-direction: column; min-height: 0; }
+.wadah-tabel { flex: 1; overflow-y: auto; overflow-x: auto; }
+.wadah-grafik-bawah { flex: 1; min-height: 0; position: relative; }
+
+/* === CSS KHUSUS HALAMAN ADMIN === */
+.kotak-form { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 400px; }
+.form-grup { margin-bottom: 15px; }
+.form-grup input { width: 100%; padding: 12px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+.form-grup input:focus { outline: none; border-color: #2b6cb0; box-shadow: 0 0 8px rgba(43,108,176,0.2); }
+.tombol-aksi { padding: 12px 20px; background-color: #1a233a; color: white; border: none; border-radius: 8px; cursor: pointer; width: 100%; font-size: 15px; font-weight: bold; transition: 0.3s;}
+.tombol-aksi:hover { background-color: #2b6cb0; }
+#pesan-error { color: #dc3545; font-size: 14px; margin-top: 15px; display: none; text-align: center; }
+
+/* === JENDELA SAMBUTAN (MODAL) === */
+.modal-overlay {
+    position: fixed;
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%;
+    background-color: rgba(26, 35, 58, 0.4); /* Efek bayang gelap */
+    backdrop-filter: blur(6px); /* Efek kabut kaca */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Memastikan posisinya menutupi semua elemen lain */
+    opacity: 1;
+    transition: opacity 0.4s ease;
+}
+
+/* Kelas tambahan untuk menyembunyikan modal secara halus */
+.modal-sembunyi {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal-box {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 450px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    position: relative;
+    transform: translateY(0);
+    transition: transform 0.4s ease;
+}
+
+.modal-sembunyi .modal-box {
+    transform: translateY(-20px);
+}
+
+.tombol-close {
+    position: absolute;
+    top: 15px; 
+    right: 15px;
+    background: transparent; 
+    border: none;
+    font-size: 20px; 
+    color: #888; 
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.tombol-close:hover { 
+    color: #dc3545; 
+}
+
+.tombol-masuk-modal {
+    background-color: #2b6cb0;
+    color: white; 
+    border: none;
+    padding: 12px 25px; 
+    border-radius: 10px;
+    font-size: 16px; 
+    font-weight: bold;
+    cursor: pointer; 
+    transition: background-color 0.3s;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.tombol-masuk-modal:hover { 
+    background-color: #1a233a; 
+}
