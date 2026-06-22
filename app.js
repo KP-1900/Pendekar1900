@@ -12,7 +12,30 @@ document.getElementById('filter-tahun').addEventListener('change', tarikData);
 document.getElementById('filter-bulan').addEventListener('change', tarikData);
 
 // Panggil data pertama kali saat web dibuka
-tarikData();
+async function isiDropdownTahun() {
+    const { data, error } = await db
+        .from('absensi')
+        .select('tahun');
+    
+    if (error || !data) return;
+
+    // Ambil tahun unik dan urutkan
+    const tahunUnik = [...new Set(data.map(d => d.tahun))].sort();
+    
+    const dropdown = document.getElementById('filter-tahun');
+    dropdown.innerHTML = ''; // Kosongkan dulu
+    
+    tahunUnik.forEach(t => {
+        const option = document.createElement('option');
+        option.value = t;
+        option.text = t;
+        dropdown.appendChild(option);
+    });
+
+    // Default ke tahun terbaru
+    dropdown.value = tahunUnik[tahunUnik.length - 1];
+}
+isiDropdownTahun().then(() => tarikData());
 
 // === FUNGSI UTAMA: MENARIK DATA DARI SUPABASE ===
 async function tarikData() {
