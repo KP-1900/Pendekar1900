@@ -1,4 +1,5 @@
 // === KONFIGURASI SUPABASE ===
+(function() {
 const SUPABASE_URL = 'https://gnytuyapiiickrieoboh.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueXR1eWFwaWlpY2tyaWVvYm9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NDAzMzksImV4cCI6MjA5NzMxNjMzOX0.-oa4YA-U8TDzWfrSHd9EkbnLNB8IyObFw0SziIkIpQo';
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -431,3 +432,5 @@ function perbaruiGrafikBatang(data) {
         }
     });
 }
+
+})(); // tutup IIFE

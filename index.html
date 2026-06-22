@@ -25,7 +25,7 @@
     </div>
 
     <div class="menu-kiri">
-        <button class="ikon-menu ikon-aktif" onclick="window.location.href='index.html'">
+        <button class="ikon-menu ikon-aktif" onclick="muatUlangDashboard()">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M12 3L4 9V21H9V14H15V21H20V9L12 3Z"/></svg>
         </button>
         <button class="ikon-menu" onclick="kePanelOrang()">
@@ -75,19 +75,32 @@
             }
         });
 
-        // Sedot kerangka konten dashboard
-        fetch('konten-dashboard.html')
-            .then(response => response.text())
-            .then(data => { 
-                // 1. Tempelkan kerangka ke layar
-                document.getElementById('wadah-konten').innerHTML = data; 
-                
-                // 2. Setelah html terpasang, panggil otak data app.js
-                const script = document.createElement('script');
-                script.src = 'app.js?v=' + new Date().getTime();
-                document.body.appendChild(script);
-            })
-            .catch(error => console.error('Gagal memuat konten:', error));
+        // Fungsi muat konten dashboard (bisa dipanggil ulang tanpa reload halaman)
+        function muatKontenDashboard() {
+            fetch('konten-dashboard.html')
+                .then(response => response.text())
+                .then(data => { 
+                    document.getElementById('wadah-konten').innerHTML = data; 
+                    
+                    // Hapus instance app.js lama jika ada, lalu muat ulang
+                    const scriptLama = document.getElementById('script-app');
+                    if (scriptLama) scriptLama.remove();
+
+                    const script = document.createElement('script');
+                    script.id = 'script-app';
+                    script.src = 'app.js?v=' + new Date().getTime();
+                    document.body.appendChild(script);
+                })
+                .catch(error => console.error('Gagal memuat konten:', error));
+        }
+
+        // Tombol beranda: muat ulang konten tanpa reload halaman penuh
+        function muatUlangDashboard() {
+            muatKontenDashboard();
+        }
+
+        // Muat konten saat pertama kali buka
+        muatKontenDashboard();
     </script>
 </body>
 </html>
