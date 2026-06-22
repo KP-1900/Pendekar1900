@@ -42,6 +42,7 @@
         const db = window.supabase.createClient(_URL, _KEY);
 
         // Pintar: arahkan ke panel sesuai siapa yang sedang login
+        // Sidebar TIDAK memiliki ikon logout — logout dilakukan dari halaman panel masing-masing
         async function kePanelOrang() {
             if (sessionStorage.getItem('pegawai_nip')) {
                 window.location.href = 'dashboard-pegawai.html';
@@ -51,16 +52,16 @@
             window.location.href = session ? 'admin-panel.html' : 'admin.html';
         }
 
-        // Logout universal dari halaman Beranda — tidak dipakai lagi, logout ada di panel masing-masing
-
         function tutupModal() {
-            document.getElementById('modal-sambutan').classList.add('modal-sembunyi');
+            const modal = document.getElementById('modal-sambutan');
+            modal.classList.add('modal-sembunyi');
+            setTimeout(() => { modal.style.display = 'none'; }, 400);
             sessionStorage.setItem('sudahDisambut', 'ya');
         }
 
-        // Sembunyikan modal sambutan SEBELUM render jika sudah pernah dibuka
+        // Sembunyikan modal sambutan SEBELUM render jika sudah pernah dibuka — langsung hide tanpa animasi
         if (sessionStorage.getItem('sudahDisambut') === 'ya') {
-            document.getElementById('modal-sambutan').classList.add('modal-sembunyi');
+            document.getElementById('modal-sambutan').style.display = 'none';
         }
 
         // Fungsi muat konten dashboard (bisa dipanggil ulang tanpa reload halaman)

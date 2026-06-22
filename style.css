@@ -136,6 +136,8 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
 .modal-sembunyi {
     opacity: 0;
     pointer-events: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
 }
 
 .modal-box {
