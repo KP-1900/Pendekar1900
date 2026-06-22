@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel PENDEKAR</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="menu-kiri">
+        <button class="ikon-menu" onclick="window.location.href='index.html'">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 3L4 9V21H9V14H15V21H20V9L12 3Z"/></svg>
+        </button>
+        <button class="ikon-menu ikon-aktif" onclick="window.location.href='admin.html'">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"/></svg>
+        </button>
+    </div>
+
+    <div class="area-kanan" style="justify-content: center; align-items: center;">
+        <div class="kotak-form" style="width:100%; max-width:500px; background:white; padding:40px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); text-align:center;">
+            
+            <h2 style="margin-top:0; color:#1a233a;">Panel Admin</h2>
+            <p style="color:#888; font-size:13px; margin-bottom:30px;">Pilih jenis data yang ingin diunggah</p>
+
+            <!-- Pilihan Upload -->
+            <div style="display:flex; gap:15px; margin-bottom:30px;">
+                <button onclick="gantiMode('agregat')" id="btn-agregat" style="flex:1; padding:15px; border:2px solid #2b6cb0; border-radius:12px; background:#2b6cb0; color:white; font-weight:bold; cursor:pointer; font-size:13px;">
+                    📊 Data Agregat<br><span style="font-weight:normal; font-size:11px;">Ringkasan per bulan</span>
+                </button>
+                <button onclick="gantiMode('pegawai')" id="btn-pegawai" style="flex:1; padding:15px; border:2px solid #ddd; border-radius:12px; background:white; color:#666; font-weight:bold; cursor:pointer; font-size:13px;">
+                    👤 Data Per Pegawai<br><span style="font-weight:normal; font-size:11px;">Detail tiap pegawai</span>
+                </button>
+            </div>
+
+            <input type="file" id="file-excel" accept=".xlsx,.xls" style="border:1px solid #ddd; padding:10px; width:90%; border-radius:8px; margin-bottom:20px;">
+            
+            <button onclick="prosesUpload()" style="background:#28a745; color:white; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; width:100%;">Unggah Data</button>
+            <p id="status-pesan" style="font-size:14px; margin-top:15px; font-weight:bold;"></p>
+
+            <button onclick="prosesKeluar()" style="background:#dc3545; color:white; padding:10px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; width:100%; margin-top:20px;">Keluar</button>
+        </div>
+    </div>
+
+    <script>
+        const _URL = 'https://gnytuyapiiickrieoboh.supabase.co';
+        const _KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueXR1eWFwaWlpY2tyaWVvYm9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NDAzMzksImV4cCI6MjA5NzMxNjMzOX0.-oa4YA-U8TDzWfrSHd9EkbnLNB8IyObFw0SziIkIpQo';
+        const db = window.supabase.createClient(_URL, _KEY);
+
+        let modeSaatIni = 'agregat';
+
+        // Cek sesi admin
+        async function cekSesi() {
+            const { data: { session } } = await db.auth.getSession();
+            if (!session) window.location.href = 'admin.html';
+        }
+        cekSesi();
+
+        function gantiMode(mode) {
+            modeSaatIni = mode;
+            if (mode === 'agregat') {
+                document.getElementById('btn-agregat').style.background = '#2b6cb0';
+                document.getElementById('btn-agregat').style.color = 'white';
+                document.getElementById('btn-agregat').style.borderColor = '#2b6cb0';
+                document.getElementById('btn-pegawai').style.background = 'white';
+                document.getElementById('btn-pegawai').style.color = '#666';
+                document.getElementById('btn-pegawai').style.borderColor = '#ddd';
+            } else {
+                document.getElementById('btn-pegawai').style.background = '#28a745';
+                document.getElementById('btn-pegawai').style.color = 'white';
+                document.getElementById('btn-pegawai').style.borderColor = '#28a745';
+                document.getElementById('btn-agregat').style.background = 'white';
+                document.getElementById('btn-agregat').style.color = '#666';
+                document.getElementById('btn-agregat').style.borderColor = '#ddd';
+            }
+            document.getElementById('status-pesan').innerText = '';
+        }
+
+        async function prosesUpload() {
+            const fileInput = document.getElementById('file-excel');
+            const statusPesan = document.getElementById('status-pesan');
+
+            if (fileInput.files.length === 0) {
+                statusPesan.style.color = '#dc3545';
+                statusPesan.innerText = "Pilih file Excel terlebih dahulu.";
+                return;
+            }
+
+            statusPesan.style.color = '#2b6cb0';
+            statusPesan.innerText = "Membaca file Excel...";
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const dataMentah = XLSX.utils.sheet_to_json(sheet);
+
+                    statusPesan.innerText = "Menyiapkan data...";
+
+                    let dataSiap, error;
+
+                    if (modeSaatIni === 'agregat') {
+                        dataSiap = dataMentah.map(b => ({
+                            tahun: b['Tahun'],
+                            bulan: b['Bulan'],
+                            jumlah_pegawai: b['Jumlah Pegawai'] || b['Pegawai'] || null,
+                            hari_kerja: b['Hari Kerja'] || null,
+                            psw: b['PSW'] || 0,
+                            ht: b['HT'] || 0,
+                            psw1: b['PSW1'] || b['PSW 1'] || 0,
+                            psw2: b['PSW2'] || b['PSW 2'] || 0,
+                            psw3: b['PSW3'] || b['PSW 3'] || 0,
+                            psw4: b['PSW4'] || b['PSW 4'] || 0,
+                            tl1: b['TL1'] || b['TL 1'] || 0,
+                            tl2: b['TL2'] || b['TL 2'] || 0,
+                            tl3: b['TL3'] || b['TL 3'] || 0,
+                            tl4: b['TL4'] || b['TL 4'] || 0
+                        })).filter(b => b.tahun && b.bulan && b.bulan.toString().toUpperCase() !== 'JUMLAH');
+
+                        ({ error } = await db.from('absensi').upsert(dataSiap, { onConflict: 'tahun,bulan' }));
+
+                    } else {
+                        // Mode per pegawai
+                        dataSiap = dataMentah.map(b => ({
+                            tahun: b['Tahun'],
+                            bulan: b['Bulan'],
+                            nip: b['NIP'] ? b['NIP'].toString() : null,
+                            nama: b['Nama'],
+                            hk: b['HK'] || 0,
+                            hd: b['HD'] || 0,
+                            psw: b['PSW'] || 0,
+                            psw1: b['PSW1'] || b['PSW 1'] || 0,
+                            psw2: b['PSW2'] || b['PSW 2'] || 0,
+                            psw3: b['PSW3'] || b['PSW 3'] || 0,
+                            psw4: b['PSW4'] || b['PSW 4'] || 0,
+                            ht: b['HT'] || 0,
+                            tl1: b['TL1'] || b['TL 1'] || 0,
+                            tl2: b['TL2'] || b['TL 2'] || 0,
+                            tl3: b['TL3'] || b['TL 3'] || 0,
+                            tl4: b['TL4'] || b['TL 4'] || 0
+                        })).filter(b => b.tahun && b.bulan && b.nip);
+
+                        // Upsert data absensi pegawai
+                        ({ error } = await db.from('absensi_pegawai').upsert(dataSiap, { onConflict: 'tahun,bulan,nip' }));
+
+                        if (!error) {
+                            // Sinkron tabel pegawai (tambah yang belum ada)
+                            const pegawaiBaru = [...new Map(dataSiap.map(d => [d.nip, { nip: d.nip, nama: d.nama, password: 'oke123456' }])).values()];
+                            await db.from('pegawai').upsert(pegawaiBaru, { onConflict: 'nip', ignoreDuplicates: true });
+                        }
+                    }
+
+                    if (error) throw error;
+
+                    statusPesan.style.color = '#28a745';
+                    statusPesan.innerText = `Berhasil! ${dataSiap.length} baris tersimpan.`;
+
+                } catch (err) {
+                    statusPesan.style.color = '#dc3545';
+                    statusPesan.innerText = "Gagal: " + err.message;
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        async function prosesKeluar() {
+            await db.auth.signOut();
+            window.location.href = 'admin.html';
+        }
+    </script>
+</body>
+</html>

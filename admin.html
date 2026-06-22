@@ -2,51 +2,49 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Admin PENDEKAR</title>
+    <title>Login PENDEKAR</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-
-    <!-- SIDEBAR KIRI -->
     <div class="menu-kiri">
         <button class="ikon-menu" onclick="window.location.href='index.html'">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M12 3L4 9V21H9V14H15V21H20V9L12 3Z"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 3L4 9V21H9V14H15V21H20V9L12 3Z"/></svg>
         </button>
         <button class="ikon-menu ikon-aktif" onclick="window.location.href='admin.html'">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"/></svg>
         </button>
     </div>
 
-    <!-- AREA KANAN -->
     <div class="area-kanan" style="justify-content: center; align-items: center;">
-        
-        <!-- 1. KOTAK LOGIN -->
-        <div id="kotak-login" class="kotak-form" style="width: 100%; max-width: 400px; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center;">
-            <h2 style="margin-top: 0; color: #1a233a;">Masuk Admin</h2>
-            <p style="color: #555; font-size: 13px; margin-bottom: 25px;">Masukkan kunci untuk mengakses panel data.</p>
+        <div class="kotak-form" style="width:100%; max-width:400px; background:white; padding:40px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); text-align:center;">
             
-            <input type="text" id="input-username" placeholder="Nama Pengguna (Contoh: admin)" style="width: 90%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px;">
-            <input type="password" id="input-sandi" placeholder="Kata Sandi" style="width: 90%; padding: 12px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 8px;">
-            
-            <button onclick="prosesMasuk()" style="background-color: #2b6cb0; color: white; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s;">Login</button>
-            <p id="pesan-login" style="font-size: 13px; color: #dc3545; font-weight: bold; margin-top: 15px;"></p>
-        </div>
+            <img src="logo.png" style="height:50px; margin-bottom:15px;">
+            <h2 style="margin:0 0 5px 0; color:#1a233a;">Login PENDEKAR</h2>
+            <p style="color:#888; font-size:13px; margin-bottom:25px;">Masuk sebagai Admin atau Pegawai</p>
 
-        <!-- 2. KOTAK UNGGAH -->
-        <div id="kotak-unggah" class="kotak-form" style="display: none; width: 100%; max-width: 450px; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center;">
-            <h2 style="margin-top: 0; color: #1a233a;">Unggah Laporan Absensi</h2>
-            <p style="color: #555; font-size: 13px; margin-bottom: 25px;">Pilih file Excel (.xlsx) untuk memasukkan data ke database.</p>
-            
-            <input type="file" id="file-excel" accept=".xlsx, .xls" style="border: 1px solid #ddd; padding: 10px; width: 90%; border-radius: 8px; margin-bottom: 20px;">
-            
-            <button onclick="prosesExcel()" style="background-color: #28a745; color: white; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s;">Unggah Data</button>
-            <p id="status-pesan" style="font-size: 14px; margin-top: 15px; font-weight: bold;"></p>
-            
-            <button onclick="prosesKeluar()" style="background-color: #dc3545; color: white; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px;">Keluar / Kunci Kembali</button>
-        </div>
+            <!-- Tab Pilihan -->
+            <div style="display:flex; margin-bottom:25px; border-radius:10px; overflow:hidden; border:1px solid #e2e8f0;">
+                <button id="tab-admin" onclick="gantiTab('admin')" style="flex:1; padding:10px; border:none; background:#2b6cb0; color:white; font-weight:bold; cursor:pointer;">Admin</button>
+                <button id="tab-pegawai" onclick="gantiTab('pegawai')" style="flex:1; padding:10px; border:none; background:#f7f9fc; color:#666; font-weight:bold; cursor:pointer;">Pegawai</button>
+            </div>
 
+            <!-- Form Admin -->
+            <div id="form-admin">
+                <input type="text" id="admin-username" placeholder="Username" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
+                <input type="password" id="admin-password" placeholder="Password" style="width:90%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
+                <button onclick="loginAdmin()" style="background:#2b6cb0; color:white; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; width:100%;">Masuk sebagai Admin</button>
+            </div>
+
+            <!-- Form Pegawai -->
+            <div id="form-pegawai" style="display:none;">
+                <input type="text" id="pegawai-nip" placeholder="NIP" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
+                <input type="password" id="pegawai-password" placeholder="Password (default: oke123456)" style="width:90%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
+                <button onclick="loginPegawai()" style="background:#28a745; color:white; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; width:100%;">Masuk sebagai Pegawai</button>
+            </div>
+
+            <p id="pesan-login" style="font-size:13px; color:#dc3545; font-weight:bold; margin-top:15px;"></p>
+        </div>
     </div>
 
     <script>
@@ -54,121 +52,78 @@
         const _KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueXR1eWFwaWlpY2tyaWVvYm9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NDAzMzksImV4cCI6MjA5NzMxNjMzOX0.-oa4YA-U8TDzWfrSHd9EkbnLNB8IyObFw0SziIkIpQo';
         const db = window.supabase.createClient(_URL, _KEY);
 
-        async function cekSesi() {
-            const { data: { session } } = await db.auth.getSession();
-            if (session) {
-                document.getElementById('kotak-login').style.display = 'none';
-                document.getElementById('kotak-unggah').style.display = 'block';
+        function gantiTab(tab) {
+            if (tab === 'admin') {
+                document.getElementById('form-admin').style.display = 'block';
+                document.getElementById('form-pegawai').style.display = 'none';
+                document.getElementById('tab-admin').style.background = '#2b6cb0';
+                document.getElementById('tab-admin').style.color = 'white';
+                document.getElementById('tab-pegawai').style.background = '#f7f9fc';
+                document.getElementById('tab-pegawai').style.color = '#666';
             } else {
-                document.getElementById('kotak-login').style.display = 'block';
-                document.getElementById('kotak-unggah').style.display = 'none';
+                document.getElementById('form-admin').style.display = 'none';
+                document.getElementById('form-pegawai').style.display = 'block';
+                document.getElementById('tab-pegawai').style.background = '#28a745';
+                document.getElementById('tab-pegawai').style.color = 'white';
+                document.getElementById('tab-admin').style.background = '#f7f9fc';
+                document.getElementById('tab-admin').style.color = '#666';
             }
+            document.getElementById('pesan-login').innerText = '';
         }
-        
-        cekSesi();
 
-        async function prosesMasuk() {
-            let username = document.getElementById('input-username').value.trim();
-            const sandi = document.getElementById('input-sandi').value;
+        async function loginAdmin() {
+            let username = document.getElementById('admin-username').value.trim();
+            const password = document.getElementById('admin-password').value;
             const pesan = document.getElementById('pesan-login');
 
-            if (!username || !sandi) {
-                pesan.style.color = '#dc3545';
+            if (!username || !password) {
                 pesan.innerText = "Username dan password tidak boleh kosong.";
                 return;
             }
-
-            if (username.toLowerCase() === 'admin') {
-                username = 'admin@pendekar.com';
-            }
+            if (username.toLowerCase() === 'admin') username = 'admin@pendekar.com';
 
             pesan.style.color = '#2b6cb0';
-            pesan.innerText = "Memeriksa kunci...";
+            pesan.innerText = "Memeriksa...";
 
-            try {
-                const { data, error } = await db.auth.signInWithPassword({
-                    email: username,
-                    password: sandi,
-                });
-
-                if (error) {
-                    pesan.style.color = '#dc3545';
-                    pesan.innerText = "Gagal: " + error.message;
-                } else {
-                    pesan.innerText = "";
-                    cekSesi();
-                }
-            } catch(e) {
+            const { data, error } = await db.auth.signInWithPassword({ email: username, password });
+            if (error) {
                 pesan.style.color = '#dc3545';
-                pesan.innerText = "Error: " + e.message;
+                pesan.innerText = "Gagal: " + error.message;
+            } else {
+                window.location.href = 'admin-panel.html';
             }
         }
 
-        async function prosesKeluar() {
-            await db.auth.signOut();
-            cekSesi(); 
-        }
+        async function loginPegawai() {
+            const nip = document.getElementById('pegawai-nip').value.trim();
+            const password = document.getElementById('pegawai-password').value;
+            const pesan = document.getElementById('pesan-login');
 
-        async function prosesExcel() {
-            const fileInput = document.getElementById('file-excel');
-            const statusPesan = document.getElementById('status-pesan');
-            
-            if (fileInput.files.length === 0) {
-                statusPesan.innerText = "Silakan pilih file Excel terlebih dahulu.";
-                statusPesan.style.color = "#dc3545";
+            if (!nip || !password) {
+                pesan.innerText = "NIP dan password tidak boleh kosong.";
                 return;
             }
 
-            statusPesan.innerText = "Membaca file Excel...";
-            statusPesan.style.color = "#2b6cb0";
+            pesan.style.color = '#2b6cb0';
+            pesan.innerText = "Memeriksa...";
 
-            const file = fileInput.files[0];
-            const reader = new FileReader();
+            // Cek di tabel pegawai
+            const { data, error } = await db
+                .from('pegawai')
+                .select('*')
+                .eq('nip', nip)
+                .eq('password', password)
+                .single();
 
-            reader.onload = async function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    const namaSheet = workbook.SheetNames[0];
-                    const sheet = workbook.Sheets[namaSheet];
-                    const dataMentah = XLSX.utils.sheet_to_json(sheet);
-                    
-                    statusPesan.innerText = "Menyiapkan data untuk dikirim...";
-
-                    const dataSiapKirim = dataMentah.map(baris => ({
-                        tahun: baris['Tahun'],
-                        bulan: baris['Bulan'],
-                        jumlah_pegawai: baris['Jumlah Pegawai'] || baris['Pegawai'] || null,
-                        hari_kerja: baris['Hari Kerja'] || null,
-                        psw: baris['PSW'] || 0,
-                        ht: baris['HT'] || 0,
-                        psw1: baris['PSW1'] || baris['PSW 1'] || 0,
-                        psw2: baris['PSW2'] || baris['PSW 2'] || 0,
-                        psw3: baris['PSW3'] || baris['PSW 3'] || 0,
-                        psw4: baris['PSW4'] || baris['PSW 4'] || 0,
-                        tl1: baris['TL1'] || baris['TL 1'] || 0,
-                        tl2: baris['TL2'] || baris['TL 2'] || 0,
-                        tl3: baris['TL3'] || baris['TL 3'] || 0,
-                        tl4: baris['TL4'] || baris['TL 4'] || 0
-                    })).filter(baris => baris.tahun && baris.bulan && baris.bulan.toString().toUpperCase() !== 'JUMLAH'); 
-
-                    const { error } = await db.from('absensi').upsert(dataSiapKirim, {
-                        onConflict: 'tahun,bulan'
-                    });
-
-                    if (error) throw error;
-
-                    statusPesan.innerText = "Berhasil! Data telah tersimpan.";
-                    statusPesan.style.color = "#28a745";
-                    
-                } catch (error) {
-                    console.error(error);
-                    statusPesan.innerText = "Gagal: " + error.message;
-                    statusPesan.style.color = "#dc3545";
-                }
-            };
-
-            reader.readAsArrayBuffer(file);
+            if (error || !data) {
+                pesan.style.color = '#dc3545';
+                pesan.innerText = "NIP atau password salah.";
+            } else {
+                // Simpan info pegawai di sessionStorage
+                sessionStorage.setItem('pegawai_nip', data.nip);
+                sessionStorage.setItem('pegawai_nama', data.nama);
+                window.location.href = 'dashboard-pegawai.html';
+            }
         }
     </script>
 </body>
