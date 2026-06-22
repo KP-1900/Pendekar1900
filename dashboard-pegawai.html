@@ -7,205 +7,205 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { overflow: hidden; height: 100vh; background: #f4f7f6; font-family: sans-serif; }
         .area-kanan {
-            padding: 12px 16px !important;
-            overflow-y: auto;
+            padding: 8px 12px !important;
+            overflow: hidden;
             height: 100vh;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
         }
         .info-pegawai {
             background: white;
-            border-radius: 12px;
-            padding: 10px 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            padding: 6px 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 6px;
             flex-shrink: 0;
         }
         .kartu-pegawai {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             flex-shrink: 0;
         }
         .kartu-hk {
             flex: 1;
             background: white;
-            border-radius: 12px;
-            padding: 10px 8px;
+            border-radius: 8px;
+            padding: 6px;
             text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
         }
         .kartu-hk .angka {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
             color: #1a233a;
-            line-height: 1.2;
+            line-height: 1.1;
         }
         .kartu-hk .label {
-            font-size: 11px;
+            font-size: 10px;
             color: #888;
             margin-top: 2px;
         }
         .grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            gap: 6px;
             flex-shrink: 0;
         }
         .grafik-box {
             background: white;
-            border-radius: 12px;
-            padding: 10px 14px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            padding: 6px 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
         }
         .grafik-box h3 {
-            margin: 0 0 6px 0;
+            margin: 0 0 4px 0;
             color: #1a233a;
-            font-size: 12px;
+            font-size: 11px;
         }
-        .grafik-tren canvas { height: 110px !important; }
-        .grafik-batang canvas { height: 90px !important; }
+        .grafik-tren canvas { height: 85px !important; }
+        .grafik-batang canvas { height: 85px !important; }
         .tabel-box {
             background: white;
-            border-radius: 12px;
-            padding: 10px 14px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            padding: 6px 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
             flex-shrink: 0;
         }
         .tabel-box h3 {
-            margin: 0 0 6px 0;
+            margin: 0 0 4px 0;
             color: #1a233a;
-            font-size: 12px;
+            font-size: 11px;
         }
         .ubah-password-box {
             background: white;
-            border-radius: 12px;
-            padding: 10px 14px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            padding: 6px 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
             flex-shrink: 0;
         }
         .ubah-password-box h3 {
-            margin: 0 0 8px 0;
+            margin: 0 0 4px 0;
             color: #1a233a;
-            font-size: 12px;
+            font-size: 11px;
         }
         .grid-bawah {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            gap: 6px;
             flex-shrink: 0;
         }
+        th, td { padding: 3px 4px !important; } /* Memadatkan isi tabel */
+        input, select, button { padding: 4px 8px !important; font-size: 11px !important; }
     </style>
 </head>
 <body>
-    <div class="menu-kiri">
-        <button class="ikon-menu" onclick="window.location.href='index.html'">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 3L4 9V21H9V14H15V21H20V9L12 3Z"/></svg>
-        </button>
-        <button class="ikon-menu ikon-aktif" onclick="window.location.href='admin.html'">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"/></svg>
-        </button>
-    </div>
-
-    <div class="area-kanan">
-
-        <!-- Info Pegawai -->
-        <div class="info-pegawai">
-            <div>
-                <div style="font-size:11px; color:#888;">Selamat datang,</div>
-                <div id="nama-pegawai" style="font-size:16px; font-weight:bold; color:#1a233a; line-height:1.2;">-</div>
-                <div id="nip-pegawai" style="font-size:11px; color:#888;">NIP: -</div>
-            </div>
-            <div style="display:flex; gap:8px; align-items:center;">
-                <select id="filter-tahun-pegawai" style="padding:6px 10px; border:1px solid #ddd; border-radius:8px; font-size:13px;"></select>
-                <select id="filter-bulan-pegawai" style="padding:6px 10px; border:1px solid #ddd; border-radius:8px; font-size:13px;"></select>
-                <button onclick="prosesKeluar()" style="padding:6px 14px; background:#dc3545; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:12px;">Keluar</button>
-            </div>
+    <div style="display: flex; height: 100vh;">
+        <div class="menu-kiri" style="width: 50px; background: #1a233a; display: flex; flex-direction: column; align-items: center; padding-top: 10px;">
+            <button class="ikon-menu" onclick="window.location.href='index.html'" style="background:none; border:none; cursor:pointer; margin-bottom:10px;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 3L4 9V21H9V14H15V21H20V9L12 3Z"/></svg>
+            </button>
+            <button class="ikon-menu ikon-aktif" onclick="window.location.href='admin.html'" style="background:none; border:none; cursor:pointer;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"/></svg>
+            </button>
         </div>
 
-        <!-- Kartu HK HD PSW HT -->
-        <div class="kartu-pegawai">
-            <div class="kartu-hk">
-                <div class="angka" id="angka-hk">-</div>
-                <div class="label">Hari Kerja</div>
-            </div>
-            <div class="kartu-hk">
-                <div class="angka" id="angka-hd" style="color:#28a745;">-</div>
-                <div class="label">Hari Hadir</div>
-            </div>
-            <div class="kartu-hk">
-                <div class="angka" id="angka-psw" style="color:#6f42c1;">-</div>
-                <div class="label">Rata-rata PSW</div>
-            </div>
-            <div class="kartu-hk">
-                <div class="angka" id="angka-ht" style="color:#f5a623;">-</div>
-                <div class="label">Rata-rata HT</div>
-            </div>
-        </div>
+        <div class="area-kanan" style="flex: 1;">
 
-        <!-- Grafik Tren -->
-        <div class="grid-2">
-            <div class="grafik-box grafik-tren">
-                <h3>Tren PSW per Bulan (%)</h3>
-                <canvas id="grafikPSW-pegawai"></canvas>
-            </div>
-            <div class="grafik-box grafik-tren">
-                <h3>Tren HT per Bulan (%)</h3>
-                <canvas id="grafikHT-pegawai"></canvas>
-            </div>
-        </div>
-
-        <!-- Grafik Batang + Tabel berdampingan -->
-        <div class="grid-bawah">
-            <div class="grafik-box grafik-batang">
-                <h3>Rata-rata per Kategori (%)</h3>
-                <canvas id="grafikBatang-pegawai"></canvas>
-            </div>
-            <div class="tabel-box">
-                <h3>Ringkasan per Bulan</h3>
-                <div style="overflow-x:auto;">
-                    <table style="width:100%; border-collapse:collapse; font-size:11px;">
-                        <thead>
-                            <tr style="background:#f7f9fc; color:#1a233a;">
-                                <th style="padding:5px 4px; text-align:left;">Bulan</th>
-                                <th style="padding:5px 4px;">HK</th>
-                                <th style="padding:5px 4px;">HD</th>
-                                <th style="padding:5px 4px; color:#6f42c1;">PSW</th>
-                                <th style="padding:5px 4px; color:#f5a623;">HT</th>
-                                <th style="padding:5px 4px;">P1</th>
-                                <th style="padding:5px 4px;">P2</th>
-                                <th style="padding:5px 4px;">P3</th>
-                                <th style="padding:5px 4px;">P4</th>
-                                <th style="padding:5px 4px;">T1</th>
-                                <th style="padding:5px 4px;">T2</th>
-                                <th style="padding:5px 4px;">T3</th>
-                                <th style="padding:5px 4px;">T4</th>
-                            </tr>
-                        </thead>
-                        <tbody id="badan-tabel-pegawai"></tbody>
-                    </table>
+            <div class="info-pegawai">
+                <div>
+                    <div style="font-size:10px; color:#888;">Selamat datang,</div>
+                    <div id="nama-pegawai" style="font-size:14px; font-weight:bold; color:#1a233a; line-height:1.2;">-</div>
+                    <div id="nip-pegawai" style="font-size:10px; color:#888;">NIP: -</div>
+                </div>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <select id="filter-tahun-pegawai" style="border:1px solid #ddd; border-radius:6px;"></select>
+                    <select id="filter-bulan-pegawai" style="border:1px solid #ddd; border-radius:6px;"></select>
+                    <button onclick="prosesKeluar()" style="background:#dc3545; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Keluar</button>
                 </div>
             </div>
-        </div>
 
-        <!-- Ubah Password -->
-        <div class="ubah-password-box">
-            <h3>🔑 Ubah Password</h3>
-            <div style="display:flex; gap:8px; align-items:center;">
-                <input type="password" id="password-lama" placeholder="Password lama" style="padding:7px 10px; border:1px solid #ddd; border-radius:8px; flex:1; font-size:12px;">
-                <input type="password" id="password-baru" placeholder="Password baru" style="padding:7px 10px; border:1px solid #ddd; border-radius:8px; flex:1; font-size:12px;">
-                <input type="password" id="password-konfirmasi" placeholder="Konfirmasi" style="padding:7px 10px; border:1px solid #ddd; border-radius:8px; flex:1; font-size:12px;">
-                <button onclick="ubahPassword()" style="padding:7px 16px; background:#2b6cb0; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:12px; white-space:nowrap;">Simpan</button>
+            <div class="kartu-pegawai">
+                <div class="kartu-hk">
+                    <div class="angka" id="angka-hk">-</div>
+                    <div class="label">Hari Kerja</div>
+                </div>
+                <div class="kartu-hk">
+                    <div class="angka" id="angka-hd" style="color:#28a745;">-</div>
+                    <div class="label">Hari Hadir</div>
+                </div>
+                <div class="kartu-hk">
+                    <div class="angka" id="angka-psw" style="color:#6f42c1;">-</div>
+                    <div class="label">Rata-rata PSW</div>
+                </div>
+                <div class="kartu-hk">
+                    <div class="angka" id="angka-ht" style="color:#f5a623;">-</div>
+                    <div class="label">Rata-rata HT</div>
+                </div>
             </div>
-            <p id="pesan-password" style="font-size:12px; font-weight:bold; margin:4px 0 0 0;"></p>
-        </div>
 
+            <div class="grid-2">
+                <div class="grafik-box grafik-tren">
+                    <h3>Tren PSW per Bulan (%)</h3>
+                    <canvas id="grafikPSW-pegawai"></canvas>
+                </div>
+                <div class="grafik-box grafik-tren">
+                    <h3>Tren HT per Bulan (%)</h3>
+                    <canvas id="grafikHT-pegawai"></canvas>
+                </div>
+            </div>
+
+            <div class="grid-bawah">
+                <div class="grafik-box grafik-batang">
+                    <h3>Rata-rata per Kategori (%)</h3>
+                    <canvas id="grafikBatang-pegawai"></canvas>
+                </div>
+                <div class="tabel-box">
+                    <h3>Ringkasan per Bulan</h3>
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%; border-collapse:collapse; font-size:10px;">
+                            <thead>
+                                <tr style="background:#f7f9fc; color:#1a233a;">
+                                    <th style="text-align:left;">Bulan</th>
+                                    <th>HK</th>
+                                    <th>HD</th>
+                                    <th style="color:#6f42c1;">PSW</th>
+                                    <th style="color:#f5a623;">HT</th>
+                                    <th>P1</th>
+                                    <th>P2</th>
+                                    <th>P3</th>
+                                    <th>P4</th>
+                                    <th>T1</th>
+                                    <th>T2</th>
+                                    <th>T3</th>
+                                    <th>T4</th>
+                                </tr>
+                            </thead>
+                            <tbody id="badan-tabel-pegawai"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ubah-password-box">
+                <h3>🔑 Ubah Password</h3>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <input type="password" id="password-lama" placeholder="Password lama" style="border:1px solid #ddd; border-radius:6px; flex:1;">
+                    <input type="password" id="password-baru" placeholder="Password baru" style="border:1px solid #ddd; border-radius:6px; flex:1;">
+                    <input type="password" id="password-konfirmasi" placeholder="Konfirmasi" style="border:1px solid #ddd; border-radius:6px; flex:1;">
+                    <button onclick="ubahPassword()" style="background:#2b6cb0; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold; white-space:nowrap;">Simpan</button>
+                </div>
+                <p id="pesan-password" style="font-size:10px; font-weight:bold; margin:2px 0 0 0;"></p>
+            </div>
+
+        </div>
     </div>
 
     <script>
@@ -235,14 +235,17 @@
         document.getElementById('filter-bulan-pegawai').addEventListener('change', tarikData);
 
         isiDropdownTahun().then(async () => {
-            const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
-            await isiDropdownBulan(tahun);
-            tarikData();
+            const dropdownTahun = document.getElementById('filter-tahun-pegawai');
+            if (dropdownTahun.value) {
+                const tahun = parseInt(dropdownTahun.value);
+                await isiDropdownBulan(tahun);
+                tarikData();
+            }
         });
 
         async function isiDropdownTahun() {
             const { data, error } = await db.from('absensi_pegawai').select('tahun').eq('nip', nipPegawai);
-            if (error || !data) return;
+            if (error || !data || data.length === 0) return;
             const tahunUnik = [...new Set(data.map(d => d.tahun))].sort();
             const dropdown = document.getElementById('filter-tahun-pegawai');
             dropdown.innerHTML = '';
@@ -284,7 +287,7 @@
             if (bulan === 'Semua') {
                 semuaBulan.forEach(b => {
                     const baris = data.find(d => d.bulan === b);
-                    labelBulan.push(b);
+                    labelBulan.push(b.substring(0,3));
                     dataPSW.push(baris ? (Number(baris.psw) * 100).toFixed(2) : 0);
                     dataHT.push(baris ? (Number(baris.ht) * 100).toFixed(2) : 0);
                 });
@@ -292,7 +295,7 @@
                 const idx = semuaBulan.indexOf(bulan);
                 const sebelum = idx > 0 ? semuaBulan[idx-1] : 'Desember';
                 const sesudah = idx < 11 ? semuaBulan[idx+1] : 'Januari';
-                labelBulan = [sebelum, bulan, sesudah];
+                labelBulan = [sebelum.substring(0,3), bulan.substring(0,3), sesudah.substring(0,3)];
                 dataPSW = [
                     ((Number((data.find(d=>d.bulan===sebelum)||{}).psw)||0)*100).toFixed(2),
                     ((Number((data.find(d=>d.bulan===bulan)||{}).psw)||0)*100).toFixed(2),
@@ -329,17 +332,17 @@
             const opsi = {
                 responsive: true, maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 9 } } } }
+                scales: { y: { beginAtZero: true, ticks: { font: { size: 9 } } }, x: { ticks: { font: { size: 9 } } } }
             };
 
             grafikPSW = new Chart(document.getElementById('grafikPSW-pegawai').getContext('2d'), {
                 type: 'line',
-                data: { labels: labelBulan, datasets: [{ data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 3 }] },
+                data: { labels: labelBulan, datasets: [{ data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 }] },
                 options: opsi
             });
             grafikHT = new Chart(document.getElementById('grafikHT-pegawai').getContext('2d'), {
                 type: 'line',
-                data: { labels: labelBulan, datasets: [{ data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 3 }] },
+                data: { labels: labelBulan, datasets: [{ data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 }] },
                 options: opsi
             });
         }
@@ -357,7 +360,7 @@
             grafikBatang = new Chart(document.getElementById('grafikBatang-pegawai').getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: ['PSW1','PSW2','PSW3','PSW4','TL1','TL2','TL3','TL4'],
+                    labels: ['P1','P2','P3','P4','T1','T2','T3','T4'],
                     datasets: [{ data: [
                         ((tPsw1/n)*100).toFixed(2), ((tPsw2/n)*100).toFixed(2),
                         ((tPsw3/n)*100).toFixed(2), ((tPsw4/n)*100).toFixed(2),
@@ -366,9 +369,9 @@
                     ], backgroundColor: [
                         'rgba(111,66,193,0.8)','rgba(111,66,193,0.8)','rgba(111,66,193,0.8)','rgba(111,66,193,0.8)',
                         'rgba(245,166,35,0.8)','rgba(245,166,35,0.8)','rgba(245,166,35,0.8)','rgba(245,166,35,0.8)'
-                    ], borderRadius: 4 }]
+                    ], borderRadius: 3 }]
                 },
-                options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{font:{size:10}}}, x:{ticks:{font:{size:10}}}} }
+                options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{font:{size:9}}}, x:{ticks:{font:{size:9}}}} }
             });
         }
 
@@ -376,7 +379,7 @@
             const tbody = document.getElementById('badan-tabel-pegawai');
             tbody.innerHTML = '';
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:8px;color:#666;">Tidak ada data</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:4px;color:#666;">Tidak ada data</td></tr>';
                 return;
             }
             const dataTabel = bulan === 'Semua' ? semuaBulan.map(b => data.find(d => d.bulan === b)).filter(Boolean) : data;
@@ -386,19 +389,19 @@
                 const p = (v) => (Number(v)*100).toFixed(2);
                 tbody.innerHTML += `
                     <tr style="border-bottom:1px solid #edf2f9;">
-                        <td style="padding:4px;font-weight:bold;font-size:11px;">${item.bulan}</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;">${item.hk}</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;">${item.hd}</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;color:#6f42c1;font-weight:bold;">${p(item.psw)}%</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;color:#f5a623;font-weight:bold;">${p(item.ht)}%</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;${warna(p(item.psw1))}">${p(item.psw1)}%</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;${warna(p(item.psw2))}">${p(item.psw2)}%</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;${warna(p(item.psw3))}">${p(item.psw3)}%</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;${warna(p(item.psw4))}">${p(item.psw4)}%</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;${warna(p(item.tl1))}">${p(item.tl1)}%</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;${warna(p(item.tl2))}">${p(item.tl2)}%</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;${warna(p(item.tl3))}">${p(item.tl3)}%</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;${warna(p(item.tl4))}">${p(item.tl4)}%</td>
+                        <td style="font-weight:bold;">${item.bulan.substring(0,3)}</td>
+                        <td style="text-align:center;">${item.hk}</td>
+                        <td style="text-align:center;">${item.hd}</td>
+                        <td style="text-align:center;color:#6f42c1;font-weight:bold;">${p(item.psw)}%</td>
+                        <td style="text-align:center;color:#f5a623;font-weight:bold;">${p(item.ht)}%</td>
+                        <td style="text-align:center;${warna(p(item.psw1))}">${p(item.psw1)}%</td>
+                        <td style="text-align:center;${warna(p(item.psw2))}">${p(item.psw2)}%</td>
+                        <td style="text-align:center;${warna(p(item.psw3))}">${p(item.psw3)}%</td>
+                        <td style="text-align:center;${warna(p(item.psw4))}">${p(item.psw4)}%</td>
+                        <td style="text-align:center;${warna(p(item.tl1))}">${p(item.tl1)}%</td>
+                        <td style="text-align:center;${warna(p(item.tl2))}">${p(item.tl2)}%</td>
+                        <td style="text-align:center;${warna(p(item.tl3))}">${p(item.tl3)}%</td>
+                        <td style="text-align:center;${warna(p(item.tl4))}">${p(item.tl4)}%</td>
                     </tr>`;
             });
         }
