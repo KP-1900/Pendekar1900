@@ -3,18 +3,28 @@ const SUPABASE_URL = 'https://gnytuyapiiickrieoboh.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueXR1eWFwaWlpY2tyaWVvYm9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NDAzMzksImV4cCI6MjA5NzMxNjMzOX0.-oa4YA-U8TDzWfrSHd9EkbnLNB8IyObFw0SziIkIpQo';
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Menyiapkan variabel kanvas untuk ketiga grafik
 let grafikGarisPSW, grafikGarisHT, grafikBatangKategori;
 
 const semuaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-document.getElementById('filter-tahun').addEventListener('change', () => {
+// === LISTENER FILTER ===
+document.getElementById('filter-tahun').addEventListener('change', async () => {
+    const tahun = parseInt(document.getElementById('filter-tahun').value);
     document.getElementById('filter-bulan').value = 'Semua';
+    await isiDropdownBulan(tahun);
     tarikData();
 });
+
 document.getElementById('filter-bulan').addEventListener('change', tarikData);
 
-// Panggil data pertama kali saat web dibuka
+// === INISIALISASI AWAL ===
+isiDropdownTahun().then(async () => {
+    const tahun = parseInt(document.getElementById('filter-tahun').value);
+    await isiDropdownBulan(tahun);
+    tarikData();
+});
+
+// === FUNGSI DROPDOWN TAHUN ===
 async function isiDropdownTahun() {
     const { data, error } = await db
         .from('absensi')
@@ -22,11 +32,10 @@ async function isiDropdownTahun() {
     
     if (error || !data) return;
 
-    // Ambil tahun unik dan urutkan
     const tahunUnik = [...new Set(data.map(d => d.tahun))].sort();
     
     const dropdown = document.getElementById('filter-tahun');
-    dropdown.innerHTML = ''; // Kosongkan dulu
+    dropdown.innerHTML = '';
     
     tahunUnik.forEach(t => {
         const option = document.createElement('option');
@@ -35,10 +44,30 @@ async function isiDropdownTahun() {
         dropdown.appendChild(option);
     });
 
-    // Default ke tahun terbaru
     dropdown.value = tahunUnik[tahunUnik.length - 1];
 }
-isiDropdownTahun().then(() => tarikData());
+
+// === FUNGSI DROPDOWN BULAN ===
+async function isiDropdownBulan(tahun) {
+    const { data, error } = await db
+        .from('absensi')
+        .select('bulan')
+        .eq('tahun', tahun);
+    
+    if (error || !data) return;
+
+    const dropdown = document.getElementById('filter-bulan');
+    dropdown.innerHTML = '<option value="Semua">Semua</option>';
+    
+    const bulanTersedia = semuaBulan.filter(b => data.some(d => d.bulan === b));
+    
+    bulanTersedia.forEach(b => {
+        const option = document.createElement('option');
+        option.value = b;
+        option.text = b;
+        dropdown.appendChild(option);
+    });
+}
 
 // === FUNGSI UTAMA: MENARIK DATA DARI SUPABASE ===
 async function tarikData() {
@@ -54,7 +83,6 @@ async function tarikData() {
         if (error) throw error;
 
         const dataValid = dataMentah || [];
-
         const dataKartu = bulan === 'Semua' ? dataValid : dataValid.filter(d => d.bulan === bulan);
         
         perbaruiKartu(dataKartu, bulan); 
@@ -269,9 +297,7 @@ function perbaruiTabel(data, bulanDipilih) {
 
     const tentukanWarnaSub = (teksAngka) => {
         let nilai = parseFloat(teksAngka) || 0;
-        if (nilai === 0) {
-            return 'color: #28a745; font-weight: bold;'; 
-        }
+        if (nilai === 0) return 'color: #28a745; font-weight: bold;'; 
         return 'color: #dc3545; font-weight: bold;'; 
     };
 
@@ -291,15 +317,12 @@ function perbaruiTabel(data, bulanDipilih) {
 
         let pegawai = item.jumlah_pegawai || 0;
         let hk = item.hari_kerja || 0;
-        
         let psw = (Number(item.psw) * 100).toFixed(2);
         let ht = (Number(item.ht) * 100).toFixed(2);
-        
         let psw1 = (Number(item.psw1) * 100).toFixed(2);
         let psw2 = (Number(item.psw2) * 100).toFixed(2);
         let psw3 = (Number(item.psw3) * 100).toFixed(2);
         let psw4 = (Number(item.psw4) * 100).toFixed(2);
-        
         let tl1 = (Number(item.tl1) * 100).toFixed(2);
         let tl2 = (Number(item.tl2) * 100).toFixed(2);
         let tl3 = (Number(item.tl3) * 100).toFixed(2);
