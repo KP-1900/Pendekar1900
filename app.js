@@ -8,7 +8,10 @@ let grafikGarisPSW, grafikGarisHT, grafikBatangKategori;
 
 const semuaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-document.getElementById('filter-tahun').addEventListener('change', tarikData);
+document.getElementById('filter-tahun').addEventListener('change', () => {
+    document.getElementById('filter-bulan').value = 'Semua';
+    tarikData();
+});
 document.getElementById('filter-bulan').addEventListener('change', tarikData);
 
 // Panggil data pertama kali saat web dibuka

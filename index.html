@@ -58,7 +58,7 @@
                 
                 // 2. Setelah html terpasang, panggil otak data app.js
                 const script = document.createElement('script');
-                script.src = 'app.js';
+                script.src = 'app.js?v=' + new Date().getTime();
                 document.body.appendChild(script);
             })
             .catch(error => console.error('Gagal memuat konten:', error));
