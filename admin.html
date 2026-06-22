@@ -25,22 +25,22 @@
 
             <!-- Tab Pilihan -->
             <div style="display:flex; margin-bottom:25px; border-radius:10px; overflow:hidden; border:1px solid #e2e8f0;">
-                <button id="tab-admin" onclick="gantiTab('admin')" style="flex:1; padding:10px; border:none; background:#2b6cb0; color:white; font-weight:bold; cursor:pointer;">Admin</button>
-                <button id="tab-pegawai" onclick="gantiTab('pegawai')" style="flex:1; padding:10px; border:none; background:#f7f9fc; color:#666; font-weight:bold; cursor:pointer;">Pegawai</button>
-            </div>
-
-            <!-- Form Admin -->
-            <div id="form-admin">
-                <input type="text" id="admin-username" placeholder="Username" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
-                <input type="password" id="admin-password" placeholder="Password" style="width:90%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
-                <button onclick="loginAdmin()" style="background:#2b6cb0; color:white; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; width:100%;">Masuk sebagai Admin</button>
+                <button id="tab-pegawai" onclick="gantiTab('pegawai')" style="flex:1; padding:10px; border:none; background:#28a745; color:white; font-weight:bold; cursor:pointer;">Pegawai</button>
+                <button id="tab-admin" onclick="gantiTab('admin')" style="flex:1; padding:10px; border:none; background:#f7f9fc; color:#666; font-weight:bold; cursor:pointer;">Admin</button>
             </div>
 
             <!-- Form Pegawai -->
-            <div id="form-pegawai" style="display:none;">
+            <div id="form-pegawai">
                 <input type="text" id="pegawai-nip" placeholder="NIP" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
                 <input type="password" id="pegawai-password" placeholder="Password (default: oke123456)" style="width:90%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
                 <button onclick="loginPegawai()" style="background:#28a745; color:white; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; width:100%;">Masuk sebagai Pegawai</button>
+            </div>
+
+            <!-- Form Admin -->
+            <div id="form-admin" style="display:none;">
+                <input type="text" id="admin-username" placeholder="Username" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
+                <input type="password" id="admin-password" placeholder="Password" style="width:90%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
+                <button onclick="loginAdmin()" style="background:#2b6cb0; color:white; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; width:100%;">Masuk sebagai Admin</button>
             </div>
 
             <p id="pesan-login" style="font-size:13px; color:#dc3545; font-weight:bold; margin-top:15px;"></p>
