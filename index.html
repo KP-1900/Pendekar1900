@@ -28,14 +28,40 @@
         <button class="ikon-menu ikon-aktif" onclick="window.location.href='index.html'">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M12 3L4 9V21H9V14H15V21H20V9L12 3Z"/></svg>
         </button>
-        <button class="ikon-menu" onclick="window.location.href='admin.html'">
+        <button class="ikon-menu" onclick="kePanelOrang()">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"/></svg>
+        </button>
+        <button class="ikon-menu" onclick="prosesKeluarBeranda()" title="Keluar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M16 17V14H9V10H16V7L21 12L16 17ZM14 2C15.1 2 16 2.9 16 4V6H14V4H5V20H14V18H16V20C16 21.1 15.1 22 14 22H5C3.9 22 3 21.1 3 20V4C3 2.9 3.9 2 5 2H14Z"/></svg>
         </button>
     </div>
 
     <div class="area-kanan" id="wadah-konten"></div>
 
     <script>
+        const _URL = 'https://gnytuyapiiickrieoboh.supabase.co';
+        const _KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueXR1eWFwaWlpY2tyaWVvYm9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NDAzMzksImV4cCI6MjA5NzMxNjMzOX0.-oa4YA-U8TDzWfrSHd9EkbnLNB8IyObFw0SziIkIpQo';
+        const db = window.supabase.createClient(_URL, _KEY);
+
+        // Pintar: arahkan ke panel sesuai siapa yang sedang login
+        async function kePanelOrang() {
+            if (sessionStorage.getItem('pegawai_nip')) {
+                window.location.href = 'dashboard-pegawai.html';
+                return;
+            }
+            const { data: { session } } = await db.auth.getSession();
+            window.location.href = session ? 'admin-panel.html' : 'admin.html';
+        }
+
+        // Logout universal dari halaman Beranda
+        async function prosesKeluarBeranda() {
+            sessionStorage.removeItem('pegawai_nip');
+            sessionStorage.removeItem('pegawai_nama');
+            sessionStorage.removeItem('sudahDisambut');
+            await db.auth.signOut();
+            window.location.href = 'admin.html';
+        }
+
         function tutupModal() {
             document.getElementById('modal-sambutan').classList.add('modal-sembunyi');
             // Menyimpan ingatan di browser agar tidak muncul lagi saat di-refresh

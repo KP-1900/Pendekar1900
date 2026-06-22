@@ -108,7 +108,7 @@
         <button class="ikon-menu" onclick="window.location.href='index.html'">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 3L4 9V21H9V14H15V21H20V9L12 3Z"/></svg>
         </button>
-        <button class="ikon-menu ikon-aktif" onclick="window.location.href='admin.html'">
+        <button class="ikon-menu ikon-aktif" onclick="kePanelOrang()">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"/></svg>
         </button>
     </div>
@@ -224,6 +224,16 @@
         } else {
             document.getElementById('nama-pegawai').innerText = namaPegawai || '-';
             document.getElementById('nip-pegawai').innerText = 'NIP: ' + nipPegawai;
+        }
+
+        // Pintar: arahkan ke panel sesuai siapa yang sedang login
+        async function kePanelOrang() {
+            if (sessionStorage.getItem('pegawai_nip')) {
+                window.location.href = 'dashboard-pegawai.html';
+                return;
+            }
+            const { data: { session } } = await db.auth.getSession();
+            window.location.href = session ? 'admin-panel.html' : 'admin.html';
         }
 
         document.getElementById('filter-tahun-pegawai').addEventListener('change', async () => {
