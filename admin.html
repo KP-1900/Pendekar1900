@@ -39,6 +39,22 @@
                     </span>
                 </div>
                 <button onclick="loginPegawai()" style="background:#28a745; color:white; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; width:100%;">Masuk sebagai Pegawai</button>
+
+                <p style="margin:12px 0 0 0; text-align:right;">
+                    <a href="#" onclick="toggleLupaPassword(); return false;" style="color:#28a745; font-size:12px; text-decoration:underline;">Lupa password?</a>
+                </p>
+
+                <div id="form-lupa-password" style="display:none; margin-top:15px; padding-top:15px; border-top:1px solid #eee; text-align:left;">
+                    <input type="text" id="lupa-nip" placeholder="NIP" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
+                    <div style="position:relative; width:90%; margin-left:auto; margin-right:auto;">
+                        <input type="password" id="lupa-password-baru" placeholder="Password baru" onkeydown="if(event.key==='Enter') kirimPermintaanReset()" style="width:100%; padding:12px; padding-right:40px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
+                        <span onclick="toggleMata('lupa-password-baru', this)" style="position:absolute; right:12px; top:12px; cursor:pointer; user-select:none; color:#888;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </span>
+                    </div>
+                    <button onclick="kirimPermintaanReset()" style="background:#e67e22; color:white; padding:10px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; width:100%;">Kirim Permintaan Ubah Password</button>
+                    <p id="pesan-lupa" style="font-size:12px; color:#888; margin-top:10px; line-height:1.5;"></p>
+                </div>
             </div>
 
             <!-- Form Admin -->
@@ -113,6 +129,54 @@
                 pesan.innerText = "Gagal: " + error.message;
             } else {
                 window.location.href = 'admin-panel.html';
+            }
+        }
+
+        function toggleLupaPassword() {
+            const form = document.getElementById('form-lupa-password');
+            form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
+            document.getElementById('pesan-lupa').innerText = '';
+        }
+
+        async function kirimPermintaanReset() {
+            const nip = document.getElementById('lupa-nip').value.trim();
+            const passwordBaru = document.getElementById('lupa-password-baru').value;
+            const pesan = document.getElementById('pesan-lupa');
+
+            if (!nip || !passwordBaru) {
+                pesan.style.color = '#dc3545';
+                pesan.innerText = "NIP dan password baru tidak boleh kosong.";
+                return;
+            }
+
+            pesan.style.color = '#2b6cb0';
+            pesan.innerText = "Memeriksa NIP...";
+
+            const { data: pegawai } = await db.from('pegawai').select('nip,nama').eq('nip', nip).single();
+
+            if (!pegawai) {
+                pesan.style.color = '#dc3545';
+                pesan.innerText = "NIP tidak ditemukan.";
+                return;
+            }
+
+            pesan.innerText = "Mengirim permintaan...";
+
+            const { error } = await db.from('reset_password').insert({
+                nip: pegawai.nip,
+                nama: pegawai.nama,
+                password_baru: passwordBaru,
+                status: 'pending'
+            });
+
+            if (error) {
+                pesan.style.color = '#dc3545';
+                pesan.innerText = "Gagal mengirim permintaan: " + error.message;
+            } else {
+                pesan.style.color = '#e67e22';
+                pesan.innerHTML = "Permintaan terkirim. Silahkan hubungi admin kepegawaian PENDEKAR1900 untuk accept request ubah password.";
+                document.getElementById('lupa-nip').value = '';
+                document.getElementById('lupa-password-baru').value = '';
             }
         }
 

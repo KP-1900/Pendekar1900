@@ -18,6 +18,7 @@
     </div>
 
     <div class="area-kanan" style="justify-content: center; align-items: center;">
+        <div style="display:flex; flex-direction:column; align-items:center; width:100%; max-width:500px; gap:20px;">
         <div class="kotak-form" style="width:100%; max-width:500px; background:white; padding:40px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); text-align:center;">
             
             <h2 style="margin-top:0; color:#1a233a;">Panel Admin</h2>
@@ -40,6 +41,14 @@
 
             <button onclick="prosesKeluar()" style="background:#dc3545; color:white; padding:10px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; width:100%; margin-top:20px;">Keluar</button>
         </div>
+
+        <div class="kotak-form" style="width:100%; max-width:500px; background:white; padding:30px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); text-align:left; margin-top:20px;">
+            <h3 style="margin-top:0; color:#1a233a; font-size:16px;">Permintaan Reset Password Pegawai</h3>
+            <div id="daftar-reset">
+                <p style="color:#999; font-size:13px;">Memuat...</p>
+            </div>
+        </div>
+        </div>
     </div>
 
     <script>
@@ -52,9 +61,60 @@
         // Cek sesi admin
         async function cekSesi() {
             const { data: { session } } = await db.auth.getSession();
-            if (!session) window.location.href = 'admin.html';
+            if (!session) {
+                window.location.href = 'admin.html';
+            } else {
+                muatPermintaanReset();
+            }
         }
         cekSesi();
+
+        let daftarPermintaan = [];
+
+        async function muatPermintaanReset() {
+            const wadah = document.getElementById('daftar-reset');
+            const { data, error } = await db
+                .from('reset_password')
+                .select('*')
+                .eq('status', 'pending')
+                .order('dibuat_pada', { ascending: false });
+
+            if (error) {
+                wadah.innerHTML = `<p style="color:#dc3545; font-size:13px;">Gagal memuat: ${error.message}</p>`;
+                return;
+            }
+
+            daftarPermintaan = data || [];
+
+            if (daftarPermintaan.length === 0) {
+                wadah.innerHTML = `<p style="color:#999; font-size:13px;">Tidak ada permintaan saat ini.</p>`;
+                return;
+            }
+
+            wadah.innerHTML = daftarPermintaan.map((r, i) => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border:1px solid #eee; border-radius:10px; margin-bottom:8px;">
+                    <div>
+                        <b style="font-size:13px;">${r.nama || '-'}</b><br>
+                        <span style="color:#888; font-size:12px;">NIP: ${r.nip}</span>
+                    </div>
+                    <button onclick="terimaReset(${i})" style="background:#28a745; color:white; border:none; padding:8px 14px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:12px;">Terima</button>
+                </div>
+            `).join('');
+        }
+
+        async function terimaReset(i) {
+            const r = daftarPermintaan[i];
+            if (!r) return;
+
+            const { error: errUpdate } = await db.from('pegawai').update({ password: r.password_baru }).eq('nip', r.nip);
+            if (errUpdate) {
+                alert('Gagal mengubah password: ' + errUpdate.message);
+                return;
+            }
+
+            await db.from('reset_password').update({ status: 'approved' }).eq('id', r.id);
+            muatPermintaanReset();
+        }
 
         // Pintar: arahkan ke panel sesuai siapa yang sedang login
         async function kePanelOrang() {
