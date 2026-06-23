@@ -24,7 +24,7 @@
             <h2 style="margin-top:0; color:#1a233a;">Panel Admin</h2>
             <p style="color:#888; font-size:13px; margin-bottom:30px;">Pilih jenis data yang ingin diunggah</p>
 
-            <div style="display:flex; gap:10px; margin-bottom:30px;">
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
                 <button onclick="gantiMode('agregat')" id="btn-agregat" style="flex:1; padding:12px 5px; border:2px solid #2b6cb0; border-radius:12px; background:#2b6cb0; color:white; font-weight:bold; cursor:pointer; font-size:12px;">
                     📊 Agregat<br><span style="font-weight:normal; font-size:10px;">Ringkasan</span>
                 </button>
@@ -35,6 +35,11 @@
                     🏢 Struktur<br><span style="font-weight:normal; font-size:10px;">Tim & Jabatan</span>
                 </button>
             </div>
+
+            <!-- Teks Link Template Excel -->
+            <p style="font-size:12px; color:#555; margin-top:0; margin-bottom:20px;">
+                Template excel unggah: <a href="https://s.bps.go.id/Pendekar1900Template" target="_blank" style="color:#2b6cb0; text-decoration:none; font-weight:bold;">s.bps.go.id/Pendekar1900Template</a>
+            </p>
 
             <input type="file" id="file-excel" accept=".xlsx,.xls" style="border:1px solid #ddd; padding:10px; width:90%; border-radius:8px; margin-bottom:20px;">
             
