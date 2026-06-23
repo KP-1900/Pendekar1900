@@ -338,16 +338,16 @@ function perbaruiTabel(data, bulanDipilih) {
                 <td style="padding: 8px; font-weight: bold;">${item.bulan}</td>
                 <td style="padding: 8px;">${pegawai}</td>
                 <td style="padding: 8px;">${hk}</td>
-                <td style="padding: 8px; color: #6f42c1; font-weight: bold;">${isNaN(psw) ? '0.00' : psw}%</td>
                 <td style="padding: 8px; color: #f5a623; font-weight: bold;">${isNaN(ht) ? '0.00' : ht}%</td>
-                <td style="padding: 8px; ${tentukanWarnaSub(psw1)}">${isNaN(psw1) ? '0.00' : psw1}%</td>
-                <td style="padding: 8px; ${tentukanWarnaSub(psw2)}">${isNaN(psw2) ? '0.00' : psw2}%</td>
-                <td style="padding: 8px; ${tentukanWarnaSub(psw3)}">${isNaN(psw3) ? '0.00' : psw3}%</td>
-                <td style="padding: 8px; ${tentukanWarnaSub(psw4)}">${isNaN(psw4) ? '0.00' : psw4}%</td>
                 <td style="padding: 8px; ${tentukanWarnaSub(tl1)}">${isNaN(tl1) ? '0.00' : tl1}%</td>
                 <td style="padding: 8px; ${tentukanWarnaSub(tl2)}">${isNaN(tl2) ? '0.00' : tl2}%</td>
                 <td style="padding: 8px; ${tentukanWarnaSub(tl3)}">${isNaN(tl3) ? '0.00' : tl3}%</td>
                 <td style="padding: 8px; ${tentukanWarnaSub(tl4)}">${isNaN(tl4) ? '0.00' : tl4}%</td>
+                <td style="padding: 8px; color: #6f42c1; font-weight: bold;">${isNaN(psw) ? '0.00' : psw}%</td>
+                <td style="padding: 8px; ${tentukanWarnaSub(psw1)}">${isNaN(psw1) ? '0.00' : psw1}%</td>
+                <td style="padding: 8px; ${tentukanWarnaSub(psw2)}">${isNaN(psw2) ? '0.00' : psw2}%</td>
+                <td style="padding: 8px; ${tentukanWarnaSub(psw3)}">${isNaN(psw3) ? '0.00' : psw3}%</td>
+                <td style="padding: 8px; ${tentukanWarnaSub(psw4)}">${isNaN(psw4) ? '0.00' : psw4}%</td>
             </tr>
         `;
     });
@@ -369,16 +369,16 @@ function perbaruiTabel(data, bulanDipilih) {
                 <td style="padding: 10px 8px;">JUMLAH</td>
                 <td style="padding: 10px 8px;">${dataTabel.length > 0 ? (dataTabel[dataTabel.length - 1].jumlah_pegawai || 0) : 0}</td>
                 <td style="padding: 10px 8px;">${tHk}</td>
-                <td style="padding: 10px 8px; color: #6f42c1;">${rataPsw}%</td>
                 <td style="padding: 10px 8px; color: #f5a623;">${rataHt}%</td>
-                <td style="padding: 10px 8px; ${tentukanWarnaSub(rataPsw1)}">${rataPsw1}%</td>
-                <td style="padding: 10px 8px; ${tentukanWarnaSub(rataPsw2)}">${rataPsw2}%</td>
-                <td style="padding: 10px 8px; ${tentukanWarnaSub(rataPsw3)}">${rataPsw3}%</td>
-                <td style="padding: 10px 8px; ${tentukanWarnaSub(rataPsw4)}">${rataPsw4}%</td>
                 <td style="padding: 10px 8px; ${tentukanWarnaSub(rataTl1)}">${rataTl1}%</td>
                 <td style="padding: 10px 8px; ${tentukanWarnaSub(rataTl2)}">${rataTl2}%</td>
                 <td style="padding: 10px 8px; ${tentukanWarnaSub(rataTl3)}">${rataTl3}%</td>
                 <td style="padding: 10px 8px; ${tentukanWarnaSub(rataTl4)}">${rataTl4}%</td>
+                <td style="padding: 10px 8px; color: #6f42c1;">${rataPsw}%</td>
+                <td style="padding: 10px 8px; ${tentukanWarnaSub(rataPsw1)}">${rataPsw1}%</td>
+                <td style="padding: 10px 8px; ${tentukanWarnaSub(rataPsw2)}">${rataPsw2}%</td>
+                <td style="padding: 10px 8px; ${tentukanWarnaSub(rataPsw3)}">${rataPsw3}%</td>
+                <td style="padding: 10px 8px; ${tentukanWarnaSub(rataPsw4)}">${rataPsw4}%</td>
             </tr>
         `;
     }
@@ -403,27 +403,27 @@ function perbaruiGrafikBatang(data) {
     });
 
     let rataKategori = [
-        len ? ((tPsw1/len)*100).toFixed(2) : 0,
-        len ? ((tPsw2/len)*100).toFixed(2) : 0,
-        len ? ((tPsw3/len)*100).toFixed(2) : 0,
-        len ? ((tPsw4/len)*100).toFixed(2) : 0,
         len ? ((tTl1/len)*100).toFixed(2) : 0,
         len ? ((tTl2/len)*100).toFixed(2) : 0,
         len ? ((tTl3/len)*100).toFixed(2) : 0,
-        len ? ((tTl4/len)*100).toFixed(2) : 0
+        len ? ((tTl4/len)*100).toFixed(2) : 0,
+        len ? ((tPsw1/len)*100).toFixed(2) : 0,
+        len ? ((tPsw2/len)*100).toFixed(2) : 0,
+        len ? ((tPsw3/len)*100).toFixed(2) : 0,
+        len ? ((tPsw4/len)*100).toFixed(2) : 0
     ];
 
     const ctx = document.getElementById('grafikBatang').getContext('2d');
     grafikBatangKategori = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['PSW 1', 'PSW 2', 'PSW 3', 'PSW 4', 'TL 1', 'TL 2', 'TL 3', 'TL 4'],
+            labels: ['TL 1', 'TL 2', 'TL 3', 'TL 4', 'PSW 1', 'PSW 2', 'PSW 3', 'PSW 4'],
             datasets: [{
                 label: 'Rata-rata (%)',
                 data: rataKategori,
                 backgroundColor: [
-                    'rgba(111, 66, 193, 0.8)', 'rgba(111, 66, 193, 0.8)', 'rgba(111, 66, 193, 0.8)', 'rgba(111, 66, 193, 0.8)',
-                    'rgba(245, 166, 35, 0.8)', 'rgba(245, 166, 35, 0.8)', 'rgba(245, 166, 35, 0.8)', 'rgba(245, 166, 35, 0.8)'
+                    'rgba(245, 166, 35, 0.8)', 'rgba(245, 166, 35, 0.8)', 'rgba(245, 166, 35, 0.8)', 'rgba(245, 166, 35, 0.8)',
+                    'rgba(111, 66, 193, 0.8)', 'rgba(111, 66, 193, 0.8)', 'rgba(111, 66, 193, 0.8)', 'rgba(111, 66, 193, 0.8)'
                 ],
                 borderRadius: 4 
             }]
