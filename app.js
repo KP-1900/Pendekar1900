@@ -46,6 +46,10 @@ async function isiDropdownTahun() {
     });
 
     dropdown.value = tahunUnik[tahunUnik.length - 1];
+
+    // Tampilkan filter setelah data siap — mencegah kedip nilai default
+    const areaFilter = document.getElementById('area-filter');
+    if (areaFilter) areaFilter.style.visibility = 'visible';
 }
 
 // === FUNGSI DROPDOWN BULAN ===
