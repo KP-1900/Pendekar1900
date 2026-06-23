@@ -198,9 +198,24 @@
         <div class="ubah-password-box">
             <h3>🔑 Ubah Password</h3>
             <div style="display:flex; gap:8px; align-items:center;">
-                <input type="password" id="password-lama" placeholder="Password lama" style="padding:7px 10px; border:1px solid #ddd; border-radius:8px; flex:1; font-size:12px;">
-                <input type="password" id="password-baru" placeholder="Password baru" style="padding:7px 10px; border:1px solid #ddd; border-radius:8px; flex:1; font-size:12px;">
-                <input type="password" id="password-konfirmasi" placeholder="Konfirmasi" style="padding:7px 10px; border:1px solid #ddd; border-radius:8px; flex:1; font-size:12px;">
+                <div style="position:relative; flex:1;">
+                    <input type="password" id="password-lama" placeholder="Password lama" style="padding:7px 28px 7px 10px; border:1px solid #ddd; border-radius:8px; font-size:12px; width:100%; box-sizing:border-box;">
+                    <span onclick="toggleMata('password-lama', this)" style="position:absolute; right:7px; top:5px; cursor:pointer; user-select:none; color:#888;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </span>
+                </div>
+                <div style="position:relative; flex:1;">
+                    <input type="password" id="password-baru" placeholder="Password baru" style="padding:7px 28px 7px 10px; border:1px solid #ddd; border-radius:8px; font-size:12px; width:100%; box-sizing:border-box;">
+                    <span onclick="toggleMata('password-baru', this)" style="position:absolute; right:7px; top:5px; cursor:pointer; user-select:none; color:#888;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </span>
+                </div>
+                <div style="position:relative; flex:1;">
+                    <input type="password" id="password-konfirmasi" placeholder="Konfirmasi" style="padding:7px 28px 7px 10px; border:1px solid #ddd; border-radius:8px; font-size:12px; width:100%; box-sizing:border-box;">
+                    <span onclick="toggleMata('password-konfirmasi', this)" style="position:absolute; right:7px; top:5px; cursor:pointer; user-select:none; color:#888;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </span>
+                </div>
                 <button onclick="ubahPassword()" style="padding:7px 16px; background:#2b6cb0; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:12px; white-space:nowrap;">Simpan</button>
             </div>
             <p id="pesan-password" style="font-size:12px; font-weight:bold; margin:4px 0 0 0;"></p>
@@ -212,6 +227,18 @@
         const _URL = 'https://gnytuyapiiickrieoboh.supabase.co';
         const _KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueXR1eWFwaWlpY2tyaWVvYm9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NDAzMzksImV4cCI6MjA5NzMxNjMzOX0.-oa4YA-U8TDzWfrSHd9EkbnLNB8IyObFw0SziIkIpQo';
         const db = window.supabase.createClient(_URL, _KEY);
+
+        // Toggle tampil/sembunyi password
+        function toggleMata(idInput, ikon) {
+            const input = document.getElementById(idInput);
+            if (input.type === 'password') {
+                input.type = 'text';
+                ikon.style.color = '#2b6cb0';
+            } else {
+                input.type = 'password';
+                ikon.style.color = '#888';
+            }
+        }
 
         const semuaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
         let grafikPSW, grafikHT, grafikBatang;

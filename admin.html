@@ -34,7 +34,9 @@
                 <input type="text" id="pegawai-nip" placeholder="NIP" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
                 <div style="position:relative; width:90%; margin-left:auto; margin-right:auto;">
                     <input type="password" id="pegawai-password" placeholder="Password (default: oke123456)" style="width:100%; padding:12px; padding-right:40px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
-                    <span onclick="toggleMata('pegawai-password', this)" style="position:absolute; right:12px; top:14px; cursor:pointer; font-size:16px; user-select:none;">👁️</span>
+                    <span onclick="toggleMata('pegawai-password', this)" style="position:absolute; right:12px; top:12px; cursor:pointer; user-select:none; color:#888;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </span>
                 </div>
                 <button onclick="loginPegawai()" style="background:#28a745; color:white; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; width:100%;">Masuk sebagai Pegawai</button>
             </div>
@@ -44,7 +46,9 @@
                 <input type="text" id="admin-username" placeholder="Username" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
                 <div style="position:relative; width:90%; margin-left:auto; margin-right:auto;">
                     <input type="password" id="admin-password" placeholder="Password" style="width:100%; padding:12px; padding-right:40px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
-                    <span onclick="toggleMata('admin-password', this)" style="position:absolute; right:12px; top:14px; cursor:pointer; font-size:16px; user-select:none;">👁️</span>
+                    <span onclick="toggleMata('admin-password', this)" style="position:absolute; right:12px; top:12px; cursor:pointer; user-select:none; color:#888;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </span>
                 </div>
                 <button onclick="loginAdmin()" style="background:#2b6cb0; color:white; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; width:100%;">Masuk sebagai Admin</button>
             </div>
@@ -63,10 +67,10 @@
             const input = document.getElementById(idInput);
             if (input.type === 'password') {
                 input.type = 'text';
-                ikon.style.opacity = '0.5';
+                ikon.style.color = '#2b6cb0';
             } else {
                 input.type = 'password';
-                ikon.style.opacity = '1';
+                ikon.style.color = '#888';
             }
         }
 
