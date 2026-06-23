@@ -1,288 +1,27 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard Pegawai PENDEKAR</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        * { box-sizing: border-box; }
-        .area-kanan {
-            padding: 12px 16px !important;
-            overflow: hidden !important; 
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .info-pegawai {
-            background: white;
-            border-radius: 12px;
-            padding: 10px 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            flex-shrink: 0;
-        }
-        .kartu-pegawai {
-            display: flex;
-            gap: 8px;
-            flex-shrink: 0;
-        }
-        .kartu-hk {
-            flex: 1;
-            background: white;
-            border-radius: 12px;
-            padding: 10px 8px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        .kartu-hk .angka {
-            font-size: 24px;
-            font-weight: bold;
-            color: #1a233a;
-            line-height: 1.2;
-        }
-        .kartu-hk .label {
-            font-size: 11px;
-            color: #888;
-            margin-top: 2px;
-        }
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            flex-shrink: 0;
-        }
-        .grafik-box {
-            background: white;
-            border-radius: 12px;
-            padding: 12px 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            border: 1px solid #edf2f9;
-        }
-        .grafik-box h3 {
-            margin: 0 0 8px 0;
-            color: #1a233a;
-            font-size: 14px;
-            font-weight: 900;
-        }
-        .grafik-tren canvas { height: 120px !important; }
-        
-        .grafik-batang { 
-            display: flex; 
-            flex-direction: column; 
-            min-height: 0; 
-        }
-        .grafik-batang canvas { 
-            flex: 1; 
-            width: 100% !important; 
-            min-height: 0; 
-        }
-        
-        .tabel-box {
-            background: white;
-            border-radius: 12px;
-            padding: 12px 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            border: 1px solid #edf2f9;
-            flex-shrink: 0;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            min-height: 0; 
-        }
-        .tabel-box > div {
-            overflow-y: auto; 
-            overflow-x: auto;
-            flex: 1;
-            min-height: 0;
-        }
-        .tabel-box h3 {
-            margin: 0 0 8px 0;
-            color: #1a233a;
-            font-size: 14px;
-            font-weight: 900;
-            flex-shrink: 0;
-        }
-        
-        .ubah-password-box {
-            background: white;
-            border-radius: 12px;
-            padding: 12px 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            border: 1px solid #edf2f9;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 0; 
-        }
-        .ubah-password-box h3 {
-            margin: 0 0 10px 0;
-            color: #1a233a;
-            font-size: 14px;
-            font-weight: 900;
-            flex-shrink: 0;
-        }
-        
-        /* Area bawah diatur agar tabel (1.8fr) mendapat porsi lebar yang lebih banyak */
-        .grid-bawah {
-            display: grid;
-            grid-template-columns: 1fr 1.8fr 220px; 
-            gap: 10px;
-            flex: 1;
-            min-height: 0;
-        }
-    </style>
-</head>
-<body>
-    <div class="menu-kiri">
-        <button class="ikon-menu" onclick="window.location.href='index.html'">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 3L4 9V21H9V14H15V21H20V9L12 3Z"/></svg>
-        </button>
-        <button class="ikon-menu ikon-aktif" onclick="kePanelOrang()">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"/></svg>
-        </button>
-    </div>
-
-    <div class="area-kanan">
-
-        <div class="info-pegawai">
-            <div>
-                <div style="font-size:11px; color:#888;">Selamat datang,</div>
-                <div id="nama-pegawai" style="font-size:16px; font-weight:bold; color:#1a233a; line-height:1.2;">-</div>
-                <div id="nip-pegawai" style="font-size:11px; color:#888;">NIP: -</div>
-            </div>
-            <div style="display:flex; gap:8px; align-items:center;">
-                <select id="filter-tahun-pegawai" style="padding:6px 10px; border:1px solid #ddd; border-radius:8px; font-size:13px; min-width:72px; width:72px;"></select>
-                <select id="filter-bulan-pegawai" style="padding:6px 10px; border:1px solid #ddd; border-radius:8px; font-size:13px; min-width:110px; width:110px;"></select>
-                <button onclick="prosesKeluar()" style="padding:6px 14px; background:#dc3545; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:12px;">Keluar</button>
-            </div>
-        </div>
-
-        <div class="kartu-pegawai">
-            <div class="kartu-hk">
-                <div class="angka" id="angka-hk">-</div>
-                <div class="label">Hari Kerja</div>
-            </div>
-            <div class="kartu-hk">
-                <div class="angka" id="angka-hd" style="color:#28a745;">-</div>
-                <div class="label">Hari Hadir</div>
-            </div>
-            <div class="kartu-hk">
-                <div class="angka" id="angka-ht" style="color:#f5a623;">-</div>
-                <div class="label">Rata-rata HT</div>
-            </div>
-            <div class="kartu-hk">
-                <div class="angka" id="angka-psw" style="color:#6f42c1;">-</div>
-                <div class="label">Rata-rata PSW</div>
-            </div>
-        </div>
-
-        <div class="grid-2">
-            <div class="grafik-box grafik-tren">
-                <h3>Tren Persentase per Bulan (HT)</h3>
-                <canvas id="grafikHT-pegawai"></canvas>
-            </div>
-            <div class="grafik-box grafik-tren">
-                <h3>Tren Persentase per Bulan (PSW)</h3>
-                <canvas id="grafikPSW-pegawai"></canvas>
-            </div>
-        </div>
-
-        <div class="grid-bawah">
-            
-            <div class="grafik-box grafik-batang">
-                <h3>Rata-rata per Kategori (%)</h3>
-                <canvas id="grafikBatang-pegawai"></canvas>
-            </div>
-            
-            <div class="tabel-box">
-                <h3>Ringkasan per Bulan</h3>
-                <div>
-                    <table style="font-size: 10px; text-align: center; border-collapse: collapse; white-space: nowrap; width: 100%;">
-                        <thead style="position: sticky; top: 0; background-color: #f4f7fe; z-index: 1;">
-                            <tr>
-                                <th style="padding: 6px 2px; text-align: left;">Bulan</th>
-                                <th style="padding: 6px 2px;">HK</th>
-                                <th style="padding: 6px 2px;">HD</th>
-                                <th style="padding: 6px 2px;">HT</th>
-                                <th style="padding: 6px 2px;">TL 1</th>
-                                <th style="padding: 6px 2px;">TL 2</th>
-                                <th style="padding: 6px 2px;">TL 3</th>
-                                <th style="padding: 6px 2px;">TL 4</th>
-                                <th style="padding: 6px 2px;">PSW</th>
-                                <th style="padding: 6px 2px;">PSW 1</th>
-                                <th style="padding: 6px 2px;">PSW 2</th>
-                                <th style="padding: 6px 2px;">PSW 3</th>
-                                <th style="padding: 6px 2px;">PSW 4</th>
-                            </tr>
-                        </thead>
-                        <tbody id="badan-tabel-pegawai"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="ubah-password-box">
-                <h3>🔑 Ubah Password</h3>
-                <div style="display:flex; flex-direction:column; gap:10px; margin-top:5px; flex:1;">
-                    <div style="position:relative; width:100%;">
-                        <input type="password" id="password-lama" placeholder="Password lama" onkeydown="if(event.key==='Enter') ubahPassword()" style="padding:10px 30px 10px 12px; border:1px solid #ddd; border-radius:8px; font-size:12px; width:100%; box-sizing:border-box;">
-                        <span onclick="toggleMata('password-lama', this)" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; user-select:none; color:#888; display:flex;">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                        </span>
-                    </div>
-                    <div style="position:relative; width:100%;">
-                        <input type="password" id="password-baru" placeholder="Password baru" onkeydown="if(event.key==='Enter') ubahPassword()" style="padding:10px 30px 10px 12px; border:1px solid #ddd; border-radius:8px; font-size:12px; width:100%; box-sizing:border-box;">
-                        <span onclick="toggleMata('password-baru', this)" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; user-select:none; color:#888; display:flex;">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                        </span>
-                    </div>
-                    <div style="position:relative; width:100%;">
-                        <input type="password" id="password-konfirmasi" placeholder="Konfirmasi" onkeydown="if(event.key==='Enter') ubahPassword()" style="padding:10px 30px 10px 12px; border:1px solid #ddd; border-radius:8px; font-size:12px; width:100%; box-sizing:border-box;">
-                        <span onclick="toggleMata('password-konfirmasi', this)" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; user-select:none; color:#888; display:flex;">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                        </span>
-                    </div>
-                    <button onclick="ubahPassword()" style="padding:10px 16px; background:#2b6cb0; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:13px; width:100%; margin-top:auto;">Simpan</button>
-                </div>
-                <p id="pesan-password" style="font-size:12px; font-weight:bold; margin:8px 0 0 0; text-align:center;"></p>
-            </div>
-
-        </div>
-
-    </div>
-
-    <script>
+<script>
         const _URL = 'https://gnytuyapiiickrieoboh.supabase.co';
         const _KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueXR1eWFwaWlpY2tyaWVvYm9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NDAzMzksImV4cCI6MjA5NzMxNjMzOX0.-oa4YA-U8TDzWfrSHd9EkbnLNB8IyObFw0SziIkIpQo';
         const db = window.supabase.createClient(_URL, _KEY);
 
-        // Toggle tampil/sembunyi password
         function toggleMata(idInput, ikon) {
             const input = document.getElementById(idInput);
-            if (input.type === 'password') {
-                input.type = 'text';
-                ikon.style.color = '#2b6cb0';
-            } else {
-                input.type = 'password';
-                ikon.style.color = '#888';
-            }
+            if (input.type === 'password') { input.type = 'text'; ikon.style.color = '#2b6cb0'; } 
+            else { input.type = 'password'; ikon.style.color = '#888'; }
         }
 
         const semuaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
         let grafikPSW, grafikHT, grafikBatang;
+        let chartTimInstances = {}; 
 
         const nipPegawai = sessionStorage.getItem('pegawai_nip');
         const namaPegawai = sessionStorage.getItem('pegawai_nama');
+        
+        let roleAkses = 'Anggota';
+        let namaTimAkses = null;
+        let isKepalaAtauAdmin = false; // Penanda untuk Kepala atau Admin Umum
 
-        if (!nipPegawai) {
-            window.location.href = 'admin.html';
-        } else {
+        if (!nipPegawai) window.location.href = 'admin.html';
+        else {
             document.getElementById('nama-pegawai').innerText = namaPegawai || '-';
             document.getElementById('nip-pegawai').innerText = 'NIP: ' + nipPegawai;
         }
@@ -293,24 +32,57 @@
             window.location.href = session ? 'admin-panel.html' : 'admin.html';
         }
 
+        function gantiMode(mode) {
+            if (mode === 'pribadi') {
+                document.getElementById('btn-mode-pribadi').className = 'btn-toggle aktif';
+                document.getElementById('btn-mode-tim').className = 'btn-toggle nonaktif';
+                document.getElementById('wadah-mode-pribadi').style.display = 'flex';
+                document.getElementById('wadah-mode-tim').style.display = 'none';
+            } else {
+                document.getElementById('btn-mode-tim').className = 'btn-toggle aktif';
+                document.getElementById('btn-mode-pribadi').className = 'btn-toggle nonaktif';
+                document.getElementById('wadah-mode-tim').style.display = 'flex';
+                document.getElementById('wadah-mode-pribadi').style.display = 'none';
+            }
+        }
+
         document.getElementById('filter-tahun-pegawai').addEventListener('change', async () => {
             const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
             await isiDropdownBulan(tahun);
             document.getElementById('filter-bulan-pegawai').value = 'Semua';
-            tarikData();
+            tarikDataSemua();
         });
-        document.getElementById('filter-bulan-pegawai').addEventListener('change', tarikData);
+        document.getElementById('filter-bulan-pegawai').addEventListener('change', tarikDataSemua);
 
-        isiDropdownTahun().then(async () => {
-            const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
-            await isiDropdownBulan(tahun);
-            tarikData();
-        });
+        async function inisialisasiAwal() {
+            // 1. Tentukan Role berdasarkan rekaman paling baru
+            const { data: dataRole } = await db.from('absensi_pegawai').select('tahun, bulan, tim, jabatan').eq('nip', nipPegawai);
+            if (dataRole && dataRole.length > 0) {
+                dataRole.sort((a, b) => {
+                    if (a.tahun !== b.tahun) return b.tahun - a.tahun;
+                    return semuaBulan.indexOf(b.bulan) - semuaBulan.indexOf(a.bulan);
+                });
+                roleAkses = dataRole[0].jabatan || 'Anggota';
+                namaTimAkses = dataRole[0].tim || null;
+                
+                const jabatanDicek = roleAkses.toLowerCase();
+                const timDicek = (namaTimAkses || '').toLowerCase();
+                
+                // Setujui jika dia Kepala ATAU (Tim Umum dan Jabatan Admin)
+                isKepalaAtauAdmin = jabatanDicek === 'kepala' || (timDicek === 'umum' && jabatanDicek === 'admin');
+            }
 
-        async function isiDropdownTahun() {
-            const { data, error } = await db.from('absensi_pegawai').select('tahun').eq('nip', nipPegawai);
-            if (error || !data) return;
-            const tahunUnik = [...new Set(data.map(d => d.tahun))].sort();
+            const jabatanDicek = roleAkses.toLowerCase();
+            if (jabatanDicek === 'ketua' || isKepalaAtauAdmin) {
+                document.getElementById('box-pilihan-mode').style.display = 'flex';
+            } else {
+                document.getElementById('box-pilihan-mode').style.display = 'none';
+            }
+
+            // 2. Isi Dropdown Tahun & Tarik Data
+            const { data: dataThn } = await db.from('absensi_pegawai').select('tahun').eq('nip', nipPegawai);
+            if (!dataThn) return;
+            const tahunUnik = [...new Set(dataThn.map(d => d.tahun))].sort();
             const dropdown = document.getElementById('filter-tahun-pegawai');
             dropdown.innerHTML = '';
             tahunUnik.forEach(t => {
@@ -319,22 +91,142 @@
                 dropdown.appendChild(opt);
             });
             dropdown.value = tahunUnik[tahunUnik.length - 1];
+
+            const tahunTerpilih = parseInt(dropdown.value);
+            await isiDropdownBulan(tahunTerpilih);
+            tarikDataSemua();
         }
+        
+        inisialisasiAwal();
 
         async function isiDropdownBulan(tahun) {
-            const { data, error } = await db.from('absensi_pegawai').select('bulan').eq('nip', nipPegawai).eq('tahun', tahun);
-            if (error || !data) return;
+            const { data } = await db.from('absensi_pegawai').select('bulan').eq('nip', nipPegawai).eq('tahun', tahun);
             const dropdown = document.getElementById('filter-bulan-pegawai');
             dropdown.innerHTML = '<option value="Semua">Semua</option>';
-            const bulanTersedia = semuaBulan.filter(b => data.some(d => d.bulan === b));
-            bulanTersedia.forEach(b => {
-                const opt = document.createElement('option');
-                opt.value = b; opt.text = b;
-                dropdown.appendChild(opt);
+            if (data) {
+                const bulanTersedia = semuaBulan.filter(b => data.some(d => d.bulan === b));
+                bulanTersedia.forEach(b => {
+                    const opt = document.createElement('option');
+                    opt.value = b; opt.text = b;
+                    dropdown.appendChild(opt);
+                });
+            }
+        }
+
+        function tarikDataSemua() {
+            tarikDataPribadi();
+            const jabatanDicek = roleAkses.toLowerCase();
+            if (jabatanDicek === 'ketua' || isKepalaAtauAdmin) {
+                tarikDataTimLengkap();
+            }
+        }
+
+        // ================== LOGIKA MODE TIM ==================
+        async function tarikDataTimLengkap() {
+            const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
+            
+            const { data } = await db.from('absensi_pegawai').select('*').eq('tahun', tahun);
+            if (!data) return;
+
+            // Saring (Kepala / Admin Umum = Lihat Semua, Ketua = Hanya Tim Sendiri)
+            let dataTersaring = data;
+            const jabatanDicek = roleAkses.toLowerCase();
+            if (jabatanDicek === 'ketua' && !isKepalaAtauAdmin && namaTimAkses) {
+                dataTersaring = data.filter(d => d.tim === namaTimAkses);
+            }
+
+            // Kelompokkan per NIP
+            const petaAnggota = {};
+            dataTersaring.forEach(d => {
+                if (!petaAnggota[d.nip]) {
+                    petaAnggota[d.nip] = { nip: d.nip, nama: d.nama, jabatan: d.jabatan || 'Anggota', tim: d.tim, dataBulanan: {} };
+                }
+                petaAnggota[d.nip].dataBulanan[d.bulan] = { ht: d.ht || 0, psw: d.psw || 0 };
+            });
+
+            // Urutkan List (Kepala > Admin > Ketua > Anggota)
+            const bobotJabatan = { 'kepala': 1, 'admin': 2, 'ketua': 3, 'anggota': 4 };
+            const daftarAnggota = Object.values(petaAnggota).sort((a, b) => {
+                const bobotA = bobotJabatan[(a.jabatan || '').toLowerCase()] || 99;
+                const bobotB = bobotJabatan[(b.jabatan || '').toLowerCase()] || 99;
+                if (bobotA !== bobotB) return bobotA - bobotB;
+                return a.nama.localeCompare(b.nama);
+            });
+
+            renderModeTim(daftarAnggota);
+        }
+
+        function renderModeTim(daftarAnggota) {
+            const wadah = document.getElementById('wadah-mode-tim');
+            wadah.innerHTML = '';
+            
+            Object.values(chartTimInstances).forEach(chart => chart.destroy());
+            chartTimInstances = {};
+
+            if (daftarAnggota.length === 0) {
+                wadah.innerHTML = '<p style="text-align:center; color:#888; font-size:13px; margin-top:20px;">Tidak ada data tim yang ditemukan untuk periode ini.</p>';
+                return;
+            }
+
+            daftarAnggota.forEach((anggota, index) => {
+                const idCanvas = `chart-tim-${index}`;
+                
+                // Pewarnaan Badge Jabatan
+                let warnaJabatan = 'background:#e6f6ee; color:#28a745;'; // Hijau untuk Anggota
+                const jabAnggota = (anggota.jabatan || '').toLowerCase();
+                if (jabAnggota === 'kepala' || jabAnggota === 'admin') {
+                    warnaJabatan = 'background:#f0e6fa; color:#6f42c1;'; // Ungu untuk Kepala & Admin
+                } else if (jabAnggota === 'ketua') {
+                    warnaJabatan = 'background:#e6f0fa; color:#007bff;'; // Biru untuk Ketua
+                }
+
+                const htmlKartu = `
+                    <div class="kartu-anggota-tim">
+                        <div class="info-anggota-tim">
+                            <h4 style="margin: 0 0 4px 0; color: #1a233a; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${anggota.nama}">${anggota.nama}</h4>
+                            <p style="margin: 0; font-size: 10px; color: #888;">NIP: ${anggota.nip}</p>
+                            ${isKepalaAtauAdmin ? `<p style="margin: 3px 0 0 0; font-size: 10px; color: #555;"><b>Tim:</b> ${anggota.tim || '-'}</p>` : ''}
+                            <span style="display: inline-block; margin-top: 8px; padding: 3px 8px; font-size: 10px; border-radius: 4px; font-weight: bold; ${warnaJabatan}">${anggota.jabatan}</span>
+                        </div>
+                        <div class="canvas-wadah-tim">
+                            <canvas id="${idCanvas}"></canvas>
+                        </div>
+                    </div>
+                `;
+                wadah.innerHTML += htmlKartu;
+            });
+
+            // Bangun ulang grafiknya
+            daftarAnggota.forEach((anggota, index) => {
+                const idCanvas = `chart-tim-${index}`;
+                
+                const dataHT = semuaBulan.map(b => anggota.dataBulanan[b] ? (Number(anggota.dataBulanan[b].ht)*100).toFixed(2) : 0);
+                const dataPSW = semuaBulan.map(b => anggota.dataBulanan[b] ? (Number(anggota.dataBulanan[b].psw)*100).toFixed(2) : 0);
+                
+                const ctx = document.getElementById(idCanvas).getContext('2d');
+                chartTimInstances[idCanvas] = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+                        datasets: [
+                            { label: 'HT (%)', data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 },
+                            { label: 'PSW (%)', data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 }
+                        ]
+                    },
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, 
+                        scales: { 
+                            y: { beginAtZero: true, ticks: { font: { size: 9 }, stepSize: 20 } }, 
+                            x: { ticks: { font: { size: 9 } } } 
+                        } 
+                    }
+                });
             });
         }
 
-        async function tarikData() {
+
+        // ================== LOGIKA MODE PRIBADI ==================
+        async function tarikDataPribadi() {
             const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
             const bulan = document.getElementById('filter-bulan-pegawai').value;
 
@@ -371,17 +263,12 @@
                     ((Number((data.find(d=>d.bulan===sesudah)||{}).ht)||0)*100).toFixed(2)
                 ];
             }
-            perbaruiGrafik(labelBulan, dataPSW, dataHT, bulan);
+            perbaruiGrafikPribadi(labelBulan, dataPSW, dataHT, bulan);
         }
 
         function perbaruiKartu(data, bulan) {
             let tHk=0, tHd=0, tPsw=0, tHt=0;
-            data.forEach(d => {
-                tHk += Number(d.hk)||0;
-                tHd += Number(d.hd)||0;
-                tPsw += Number(d.psw)||0;
-                tHt += Number(d.ht)||0;
-            });
+            data.forEach(d => { tHk += Number(d.hk)||0; tHd += Number(d.hd)||0; tPsw += Number(d.psw)||0; tHt += Number(d.ht)||0; });
             const n = data.length || 1;
             document.getElementById('angka-hk').innerText = tHk;
             document.getElementById('angka-hd').innerText = tHd;
@@ -389,121 +276,58 @@
             document.getElementById('angka-ht').innerText = ((tHt/n)*100).toFixed(2) + '%';
         }
 
-        function perbaruiGrafik(labelBulan, dataPSW, dataHT, bulan) {
+        function perbaruiGrafikPribadi(labelBulan, dataPSW, dataHT, bulan) {
             if (grafikPSW) grafikPSW.destroy();
             if (grafikHT) grafikHT.destroy();
-
-            const opsi = {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 9 } } } }
-            };
-
-            grafikHT = new Chart(document.getElementById('grafikHT-pegawai').getContext('2d'), {
-                type: 'line',
-                data: { labels: labelBulan, datasets: [{ data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 3 }] },
-                options: opsi
-            });
-            
-            grafikPSW = new Chart(document.getElementById('grafikPSW-pegawai').getContext('2d'), {
-                type: 'line',
-                data: { labels: labelBulan, datasets: [{ data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 3 }] },
-                options: opsi
-            });
+            const opsi = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 9 } } } } };
+            grafikHT = new Chart(document.getElementById('grafikHT-pegawai').getContext('2d'), { type: 'line', data: { labels: labelBulan, datasets: [{ data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 3 }] }, options: opsi });
+            grafikPSW = new Chart(document.getElementById('grafikPSW-pegawai').getContext('2d'), { type: 'line', data: { labels: labelBulan, datasets: [{ data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 3 }] }, options: opsi });
         }
 
         function perbaruiGrafikBatang(data) {
             if (grafikBatang) grafikBatang.destroy();
-            let tPsw1=0,tPsw2=0,tPsw3=0,tPsw4=0,tTl1=0,tTl2=0,tTl3=0,tTl4=0;
-            const n = data.length || 1;
-            data.forEach(d => {
-                tPsw1+=Number(d.psw1)||0; tPsw2+=Number(d.psw2)||0;
-                tPsw3+=Number(d.psw3)||0; tPsw4+=Number(d.psw4)||0;
-                tTl1+=Number(d.tl1)||0; tTl2+=Number(d.tl2)||0;
-                tTl3+=Number(d.tl3)||0; tTl4+=Number(d.tl4)||0;
-            });
+            let tPsw1=0,tPsw2=0,tPsw3=0,tPsw4=0,tTl1=0,tTl2=0,tTl3=0,tTl4=0; const n = data.length || 1;
+            data.forEach(d => { tPsw1+=Number(d.psw1)||0; tPsw2+=Number(d.psw2)||0; tPsw3+=Number(d.psw3)||0; tPsw4+=Number(d.psw4)||0; tTl1+=Number(d.tl1)||0; tTl2+=Number(d.tl2)||0; tTl3+=Number(d.tl3)||0; tTl4+=Number(d.tl4)||0; });
             grafikBatang = new Chart(document.getElementById('grafikBatang-pegawai').getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: ['TL 1','TL 2','TL 3','TL 4','PSW 1','PSW 2','PSW 3','PSW 4'],
-                    datasets: [{ data: [
-                        ((tTl1/n)*100).toFixed(2), ((tTl2/n)*100).toFixed(2),
-                        ((tTl3/n)*100).toFixed(2), ((tTl4/n)*100).toFixed(2),
-                        ((tPsw1/n)*100).toFixed(2), ((tPsw2/n)*100).toFixed(2),
-                        ((tPsw3/n)*100).toFixed(2), ((tPsw4/n)*100).toFixed(2)
-                    ], backgroundColor: [
-                        'rgba(245,166,35,0.8)','rgba(245,166,35,0.8)','rgba(245,166,35,0.8)','rgba(245,166,35,0.8)',
-                        'rgba(111,66,193,0.8)','rgba(111,66,193,0.8)','rgba(111,66,193,0.8)','rgba(111,66,193,0.8)'
-                    ], borderRadius: 4 }]
+                    datasets: [{ data: [ ((tTl1/n)*100).toFixed(2), ((tTl2/n)*100).toFixed(2), ((tTl3/n)*100).toFixed(2), ((tTl4/n)*100).toFixed(2), ((tPsw1/n)*100).toFixed(2), ((tPsw2/n)*100).toFixed(2), ((tPsw3/n)*100).toFixed(2), ((tPsw4/n)*100).toFixed(2) ], backgroundColor: [ 'rgba(245,166,35,0.8)','rgba(245,166,35,0.8)','rgba(245,166,35,0.8)','rgba(245,166,35,0.8)', 'rgba(111,66,193,0.8)','rgba(111,66,193,0.8)','rgba(111,66,193,0.8)','rgba(111,66,193,0.8)' ], borderRadius: 4 }]
                 },
                 options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{font:{size:10}}}, x:{ticks:{font:{size:10}}}} }
             });
         }
 
         function perbaruiTabel(data, bulan) {
-            const tbody = document.getElementById('badan-tabel-pegawai');
-            tbody.innerHTML = '';
-            if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:8px;color:#666;">Tidak ada data</td></tr>';
-                return;
-            }
+            const tbody = document.getElementById('badan-tabel-pegawai'); tbody.innerHTML = '';
+            if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:8px;color:#666;">Tidak ada data</td></tr>'; return; }
             const dataTabel = bulan === 'Semua' ? semuaBulan.map(b => data.find(d => d.bulan === b)).filter(Boolean) : data;
-            const tentukanWarnaSub = (teksAngka) => {
-                let nilai = parseFloat(teksAngka) || 0;
-                if (nilai === 0) return 'color: #28a745; font-weight: bold;'; 
-                return 'color: #dc3545; font-weight: bold;'; 
-            };
-
+            const t = (v) => parseFloat(v) === 0 ? 'color: #28a745; font-weight: bold;' : 'color: #dc3545; font-weight: bold;';
             dataTabel.forEach(item => {
                 const p = (v) => (Number(v)*100).toFixed(2);
                 tbody.innerHTML += `
                     <tr style="border-bottom: 1px solid #edf2f9;">
                         <td style="padding: 6px 2px; text-align: left; font-weight: bold;">${item.bulan}</td>
-                        <td style="padding: 6px 2px;">${item.hk}</td>
-                        <td style="padding: 6px 2px;">${item.hd}</td>
+                        <td style="padding: 6px 2px;">${item.hk}</td><td style="padding: 6px 2px;">${item.hd}</td>
                         <td style="padding: 6px 2px; color: #f5a623; font-weight: bold;">${p(item.ht)}%</td>
-                        <td style="padding: 6px 2px; ${tentukanWarnaSub(p(item.tl1))}">${p(item.tl1)}%</td>
-                        <td style="padding: 6px 2px; ${tentukanWarnaSub(p(item.tl2))}">${p(item.tl2)}%</td>
-                        <td style="padding: 6px 2px; ${tentukanWarnaSub(p(item.tl3))}">${p(item.tl3)}%</td>
-                        <td style="padding: 6px 2px; ${tentukanWarnaSub(p(item.tl4))}">${p(item.tl4)}%</td>
+                        <td style="padding: 6px 2px; ${t(p(item.tl1))}">${p(item.tl1)}%</td><td style="padding: 6px 2px; ${t(p(item.tl2))}">${p(item.tl2)}%</td><td style="padding: 6px 2px; ${t(p(item.tl3))}">${p(item.tl3)}%</td><td style="padding: 6px 2px; ${t(p(item.tl4))}">${p(item.tl4)}%</td>
                         <td style="padding: 6px 2px; color: #6f42c1; font-weight: bold;">${p(item.psw)}%</td>
-                        <td style="padding: 6px 2px; ${tentukanWarnaSub(p(item.psw1))}">${p(item.psw1)}%</td>
-                        <td style="padding: 6px 2px; ${tentukanWarnaSub(p(item.psw2))}">${p(item.psw2)}%</td>
-                        <td style="padding: 6px 2px; ${tentukanWarnaSub(p(item.psw3))}">${p(item.psw3)}%</td>
-                        <td style="padding: 6px 2px; ${tentukanWarnaSub(p(item.psw4))}">${p(item.psw4)}%</td>
+                        <td style="padding: 6px 2px; ${t(p(item.psw1))}">${p(item.psw1)}%</td><td style="padding: 6px 2px; ${t(p(item.psw2))}">${p(item.psw2)}%</td><td style="padding: 6px 2px; ${t(p(item.psw3))}">${p(item.psw3)}%</td><td style="padding: 6px 2px; ${t(p(item.psw4))}">${p(item.psw4)}%</td>
                     </tr>`;
             });
         }
 
         async function ubahPassword() {
-            const lama = document.getElementById('password-lama').value;
-            const baru = document.getElementById('password-baru').value;
-            const konfirmasi = document.getElementById('password-konfirmasi').value;
-            const pesan = document.getElementById('pesan-password');
-
+            const lama = document.getElementById('password-lama').value, baru = document.getElementById('password-baru').value, konfirmasi = document.getElementById('password-konfirmasi').value, pesan = document.getElementById('pesan-password');
             if (!lama || !baru || !konfirmasi) { pesan.style.color='#dc3545'; pesan.innerText="Semua field harus diisi."; return; }
             if (baru !== konfirmasi) { pesan.style.color='#dc3545'; pesan.innerText="Password baru tidak cocok."; return; }
             if (baru.length < 6) { pesan.style.color='#dc3545'; pesan.innerText="Password minimal 6 karakter."; return; }
-
             const { data, error } = await db.from('pegawai').select('*').eq('nip', nipPegawai).eq('password', lama).single();
             if (error || !data) { pesan.style.color='#dc3545'; pesan.innerText="Password lama salah."; return; }
-
             const { error: errUpdate } = await db.from('pegawai').update({ password: baru }).eq('nip', nipPegawai);
-            if (errUpdate) {
-                pesan.style.color='#dc3545'; pesan.innerText="Gagal: " + errUpdate.message;
-            } else {
-                pesan.style.color='#28a745'; pesan.innerText="Password berhasil diubah!";
-                document.getElementById('password-lama').value='';
-                document.getElementById('password-baru').value='';
-                document.getElementById('password-konfirmasi').value='';
-            }
+            if (errUpdate) { pesan.style.color='#dc3545'; pesan.innerText="Gagal: " + errUpdate.message; } 
+            else { pesan.style.color='#28a745'; pesan.innerText="Password berhasil diubah!"; document.getElementById('password-lama').value=''; document.getElementById('password-baru').value=''; document.getElementById('password-konfirmasi').value=''; }
         }
 
-        function prosesKeluar() {
-            sessionStorage.removeItem('pegawai_nip');
-            sessionStorage.removeItem('pegawai_nama');
-            window.location.href = 'admin.html';
-        }
+        function prosesKeluar() { sessionStorage.removeItem('pegawai_nip'); sessionStorage.removeItem('pegawai_nama'); window.location.href = 'admin.html'; }
     </script>
-</body>
-</html>

@@ -24,7 +24,6 @@
             <h2 style="margin-top:0; color:#1a233a;">Panel Admin</h2>
             <p style="color:#888; font-size:13px; margin-bottom:30px;">Pilih jenis data yang ingin diunggah</p>
 
-            <!-- Pilihan Upload -->
             <div style="display:flex; gap:15px; margin-bottom:30px;">
                 <button onclick="gantiMode('agregat')" id="btn-agregat" style="flex:1; padding:15px; border:2px solid #2b6cb0; border-radius:12px; background:#2b6cb0; color:white; font-weight:bold; cursor:pointer; font-size:13px;">
                     📊 Data Agregat<br><span style="font-weight:normal; font-size:11px;">Ringkasan per bulan</span>
@@ -58,7 +57,6 @@
 
         let modeSaatIni = 'agregat';
 
-        // Cek sesi admin
         async function cekSesi() {
             const { data: { session } } = await db.auth.getSession();
             if (!session) {
@@ -128,7 +126,6 @@
             muatPermintaanReset();
         }
 
-        // Pintar: arahkan ke panel sesuai siapa yang sedang login
         async function kePanelOrang() {
             if (sessionStorage.getItem('pegawai_nip')) {
                 window.location.href = 'dashboard-pegawai.html';
@@ -206,12 +203,14 @@
                         ({ error } = await db.from('absensi').upsert(dataSiap, { onConflict: 'tahun,bulan' }));
 
                     } else {
-                        // Mode per pegawai
+                        // Mode per pegawai (Sudah Membaca Tim dan Jabatan)
                         dataSiap = dataMentah.map(b => ({
                             tahun: b['Tahun'],
                             bulan: b['Bulan'],
                             nip: b['NIP'] ? b['NIP'].toString() : null,
                             nama: b['Nama'],
+                            tim: b['TIM'] || null,
+                            jabatan: b['JABATAN'] || null,
                             hk: b['HK'] || 0,
                             hd: b['HD'] || 0,
                             psw: b['PSW'] || 0,
@@ -226,11 +225,9 @@
                             tl4: b['TL4'] || b['TL 4'] || 0
                         })).filter(b => b.tahun && b.bulan && b.nip);
 
-                        // Upsert data absensi pegawai
                         ({ error } = await db.from('absensi_pegawai').upsert(dataSiap, { onConflict: 'tahun,bulan,nip' }));
 
                         if (!error) {
-                            // Sinkron tabel pegawai (tambah yang belum ada)
                             const pegawaiBaru = [...new Map(dataSiap.map(d => [d.nip, { nip: d.nip, nama: d.nama, password: 'oke123456' }])).values()];
                             await db.from('pegawai').upsert(pegawaiBaru, { onConflict: 'nip', ignoreDuplicates: true });
                         }
