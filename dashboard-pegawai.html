@@ -90,6 +90,7 @@
             overflow-x: auto;
             flex: 1;
             min-height: 0;
+            max-height: 200px; /* Batasan tinggi agar isi tabel bisa di-scroll rapi */
         }
         .tabel-box h3 {
             margin: 0 0 8px 0;
@@ -146,7 +147,7 @@
             </div>
         </div>
 
-        <!-- Kartu HK HD PSW HT -->
+        <!-- Kartu HK HD HT PSW (Urutan Disamakan) -->
         <div class="kartu-pegawai">
             <div class="kartu-hk">
                 <div class="angka" id="angka-hk">-</div>
@@ -157,24 +158,24 @@
                 <div class="label">Hari Hadir</div>
             </div>
             <div class="kartu-hk">
-                <div class="angka" id="angka-psw" style="color:#6f42c1;">-</div>
-                <div class="label">Rata-rata PSW</div>
-            </div>
-            <div class="kartu-hk">
                 <div class="angka" id="angka-ht" style="color:#f5a623;">-</div>
                 <div class="label">Rata-rata HT</div>
             </div>
+            <div class="kartu-hk">
+                <div class="angka" id="angka-psw" style="color:#6f42c1;">-</div>
+                <div class="label">Rata-rata PSW</div>
+            </div>
         </div>
 
-        <!-- Grafik Tren -->
+        <!-- Grafik Tren (Urutan Disamakan) -->
         <div class="grid-2">
             <div class="grafik-box grafik-tren">
-                <h3>Tren PSW per Bulan (%)</h3>
-                <canvas id="grafikPSW-pegawai"></canvas>
+                <h3>Tren Persentase per Bulan (HT)</h3>
+                <canvas id="grafikHT-pegawai"></canvas>
             </div>
             <div class="grafik-box grafik-tren">
-                <h3>Tren HT per Bulan (%)</h3>
-                <canvas id="grafikHT-pegawai"></canvas>
+                <h3>Tren Persentase per Bulan (PSW)</h3>
+                <canvas id="grafikPSW-pegawai"></canvas>
             </div>
         </div>
 
@@ -187,22 +188,23 @@
             <div class="tabel-box">
                 <h3>Ringkasan per Bulan</h3>
                 <div>
-                    <table style="font-size: 12.5px; text-align: left; border-collapse: collapse; white-space: nowrap; width: 100%;">
+                    <!-- Ukuran disesuaikan dan urutan kolom disamakan -->
+                    <table style="font-size: 11.5px; text-align: left; border-collapse: collapse; white-space: nowrap; width: 100%;">
                         <thead style="position: sticky; top: 0; background-color: #f4f7fe; z-index: 1;">
                             <tr>
-                                <th style="padding: 6px;">Bulan</th>
-                                <th style="padding: 6px;">HK</th>
-                                <th style="padding: 6px;">HD</th>
-                                <th style="padding: 6px;">PSW</th>
-                                <th style="padding: 6px;">HT</th>
-                                <th style="padding: 6px;">PSW 1</th>
-                                <th style="padding: 6px;">PSW 2</th>
-                                <th style="padding: 6px;">PSW 3</th>
-                                <th style="padding: 6px;">PSW 4</th>
-                                <th style="padding: 6px;">TL 1</th>
-                                <th style="padding: 6px;">TL 2</th>
-                                <th style="padding: 6px;">TL 3</th>
-                                <th style="padding: 6px;">TL 4</th>
+                                <th style="padding: 6px 4px;">Bulan</th>
+                                <th style="padding: 6px 4px;">HK</th>
+                                <th style="padding: 6px 4px;">HD</th>
+                                <th style="padding: 6px 4px;">HT</th>
+                                <th style="padding: 6px 4px;">TL 1</th>
+                                <th style="padding: 6px 4px;">TL 2</th>
+                                <th style="padding: 6px 4px;">TL 3</th>
+                                <th style="padding: 6px 4px;">TL 4</th>
+                                <th style="padding: 6px 4px;">PSW</th>
+                                <th style="padding: 6px 4px;">PSW 1</th>
+                                <th style="padding: 6px 4px;">PSW 2</th>
+                                <th style="padding: 6px 4px;">PSW 3</th>
+                                <th style="padding: 6px 4px;">PSW 4</th>
                             </tr>
                         </thead>
                         <tbody id="badan-tabel-pegawai"></tbody>
@@ -385,14 +387,16 @@
                 scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 9 } } } }
             };
 
-            grafikPSW = new Chart(document.getElementById('grafikPSW-pegawai').getContext('2d'), {
-                type: 'line',
-                data: { labels: labelBulan, datasets: [{ data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 3 }] },
-                options: opsi
-            });
+            // Di sini id canvas sengaja ditukar agar selaras dengan posisi div HTML-nya
             grafikHT = new Chart(document.getElementById('grafikHT-pegawai').getContext('2d'), {
                 type: 'line',
                 data: { labels: labelBulan, datasets: [{ data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 3 }] },
+                options: opsi
+            });
+            
+            grafikPSW = new Chart(document.getElementById('grafikPSW-pegawai').getContext('2d'), {
+                type: 'line',
+                data: { labels: labelBulan, datasets: [{ data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 3 }] },
                 options: opsi
             });
         }
@@ -443,19 +447,19 @@
                 const p = (v) => (Number(v)*100).toFixed(2);
                 tbody.innerHTML += `
                     <tr style="border-bottom: 1px solid #edf2f9;">
-                        <td style="padding: 8px; font-weight: bold;">${item.bulan}</td>
-                        <td style="padding: 8px;">${item.hk}</td>
-                        <td style="padding: 8px;">${item.hd}</td>
-                        <td style="padding: 8px; color: #6f42c1; font-weight: bold;">${p(item.psw)}%</td>
-                        <td style="padding: 8px; color: #f5a623; font-weight: bold;">${p(item.ht)}%</td>
-                        <td style="padding: 8px; ${tentukanWarnaSub(p(item.psw1))}">${p(item.psw1)}%</td>
-                        <td style="padding: 8px; ${tentukanWarnaSub(p(item.psw2))}">${p(item.psw2)}%</td>
-                        <td style="padding: 8px; ${tentukanWarnaSub(p(item.psw3))}">${p(item.psw3)}%</td>
-                        <td style="padding: 8px; ${tentukanWarnaSub(p(item.psw4))}">${p(item.psw4)}%</td>
-                        <td style="padding: 8px; ${tentukanWarnaSub(p(item.tl1))}">${p(item.tl1)}%</td>
-                        <td style="padding: 8px; ${tentukanWarnaSub(p(item.tl2))}">${p(item.tl2)}%</td>
-                        <td style="padding: 8px; ${tentukanWarnaSub(p(item.tl3))}">${p(item.tl3)}%</td>
-                        <td style="padding: 8px; ${tentukanWarnaSub(p(item.tl4))}">${p(item.tl4)}%</td>
+                        <td style="padding: 6px 4px; font-weight: bold;">${item.bulan}</td>
+                        <td style="padding: 6px 4px;">${item.hk}</td>
+                        <td style="padding: 6px 4px;">${item.hd}</td>
+                        <td style="padding: 6px 4px; color: #f5a623; font-weight: bold;">${p(item.ht)}%</td>
+                        <td style="padding: 6px 4px; ${tentukanWarnaSub(p(item.tl1))}">${p(item.tl1)}%</td>
+                        <td style="padding: 6px 4px; ${tentukanWarnaSub(p(item.tl2))}">${p(item.tl2)}%</td>
+                        <td style="padding: 6px 4px; ${tentukanWarnaSub(p(item.tl3))}">${p(item.tl3)}%</td>
+                        <td style="padding: 6px 4px; ${tentukanWarnaSub(p(item.tl4))}">${p(item.tl4)}%</td>
+                        <td style="padding: 6px 4px; color: #6f42c1; font-weight: bold;">${p(item.psw)}%</td>
+                        <td style="padding: 6px 4px; ${tentukanWarnaSub(p(item.psw1))}">${p(item.psw1)}%</td>
+                        <td style="padding: 6px 4px; ${tentukanWarnaSub(p(item.psw2))}">${p(item.psw2)}%</td>
+                        <td style="padding: 6px 4px; ${tentukanWarnaSub(p(item.psw3))}">${p(item.psw3)}%</td>
+                        <td style="padding: 6px 4px; ${tentukanWarnaSub(p(item.psw4))}">${p(item.psw4)}%</td>
                     </tr>`;
             });
         }

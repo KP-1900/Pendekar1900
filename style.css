@@ -20,7 +20,6 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
 .ikon-aktif { background-color: #2b6cb0; box-shadow: 0 0 10px rgba(43,108,176,0.5); } 
 
 /* === AREA KANAN UMUM === */
-/* === AREA KANAN UMUM === */
 .area-kanan { 
     flex: 1; 
     height: calc(100vh - 30px); 
@@ -29,6 +28,7 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
     display: flex; 
     flex-direction: column; 
     overflow: hidden; 
+    animation: munculHalus 0.4s ease-out forwards; /* Animasi diterapkan di sini */
 }
 
 /* === CSS KHUSUS DASHBOARD === */
@@ -188,4 +188,16 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
 
 .tombol-masuk-modal:hover { 
     background-color: #1a233a; 
+}
+
+/* === ANIMASI MUNCUL HALUS (FADE IN) === */
+@keyframes munculHalus {
+    from { 
+        opacity: 0; 
+        transform: translateY(10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
 }
