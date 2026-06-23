@@ -296,7 +296,7 @@ function perbaruiTabel(data, bulanDipilih) {
         dataTabel = semuaBulan.map(b => data.find(d => d.bulan === b)).filter(d => d !== undefined);
     }
 
-    let tPegawai = 0, tHk = 0;
+    let tHk = 0;
     let tPsw = 0, tHt = 0, tPsw1 = 0, tPsw2 = 0, tPsw3 = 0, tPsw4 = 0;
     let tTl1 = 0, tTl2 = 0, tTl3 = 0, tTl4 = 0;
     let jmlData = dataTabel.length;
@@ -308,7 +308,6 @@ function perbaruiTabel(data, bulanDipilih) {
     };
 
     dataTabel.forEach(item => {
-        tPegawai += Number(item.jumlah_pegawai) || 0;
         tHk += Number(item.hari_kerja) || 0;
         tPsw += Number(item.psw) || 0;
         tHt += Number(item.ht) || 0;
@@ -368,7 +367,7 @@ function perbaruiTabel(data, bulanDipilih) {
         tbody.innerHTML += `
             <tr style="background-color: #eaedf2; color: #1a233a; font-weight: bold; border-top: 2px solid #707a8a;">
                 <td style="padding: 10px 8px;">JUMLAH</td>
-                <td style="padding: 10px 8px;">${tPegawai}</td>
+                <td style="padding: 10px 8px;">${dataTabel.length > 0 ? (dataTabel[dataTabel.length - 1].jumlah_pegawai || 0) : 0}</td>
                 <td style="padding: 10px 8px;">${tHk}</td>
                 <td style="padding: 10px 8px; color: #6f42c1;">${rataPsw}%</td>
                 <td style="padding: 10px 8px; color: #f5a623;">${rataHt}%</td>
