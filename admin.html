@@ -17,7 +17,8 @@
     </div>
 
     <div class="area-kanan" style="justify-content: center; align-items: center;">
-        <div class="kotak-form" style="width:100%; max-width:400px; background:white; padding:40px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); text-align:center;">
+        <div style="display:flex; flex-direction:row; align-items:flex-start; justify-content:center; width:100%; max-width:850px; gap:20px; flex-wrap:wrap;">
+        <div class="kotak-form" style="flex:1; min-width:320px; max-width:400px; background:white; padding:40px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); text-align:center;">
             
             <img src="logo.png" style="height:50px; margin-bottom:15px;">
             <h2 style="margin:0 0 5px 0; color:#1a233a;">Login PENDEKAR</h2>
@@ -43,18 +44,6 @@
                 <p style="margin:12px 0 0 0; text-align:right;">
                     <a href="#" onclick="toggleLupaPassword(); return false;" style="color:#28a745; font-size:12px; text-decoration:underline;">Lupa password?</a>
                 </p>
-
-                <div id="form-lupa-password" style="display:none; margin-top:15px; padding-top:15px; border-top:1px solid #eee; text-align:left;">
-                    <input type="text" id="lupa-nip" placeholder="NIP" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
-                    <div style="position:relative; width:90%; margin-left:auto; margin-right:auto;">
-                        <input type="password" id="lupa-password-baru" placeholder="Password baru" onkeydown="if(event.key==='Enter') kirimPermintaanReset()" style="width:100%; padding:12px; padding-right:40px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
-                        <span onclick="toggleMata('lupa-password-baru', this)" style="position:absolute; right:12px; top:12px; cursor:pointer; user-select:none; color:#888;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                        </span>
-                    </div>
-                    <button onclick="kirimPermintaanReset()" style="background:#e67e22; color:white; padding:10px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; width:100%;">Kirim Permintaan Ubah Password</button>
-                    <p id="pesan-lupa" style="font-size:12px; color:#888; margin-top:10px; line-height:1.5;"></p>
-                </div>
             </div>
 
             <!-- Form Admin -->
@@ -70,6 +59,22 @@
             </div>
 
             <p id="pesan-login" style="font-size:13px; color:#dc3545; font-weight:bold; margin-top:15px;"></p>
+        </div>
+
+        <div id="kotak-lupa-password" style="display:none; flex:1; min-width:320px; max-width:400px; background:white; padding:40px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); text-align:center;">
+            <h2 style="margin:0 0 5px 0; color:#1a233a; font-size:18px;">Lupa Password</h2>
+            <p style="color:#888; font-size:13px; margin-bottom:25px;">Ajukan permintaan ubah password</p>
+
+            <input type="text" id="lupa-nip" placeholder="NIP" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
+            <div style="position:relative; width:90%; margin-left:auto; margin-right:auto;">
+                <input type="password" id="lupa-password-baru" placeholder="Password baru" onkeydown="if(event.key==='Enter') kirimPermintaanReset()" style="width:100%; padding:12px; padding-right:40px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
+                <span onclick="toggleMata('lupa-password-baru', this)" style="position:absolute; right:12px; top:12px; cursor:pointer; user-select:none; color:#888;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </span>
+            </div>
+            <button onclick="kirimPermintaanReset()" style="background:#e67e22; color:white; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; width:100%;">Kirim Permintaan Ubah Password</button>
+            <p id="pesan-lupa" style="font-size:12px; color:#888; margin-top:15px; line-height:1.5;"></p>
+        </div>
         </div>
     </div>
 
@@ -133,7 +138,7 @@
         }
 
         function toggleLupaPassword() {
-            const form = document.getElementById('form-lupa-password');
+            const form = document.getElementById('kotak-lupa-password');
             form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
             document.getElementById('pesan-lupa').innerText = '';
         }
