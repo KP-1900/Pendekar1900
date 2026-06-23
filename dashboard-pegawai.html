@@ -190,7 +190,6 @@
             }
         }
 
-        // === LISTENER FILTER DENGAN SESSION STORAGE (KHUSUS PEGAWAI) ===
         document.getElementById('filter-tahun-pegawai').addEventListener('change', async () => {
             const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
             sessionStorage.setItem('pegawai_filter_tahun', tahun);
@@ -206,22 +205,25 @@
         });
 
         async function inisialisasiAwal() {
-            const { data: dataRole } = await db.from('absensi_pegawai').select('tahun, bulan, tim, jabatan, nama').eq('nip', nipPegawai);
-            if (dataRole && dataRole.length > 0) {
-                dataRole.sort((a, b) => {
-                    if (a.tahun !== b.tahun) return b.tahun - a.tahun;
-                    return semuaBulan.indexOf(b.bulan) - semuaBulan.indexOf(a.bulan);
-                });
-                roleAkses = dataRole[0].jabatan || 'Anggota';
-                namaTimAkses = dataRole[0].tim || null;
-                document.getElementById('nama-pegawai').innerText = dataRole[0].nama || '-';
-                
-                const jabatanDicek = roleAkses.toLowerCase();
-                const timDicek = (namaTimAkses || '').toLowerCase();
-                isKepalaAtauAdmin = jabatanDicek === 'kepala' || (timDicek === 'umum' && jabatanDicek === 'admin');
+            // Ambil Info dari Tabel Referensi Utama! (Sangat Stabil)
+            const { data: dataRole } = await db.from('struktur_kantor').select('*').eq('nip', nipPegawai).single();
+            
+            if (dataRole) {
+                roleAkses = dataRole.jabatan || 'Anggota';
+                namaTimAkses = dataRole.tim || null;
+                document.getElementById('nama-pegawai').innerText = dataRole.nama || '-';
+            } else {
+                // Berjaga-jaga kalau orangnya belum terdaftar di excel struktur baru
+                roleAkses = 'Anggota';
+                namaTimAkses = null;
+                document.getElementById('nama-pegawai').innerText = 'Data Struktur Belum Diupdate';
             }
 
-            if (roleAkses.toLowerCase() === 'ketua' || isKepalaAtauAdmin) {
+            const jabatanDicek = roleAkses.toLowerCase();
+            const timDicek = (namaTimAkses || '').toLowerCase();
+            isKepalaAtauAdmin = jabatanDicek === 'kepala' || (timDicek === 'umum' && jabatanDicek === 'admin');
+
+            if (jabatanDicek === 'ketua' || isKepalaAtauAdmin) {
                 document.getElementById('box-pilihan-mode').style.display = 'flex';
             } else {
                 document.getElementById('box-pilihan-mode').style.display = 'none';
@@ -238,7 +240,6 @@
                 dropdown.appendChild(opt);
             });
             
-            // Cek memori browser khusus pegawai
             const savedTahun = sessionStorage.getItem('pegawai_filter_tahun');
             if (savedTahun && tahunUnik.includes(parseInt(savedTahun))) {
                 dropdown.value = savedTahun;
@@ -266,7 +267,6 @@
                     dropdown.appendChild(opt);
                 });
                 
-                // Cek memori browser khusus pegawai
                 const savedBulan = sessionStorage.getItem('pegawai_filter_bulan');
                 if (savedBulan && (savedBulan === 'Semua' || bulanTersedia.includes(savedBulan))) {
                     dropdown.value = savedBulan;
@@ -286,61 +286,51 @@
 
         async function tarikDataTimLengkap() {
             const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
-            const { data: dataTahunIni } = await db.from('absensi_pegawai').select('*').eq('tahun', tahun);
-            const { data: allData } = await db.from('absensi_pegawai').select('nip, nama, jabatan, tim, tahun, bulan');
             
-            if (!allData || !dataTahunIni) return;
+            // Tarik data absen tahun ini dan daftar seluruh orang di kantor
+            const { data: dataTahunIni } = await db.from('absensi_pegawai').select('*').eq('tahun', tahun);
+            const { data: allStruktur } = await db.from('struktur_kantor').select('*');
+            
+            if (!allStruktur || !dataTahunIni) return;
 
-            let maxTahun = 0;
-            allData.forEach(d => { if(d.tahun > maxTahun) maxTahun = d.tahun; });
-            let maxBulanIdx = -1;
-            allData.forEach(d => {
-                if(d.tahun === maxTahun) {
-                    let mIdx = semuaBulan.indexOf(d.bulan);
-                    if(mIdx > maxBulanIdx) maxBulanIdx = mIdx;
+            // Memilih hanya yang relevan berdasarkan hak akses login
+            let daftarStrukturTersaring = allStruktur.filter(d => {
+                if (d.nip === nipPegawai) return false; // Sembunyikan diri sendiri
+                
+                let jabatanKita = roleAkses.toLowerCase();
+                if (jabatanKita === 'ketua' && !isKepalaAtauAdmin) {
+                    if (d.tim !== namaTimAkses) return false; // Ketua cuma lihat timnya
                 }
-            });
-            const bulanTerakhir = semuaBulan[maxBulanIdx];
-
-            const infoTerakhir = {};
-            allData.forEach(d => {
-                if (!infoTerakhir[d.nip]) {
-                    infoTerakhir[d.nip] = d;
-                } else {
-                    let cur = infoTerakhir[d.nip];
-                    if (d.tahun > cur.tahun || (d.tahun === cur.tahun && semuaBulan.indexOf(d.bulan) > semuaBulan.indexOf(cur.bulan))) {
-                        infoTerakhir[d.nip] = d;
-                    }
-                }
+                return true; // Kepala/Admin Umum lihat semua
             });
 
             const petaAnggota = {};
-            dataTahunIni.forEach(d => {
-                if (d.nip === nipPegawai) return;
-                if (!infoTerakhir[d.nip] || infoTerakhir[d.nip].tahun !== maxTahun || infoTerakhir[d.nip].bulan !== bulanTerakhir) return;
-                
-                let infoOrangItu = infoTerakhir[d.nip];
-                let jabatanKita = roleAkses.toLowerCase();
-                
-                if (jabatanKita === 'ketua' && !isKepalaAtauAdmin) {
-                    if (infoOrangItu.tim !== namaTimAkses) return;
-                }
-
-                if (!petaAnggota[d.nip]) {
-                    petaAnggota[d.nip] = { nip: d.nip, nama: infoOrangItu.nama, jabatan: infoOrangItu.jabatan || 'Anggota', tim: infoOrangItu.tim, dataBulanan: {} };
-                }
-                petaAnggota[d.nip].dataBulanan[d.bulan] = { ht: d.ht || 0, psw: d.psw || 0 };
+            
+            // Siapkan kanvas kosong per orang
+            daftarStrukturTersaring.forEach(d => {
+                petaAnggota[d.nip] = { 
+                    nip: d.nip, 
+                    nama: d.nama, 
+                    jabatan: d.jabatan || 'Anggota', 
+                    tim: d.tim, 
+                    dataBulanan: {} 
+                };
             });
 
-            const daftarAnggota = Object.values(petaAnggota)
-                .filter(a => a.nip !== nipPegawai)
-                .sort((a, b) => {
-                    const bobotJabatan = { 'kepala': 1, 'admin': 2, 'ketua': 3, 'anggota': 4 };
-                    const bobotA = bobotJabatan[(a.jabatan || '').toLowerCase()] || 99;
-                    const bobotB = bobotJabatan[(b.jabatan || '').toLowerCase()] || 99;
-                    if (bobotA !== bobotB) return bobotA - bobotB;
-                    return a.nama.localeCompare(b.nama);
-                });
+            // Isikan nilai absen yang ditemukan
+            dataTahunIni.forEach(d => {
+                if (petaAnggota[d.nip]) {
+                    petaAnggota[d.nip].dataBulanan[d.bulan] = { ht: d.ht || 0, psw: d.psw || 0 };
+                }
+            });
+
+            const bobotJabatan = { 'kepala': 1, 'admin': 2, 'ketua': 3, 'anggota': 4 };
+            const daftarAnggota = Object.values(petaAnggota).sort((a, b) => {
+                const bobotA = bobotJabatan[(a.jabatan || '').toLowerCase()] || 99;
+                const bobotB = bobotJabatan[(b.jabatan || '').toLowerCase()] || 99;
+                if (bobotA !== bobotB) return bobotA - bobotB;
+                return a.nama.localeCompare(b.nama);
+            });
 
             renderModeTim(daftarAnggota);
         }
@@ -353,7 +343,7 @@
             chartTimInstances = {};
 
             if (daftarAnggota.length === 0) {
-                wadah.innerHTML = '<p style="text-align:center; color:#888; font-size:13px; margin-top:20px;">Tidak ada data anggota tim yang ditemukan untuk periode ini.</p>';
+                wadah.innerHTML = '<p style="text-align:center; color:#888; font-size:13px; margin-top:20px;">Belum ada data atau anggota yang terdaftar di sistem.</p>';
                 return;
             }
 

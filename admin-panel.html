@@ -19,17 +19,20 @@
 
     <div class="area-kanan" style="justify-content: center; align-items: center;">
         <div style="display:flex; flex-direction:row; align-items:flex-start; justify-content:center; width:100%; max-width:1000px; gap:20px; flex-wrap:wrap;">
-        <div class="kotak-form" style="flex:1; min-width:320px; max-width:500px; background:white; padding:40px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); text-align:center;">
+        <div class="kotak-form" style="flex:1; min-width:320px; max-width:550px; background:white; padding:40px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); text-align:center;">
             
             <h2 style="margin-top:0; color:#1a233a;">Panel Admin</h2>
             <p style="color:#888; font-size:13px; margin-bottom:30px;">Pilih jenis data yang ingin diunggah</p>
 
-            <div style="display:flex; gap:15px; margin-bottom:30px;">
-                <button onclick="gantiMode('agregat')" id="btn-agregat" style="flex:1; padding:15px; border:2px solid #2b6cb0; border-radius:12px; background:#2b6cb0; color:white; font-weight:bold; cursor:pointer; font-size:13px;">
-                    📊 Data Agregat<br><span style="font-weight:normal; font-size:11px;">Ringkasan per bulan</span>
+            <div style="display:flex; gap:10px; margin-bottom:30px;">
+                <button onclick="gantiMode('agregat')" id="btn-agregat" style="flex:1; padding:12px 5px; border:2px solid #2b6cb0; border-radius:12px; background:#2b6cb0; color:white; font-weight:bold; cursor:pointer; font-size:12px;">
+                    📊 Agregat<br><span style="font-weight:normal; font-size:10px;">Ringkasan</span>
                 </button>
-                <button onclick="gantiMode('pegawai')" id="btn-pegawai" style="flex:1; padding:15px; border:2px solid #ddd; border-radius:12px; background:white; color:#666; font-weight:bold; cursor:pointer; font-size:13px;">
-                    👤 Data Per Pegawai<br><span style="font-weight:normal; font-size:11px;">Detail tiap pegawai</span>
+                <button onclick="gantiMode('pegawai')" id="btn-pegawai" style="flex:1; padding:12px 5px; border:2px solid #ddd; border-radius:12px; background:white; color:#666; font-weight:bold; cursor:pointer; font-size:12px;">
+                    👤 Per Pegawai<br><span style="font-weight:normal; font-size:10px;">Absensi bulanan</span>
+                </button>
+                <button onclick="gantiMode('struktur')" id="btn-struktur" style="flex:1; padding:12px 5px; border:2px solid #ddd; border-radius:12px; background:white; color:#666; font-weight:bold; cursor:pointer; font-size:12px;">
+                    🏢 Struktur<br><span style="font-weight:normal; font-size:10px;">Tim & Jabatan</span>
                 </button>
             </div>
 
@@ -59,11 +62,8 @@
 
         async function cekSesi() {
             const { data: { session } } = await db.auth.getSession();
-            if (!session) {
-                window.location.href = 'admin.html';
-            } else {
-                muatPermintaanReset();
-            }
+            if (!session) window.location.href = 'admin.html';
+            else muatPermintaanReset();
         }
         cekSesi();
 
@@ -71,30 +71,13 @@
 
         async function muatPermintaanReset() {
             const wadah = document.getElementById('daftar-reset');
-            const { data, error } = await db
-                .from('reset_password')
-                .select('*')
-                .eq('status', 'pending')
-                .order('dibuat_pada', { ascending: false });
-
-            if (error) {
-                wadah.innerHTML = `<p style="color:#dc3545; font-size:13px;">Gagal memuat: ${error.message}</p>`;
-                return;
-            }
-
+            const { data, error } = await db.from('reset_password').select('*').eq('status', 'pending').order('dibuat_pada', { ascending: false });
+            if (error) { wadah.innerHTML = `<p style="color:#dc3545; font-size:13px;">Gagal memuat: ${error.message}</p>`; return; }
             daftarPermintaan = data || [];
-
-            if (daftarPermintaan.length === 0) {
-                wadah.innerHTML = `<p style="color:#999; font-size:13px;">Tidak ada permintaan saat ini.</p>`;
-                return;
-            }
-
+            if (daftarPermintaan.length === 0) { wadah.innerHTML = `<p style="color:#999; font-size:13px;">Tidak ada permintaan saat ini.</p>`; return; }
             wadah.innerHTML = daftarPermintaan.map((r, i) => `
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border:1px solid #eee; border-radius:10px; margin-bottom:8px;">
-                    <div>
-                        <b style="font-size:13px;">${r.nama || '-'}</b><br>
-                        <span style="color:#888; font-size:12px;">NIP: ${r.nip}</span>
-                    </div>
+                    <div><b style="font-size:13px;">${r.nama || '-'}</b><br><span style="color:#888; font-size:12px;">NIP: ${r.nip}</span></div>
                     <div style="display:flex; gap:6px;">
                         <button onclick="terimaReset(${i})" style="background:#28a745; color:white; border:none; padding:8px 14px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:12px;">Terima</button>
                         <button onclick="tolakReset(${i})" style="background:#dc3545; color:white; border:none; padding:8px 14px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:12px;">Tolak</button>
@@ -106,8 +89,7 @@
         async function tolakReset(i) {
             const r = daftarPermintaan[i];
             if (!r) return;
-            if (!confirm(`Tolak permintaan ubah password dari ${r.nama || r.nip}? Password lama tidak akan berubah.`)) return;
-
+            if (!confirm(`Tolak permintaan ubah password dari ${r.nama || r.nip}?`)) return;
             await db.from('reset_password').update({ status: 'rejected' }).eq('id', r.id);
             muatPermintaanReset();
         }
@@ -115,43 +97,30 @@
         async function terimaReset(i) {
             const r = daftarPermintaan[i];
             if (!r) return;
-
             const { error: errUpdate } = await db.from('pegawai').update({ password: r.password_baru }).eq('nip', r.nip);
-            if (errUpdate) {
-                alert('Gagal mengubah password: ' + errUpdate.message);
-                return;
-            }
-
+            if (errUpdate) { alert('Gagal mengubah password: ' + errUpdate.message); return; }
             await db.from('reset_password').update({ status: 'approved' }).eq('id', r.id);
             muatPermintaanReset();
         }
 
         async function kePanelOrang() {
-            if (sessionStorage.getItem('pegawai_nip')) {
-                window.location.href = 'dashboard-pegawai.html';
-                return;
-            }
+            if (sessionStorage.getItem('pegawai_nip')) { window.location.href = 'dashboard-pegawai.html'; return; }
             const { data: { session } } = await db.auth.getSession();
             window.location.href = session ? 'admin-panel.html' : 'admin.html';
         }
 
         function gantiMode(mode) {
             modeSaatIni = mode;
-            if (mode === 'agregat') {
-                document.getElementById('btn-agregat').style.background = '#2b6cb0';
-                document.getElementById('btn-agregat').style.color = 'white';
-                document.getElementById('btn-agregat').style.borderColor = '#2b6cb0';
-                document.getElementById('btn-pegawai').style.background = 'white';
-                document.getElementById('btn-pegawai').style.color = '#666';
-                document.getElementById('btn-pegawai').style.borderColor = '#ddd';
-            } else {
-                document.getElementById('btn-pegawai').style.background = '#28a745';
-                document.getElementById('btn-pegawai').style.color = 'white';
-                document.getElementById('btn-pegawai').style.borderColor = '#28a745';
-                document.getElementById('btn-agregat').style.background = 'white';
-                document.getElementById('btn-agregat').style.color = '#666';
-                document.getElementById('btn-agregat').style.borderColor = '#ddd';
-            }
+            const bA = document.getElementById('btn-agregat');
+            const bP = document.getElementById('btn-pegawai');
+            const bS = document.getElementById('btn-struktur');
+            
+            [bA, bP, bS].forEach(b => { b.style.background = 'white'; b.style.color = '#666'; b.style.borderColor = '#ddd'; });
+
+            if (mode === 'agregat') { bA.style.background = '#2b6cb0'; bA.style.color = 'white'; bA.style.borderColor = '#2b6cb0'; }
+            else if (mode === 'pegawai') { bP.style.background = '#28a745'; bP.style.color = 'white'; bP.style.borderColor = '#28a745'; }
+            else if (mode === 'struktur') { bS.style.background = '#e67e22'; bS.style.color = 'white'; bS.style.borderColor = '#e67e22'; }
+            
             document.getElementById('status-pesan').innerText = '';
         }
 
@@ -160,13 +129,10 @@
             const statusPesan = document.getElementById('status-pesan');
 
             if (fileInput.files.length === 0) {
-                statusPesan.style.color = '#dc3545';
-                statusPesan.innerText = "Pilih file Excel terlebih dahulu.";
-                return;
+                statusPesan.style.color = '#dc3545'; statusPesan.innerText = "Pilih file Excel terlebih dahulu."; return;
             }
 
-            statusPesan.style.color = '#2b6cb0';
-            statusPesan.innerText = "Membaca file Excel...";
+            statusPesan.style.color = '#2b6cb0'; statusPesan.innerText = "Membaca file Excel...";
 
             const file = fileInput.files[0];
             const reader = new FileReader();
@@ -177,64 +143,42 @@
                     const workbook = XLSX.read(data, { type: 'array' });
                     const sheet = workbook.Sheets[workbook.SheetNames[0]];
                     const dataMentah = XLSX.utils.sheet_to_json(sheet);
-
                     statusPesan.innerText = "Menyiapkan data...";
-
                     let dataSiap, error;
 
                     if (modeSaatIni === 'agregat') {
                         dataSiap = dataMentah.map(b => ({
-                            tahun: b['Tahun'],
-                            bulan: b['Bulan'],
-                            jumlah_pegawai: b['Jumlah Pegawai'] || b['Pegawai'] || null,
-                            hari_kerja: b['Hari Kerja'] || null,
-                            psw: b['PSW'] || 0,
-                            ht: b['HT'] || 0,
-                            psw1: b['PSW1'] || b['PSW 1'] || 0,
-                            psw2: b['PSW2'] || b['PSW 2'] || 0,
-                            psw3: b['PSW3'] || b['PSW 3'] || 0,
-                            psw4: b['PSW4'] || b['PSW 4'] || 0,
-                            tl1: b['TL1'] || b['TL 1'] || 0,
-                            tl2: b['TL2'] || b['TL 2'] || 0,
-                            tl3: b['TL3'] || b['TL 3'] || 0,
-                            tl4: b['TL4'] || b['TL 4'] || 0
+                            tahun: b['Tahun'], bulan: b['Bulan'], jumlah_pegawai: b['Jumlah Pegawai'] || b['Pegawai'] || null, hari_kerja: b['Hari Kerja'] || null,
+                            psw: b['PSW'] || 0, ht: b['HT'] || 0, psw1: b['PSW1'] || b['PSW 1'] || 0, psw2: b['PSW2'] || b['PSW 2'] || 0, psw3: b['PSW3'] || b['PSW 3'] || 0, psw4: b['PSW4'] || b['PSW 4'] || 0,
+                            tl1: b['TL1'] || b['TL 1'] || 0, tl2: b['TL2'] || b['TL 2'] || 0, tl3: b['TL3'] || b['TL 3'] || 0, tl4: b['TL4'] || b['TL 4'] || 0
                         })).filter(b => b.tahun && b.bulan && b.bulan.toString().toUpperCase() !== 'JUMLAH');
-
                         ({ error } = await db.from('absensi').upsert(dataSiap, { onConflict: 'tahun,bulan' }));
 
-                    } else {
-                        // Mode per pegawai (Sudah Membaca Tim dan Jabatan)
+                    } else if (modeSaatIni === 'pegawai') {
                         dataSiap = dataMentah.map(b => ({
-                            tahun: b['Tahun'],
-                            bulan: b['Bulan'],
-                            nip: b['NIP'] ? b['NIP'].toString() : null,
-                            nama: b['Nama'],
-                            tim: b['TIM'] || null,
-                            jabatan: b['JABATAN'] || null,
-                            hk: b['HK'] || 0,
-                            hd: b['HD'] || 0,
-                            psw: b['PSW'] || 0,
-                            psw1: b['PSW1'] || b['PSW 1'] || 0,
-                            psw2: b['PSW2'] || b['PSW 2'] || 0,
-                            psw3: b['PSW3'] || b['PSW 3'] || 0,
-                            psw4: b['PSW4'] || b['PSW 4'] || 0,
-                            ht: b['HT'] || 0,
-                            tl1: b['TL1'] || b['TL 1'] || 0,
-                            tl2: b['TL2'] || b['TL 2'] || 0,
-                            tl3: b['TL3'] || b['TL 3'] || 0,
-                            tl4: b['TL4'] || b['TL 4'] || 0
+                            tahun: b['Tahun'], bulan: b['Bulan'], nip: b['NIP'] ? b['NIP'].toString() : null, nama: b['Nama'],
+                            hk: b['HK'] || 0, hd: b['HD'] || 0, psw: b['PSW'] || 0, psw1: b['PSW1'] || b['PSW 1'] || 0, psw2: b['PSW2'] || b['PSW 2'] || 0, psw3: b['PSW3'] || b['PSW 3'] || 0, psw4: b['PSW4'] || b['PSW 4'] || 0,
+                            ht: b['HT'] || 0, tl1: b['TL1'] || b['TL 1'] || 0, tl2: b['TL2'] || b['TL 2'] || 0, tl3: b['TL3'] || b['TL 3'] || 0, tl4: b['TL4'] || b['TL 4'] || 0
                         })).filter(b => b.tahun && b.bulan && b.nip);
-
                         ({ error } = await db.from('absensi_pegawai').upsert(dataSiap, { onConflict: 'tahun,bulan,nip' }));
 
+                    } else if (modeSaatIni === 'struktur') {
+                        dataSiap = dataMentah.map(b => ({
+                            nip: b['NIP'] ? b['NIP'].toString() : null,
+                            nama: b['Nama'] || b['NAMA'] || null,
+                            tim: b['TIM'] || b['Tim'] || null,
+                            jabatan: b['JABATAN'] || b['Jabatan'] || null
+                        })).filter(b => b.nip);
+                        ({ error } = await db.from('struktur_kantor').upsert(dataSiap, { onConflict: 'nip' }));
+                        
+                        // Buatkan akun sekalian bagi yang baru masuk struktur
                         if (!error) {
-                            const pegawaiBaru = [...new Map(dataSiap.map(d => [d.nip, { nip: d.nip, nama: d.nama, password: 'oke123456' }])).values()];
-                            await db.from('pegawai').upsert(pegawaiBaru, { onConflict: 'nip', ignoreDuplicates: true });
+                            const akunBaru = dataSiap.map(d => ({ nip: d.nip, nama: d.nama, password: 'oke123456' }));
+                            await db.from('pegawai').upsert(akunBaru, { onConflict: 'nip', ignoreDuplicates: true });
                         }
                     }
 
                     if (error) throw error;
-
                     statusPesan.style.color = '#28a745';
                     statusPesan.innerText = `Berhasil! ${dataSiap.length} baris tersimpan.`;
 
@@ -243,14 +187,10 @@
                     statusPesan.innerText = "Gagal: " + err.message;
                 }
             };
-
             reader.readAsArrayBuffer(file);
         }
 
-        async function prosesKeluar() {
-            await db.auth.signOut();
-            window.location.href = 'admin.html';
-        }
+        async function prosesKeluar() { await db.auth.signOut(); window.location.href = 'admin.html'; }
     </script>
 </body>
 </html>
