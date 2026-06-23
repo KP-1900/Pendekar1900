@@ -73,7 +73,7 @@
         }
         .grafik-tren canvas { height: 120px !important; }
         .grafik-batang { display: flex; flex-direction: column; }
-        .grafik-batang canvas { height: 100px !important; flex-shrink: 0; }
+        .grafik-batang canvas { flex: 1; width: 100% !important; min-height: 100px; }
         .tabel-box {
             background: white;
             border-radius: 12px;
@@ -90,7 +90,6 @@
             overflow-x: auto;
             flex: 1;
             min-height: 0;
-            max-height: 200px; /* Batasan tinggi agar isi tabel bisa di-scroll rapi */
         }
         .tabel-box h3 {
             margin: 0 0 8px 0;
@@ -105,6 +104,8 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             border: 1px solid #edf2f9;
             flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
         }
         .ubah-password-box h3 {
             margin: 0 0 10px 0;
@@ -112,9 +113,11 @@
             font-size: 14px;
             font-weight: 900;
         }
+        
+        /* Area bawah diatur jadi 3 kolom agar Password ada di kanan */
         .grid-bawah {
             display: grid;
-            grid-template-columns: 1fr 1.2fr;
+            grid-template-columns: 1fr 1.6fr 220px; 
             gap: 10px;
             flex: 1;
             min-height: 0;
@@ -133,7 +136,6 @@
 
     <div class="area-kanan">
 
-        <!-- Info Pegawai -->
         <div class="info-pegawai">
             <div>
                 <div style="font-size:11px; color:#888;">Selamat datang,</div>
@@ -147,7 +149,6 @@
             </div>
         </div>
 
-        <!-- Kartu HK HD HT PSW (Urutan Disamakan) -->
         <div class="kartu-pegawai">
             <div class="kartu-hk">
                 <div class="angka" id="angka-hk">-</div>
@@ -167,7 +168,6 @@
             </div>
         </div>
 
-        <!-- Grafik Tren (Urutan Disamakan) -->
         <div class="grid-2">
             <div class="grafik-box grafik-tren">
                 <h3>Tren Persentase per Bulan (HT)</h3>
@@ -179,16 +179,16 @@
             </div>
         </div>
 
-        <!-- Grafik Batang + Tabel berdampingan -->
         <div class="grid-bawah">
+            
             <div class="grafik-box grafik-batang">
                 <h3>Rata-rata per Kategori (%)</h3>
                 <canvas id="grafikBatang-pegawai"></canvas>
             </div>
+            
             <div class="tabel-box">
                 <h3>Ringkasan per Bulan</h3>
                 <div>
-                    <!-- Ukuran disesuaikan dan urutan kolom disamakan -->
                     <table style="font-size: 11.5px; text-align: left; border-collapse: collapse; white-space: nowrap; width: 100%;">
                         <thead style="position: sticky; top: 0; background-color: #f4f7fe; z-index: 1;">
                             <tr>
@@ -211,33 +211,33 @@
                     </table>
                 </div>
             </div>
-        </div>
 
-        <!-- Ubah Password -->
-        <div class="ubah-password-box">
-            <h3>🔑 Ubah Password</h3>
-            <div style="display:flex; gap:8px; align-items:center;">
-                <div style="position:relative; flex:1;">
-                    <input type="password" id="password-lama" placeholder="Password lama" onkeydown="if(event.key==='Enter') ubahPassword()" style="padding:7px 28px 7px 10px; border:1px solid #ddd; border-radius:8px; font-size:12px; width:100%; box-sizing:border-box;">
-                    <span onclick="toggleMata('password-lama', this)" style="position:absolute; right:7px; top:5px; cursor:pointer; user-select:none; color:#888;">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                    </span>
+            <div class="ubah-password-box">
+                <h3>🔑 Ubah Password</h3>
+                <div style="display:flex; flex-direction:column; gap:10px; margin-top:5px; flex:1;">
+                    <div style="position:relative; width:100%;">
+                        <input type="password" id="password-lama" placeholder="Password lama" onkeydown="if(event.key==='Enter') ubahPassword()" style="padding:10px 30px 10px 12px; border:1px solid #ddd; border-radius:8px; font-size:12px; width:100%; box-sizing:border-box;">
+                        <span onclick="toggleMata('password-lama', this)" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; user-select:none; color:#888; display:flex;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </span>
+                    </div>
+                    <div style="position:relative; width:100%;">
+                        <input type="password" id="password-baru" placeholder="Password baru" onkeydown="if(event.key==='Enter') ubahPassword()" style="padding:10px 30px 10px 12px; border:1px solid #ddd; border-radius:8px; font-size:12px; width:100%; box-sizing:border-box;">
+                        <span onclick="toggleMata('password-baru', this)" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; user-select:none; color:#888; display:flex;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </span>
+                    </div>
+                    <div style="position:relative; width:100%;">
+                        <input type="password" id="password-konfirmasi" placeholder="Konfirmasi" onkeydown="if(event.key==='Enter') ubahPassword()" style="padding:10px 30px 10px 12px; border:1px solid #ddd; border-radius:8px; font-size:12px; width:100%; box-sizing:border-box;">
+                        <span onclick="toggleMata('password-konfirmasi', this)" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; user-select:none; color:#888; display:flex;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </span>
+                    </div>
+                    <button onclick="ubahPassword()" style="padding:10px 16px; background:#2b6cb0; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:13px; width:100%; margin-top:auto;">Simpan</button>
                 </div>
-                <div style="position:relative; flex:1;">
-                    <input type="password" id="password-baru" placeholder="Password baru" onkeydown="if(event.key==='Enter') ubahPassword()" style="padding:7px 28px 7px 10px; border:1px solid #ddd; border-radius:8px; font-size:12px; width:100%; box-sizing:border-box;">
-                    <span onclick="toggleMata('password-baru', this)" style="position:absolute; right:7px; top:5px; cursor:pointer; user-select:none; color:#888;">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                    </span>
-                </div>
-                <div style="position:relative; flex:1;">
-                    <input type="password" id="password-konfirmasi" placeholder="Konfirmasi" onkeydown="if(event.key==='Enter') ubahPassword()" style="padding:7px 28px 7px 10px; border:1px solid #ddd; border-radius:8px; font-size:12px; width:100%; box-sizing:border-box;">
-                    <span onclick="toggleMata('password-konfirmasi', this)" style="position:absolute; right:7px; top:5px; cursor:pointer; user-select:none; color:#888;">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                    </span>
-                </div>
-                <button onclick="ubahPassword()" style="padding:7px 16px; background:#2b6cb0; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:12px; white-space:nowrap;">Simpan</button>
+                <p id="pesan-password" style="font-size:12px; font-weight:bold; margin:8px 0 0 0; text-align:center;"></p>
             </div>
-            <p id="pesan-password" style="font-size:12px; font-weight:bold; margin:4px 0 0 0;"></p>
+
         </div>
 
     </div>
@@ -272,11 +272,8 @@
             document.getElementById('nip-pegawai').innerText = 'NIP: ' + nipPegawai;
         }
 
-        // Pintar: arahkan ke panel sesuai siapa yang sedang login
         async function kePanelOrang() {
-            if (sessionStorage.getItem('pegawai_nip')) {
-                return; // sudah di halaman ini, tidak perlu reload
-            }
+            if (sessionStorage.getItem('pegawai_nip')) return;
             const { data: { session } } = await db.auth.getSession();
             window.location.href = session ? 'admin-panel.html' : 'admin.html';
         }
@@ -387,7 +384,6 @@
                 scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 9 } } } }
             };
 
-            // Di sini id canvas sengaja ditukar agar selaras dengan posisi div HTML-nya
             grafikHT = new Chart(document.getElementById('grafikHT-pegawai').getContext('2d'), {
                 type: 'line',
                 data: { labels: labelBulan, datasets: [{ data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 3 }] },
@@ -414,16 +410,13 @@
             grafikBatang = new Chart(document.getElementById('grafikBatang-pegawai').getContext('2d'), {
                 type: 'bar',
                 data: {
-                    // Label diurutkan TL dulu baru PSW
                     labels: ['TL 1','TL 2','TL 3','TL 4','PSW 1','PSW 2','PSW 3','PSW 4'],
                     datasets: [{ data: [
-                        // Data diurutkan TL dulu baru PSW
                         ((tTl1/n)*100).toFixed(2), ((tTl2/n)*100).toFixed(2),
                         ((tTl3/n)*100).toFixed(2), ((tTl4/n)*100).toFixed(2),
                         ((tPsw1/n)*100).toFixed(2), ((tPsw2/n)*100).toFixed(2),
                         ((tPsw3/n)*100).toFixed(2), ((tPsw4/n)*100).toFixed(2)
                     ], backgroundColor: [
-                        // Warna oranye untuk TL, ungu untuk PSW
                         'rgba(245,166,35,0.8)','rgba(245,166,35,0.8)','rgba(245,166,35,0.8)','rgba(245,166,35,0.8)',
                         'rgba(111,66,193,0.8)','rgba(111,66,193,0.8)','rgba(111,66,193,0.8)','rgba(111,66,193,0.8)'
                     ], borderRadius: 4 }]
