@@ -10,7 +10,7 @@
         * { box-sizing: border-box; }
         .area-kanan {
             padding: 12px 16px !important;
-            overflow-y: auto;
+            overflow: hidden !important; /* Kunci agar layar utama tidak bisa scroll */
             height: 100vh;
             display: flex;
             flex-direction: column;
@@ -72,8 +72,18 @@
             font-weight: 900;
         }
         .grafik-tren canvas { height: 120px !important; }
-        .grafik-batang { display: flex; flex-direction: column; }
-        .grafik-batang canvas { flex: 1; width: 100% !important; min-height: 100px; }
+        
+        .grafik-batang { 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 0; /* Penting agar patuh pada batas grid */
+        }
+        .grafik-batang canvas { 
+            flex: 1; 
+            width: 100% !important; 
+            min-height: 0; 
+        }
+        
         .tabel-box {
             background: white;
             border-radius: 12px;
@@ -84,9 +94,10 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            min-height: 0; /* Penting agar isi tabel tidak menjebol layar ke bawah */
         }
         .tabel-box > div {
-            overflow-y: auto;
+            overflow-y: auto; /* Ini yang bikin tabelnya bisa di-scroll secara independen */
             overflow-x: auto;
             flex: 1;
             min-height: 0;
@@ -96,7 +107,9 @@
             color: #1a233a;
             font-size: 14px;
             font-weight: 900;
+            flex-shrink: 0;
         }
+        
         .ubah-password-box {
             background: white;
             border-radius: 12px;
@@ -106,15 +119,16 @@
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
+            min-height: 0; /* Penting agar patuh pada batas grid */
         }
         .ubah-password-box h3 {
             margin: 0 0 10px 0;
             color: #1a233a;
             font-size: 14px;
             font-weight: 900;
+            flex-shrink: 0;
         }
         
-        /* Area bawah diatur jadi 3 kolom agar Password ada di kanan */
         .grid-bawah {
             display: grid;
             grid-template-columns: 1fr 1.6fr 220px; 
