@@ -55,28 +55,31 @@
         .grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            gap: 10px;
             flex-shrink: 0;
         }
         .grafik-box {
             background: white;
             border-radius: 12px;
-            padding: 10px 14px;
+            padding: 12px 16px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #edf2f9;
         }
         .grafik-box h3 {
-            margin: 0 0 6px 0;
+            margin: 0 0 8px 0;
             color: #1a233a;
-            font-size: 12px;
+            font-size: 14px;
+            font-weight: 900;
         }
-        .grafik-tren canvas { height: 110px !important; }
+        .grafik-tren canvas { height: 120px !important; }
         .grafik-batang { display: flex; flex-direction: column; }
-        .grafik-batang canvas { height: 90px !important; flex-shrink: 0; }
+        .grafik-batang canvas { height: 100px !important; flex-shrink: 0; }
         .tabel-box {
             background: white;
             border-radius: 12px;
-            padding: 10px 14px;
+            padding: 12px 16px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #edf2f9;
             flex-shrink: 0;
             overflow: hidden;
             display: flex;
@@ -85,30 +88,35 @@
         .tabel-box > div {
             overflow-y: auto;
             overflow-x: auto;
-            max-height: 200px;
+            flex: 1;
+            min-height: 0;
         }
         .tabel-box h3 {
-            margin: 0 0 6px 0;
+            margin: 0 0 8px 0;
             color: #1a233a;
-            font-size: 12px;
+            font-size: 14px;
+            font-weight: 900;
         }
         .ubah-password-box {
             background: white;
             border-radius: 12px;
-            padding: 10px 14px;
+            padding: 12px 16px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #edf2f9;
             flex-shrink: 0;
         }
         .ubah-password-box h3 {
-            margin: 0 0 8px 0;
+            margin: 0 0 10px 0;
             color: #1a233a;
-            font-size: 12px;
+            font-size: 14px;
+            font-weight: 900;
         }
         .grid-bawah {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            flex-shrink: 0;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 10px;
+            flex: 1;
+            min-height: 0;
         }
     </style>
 </head>
@@ -178,23 +186,23 @@
             </div>
             <div class="tabel-box">
                 <h3>Ringkasan per Bulan</h3>
-                <div style="overflow-x:auto;">
-                    <table style="width:100%; border-collapse:collapse; font-size:11px;">
-                        <thead>
-                            <tr style="background:#f7f9fc; color:#1a233a;">
-                                <th style="padding:5px 4px; text-align:left;">Bulan</th>
-                                <th style="padding:5px 4px;">HK</th>
-                                <th style="padding:5px 4px;">HD</th>
-                                <th style="padding:5px 4px; color:#6f42c1;">PSW</th>
-                                <th style="padding:5px 4px; color:#f5a623;">HT</th>
-                                <th style="padding:5px 4px;">P1</th>
-                                <th style="padding:5px 4px;">P2</th>
-                                <th style="padding:5px 4px;">P3</th>
-                                <th style="padding:5px 4px;">P4</th>
-                                <th style="padding:5px 4px;">T1</th>
-                                <th style="padding:5px 4px;">T2</th>
-                                <th style="padding:5px 4px;">T3</th>
-                                <th style="padding:5px 4px;">T4</th>
+                <div>
+                    <table style="font-size: 12.5px; text-align: left; border-collapse: collapse; white-space: nowrap; width: 100%;">
+                        <thead style="position: sticky; top: 0; background-color: #f4f7fe; z-index: 1;">
+                            <tr>
+                                <th style="padding: 6px;">Bulan</th>
+                                <th style="padding: 6px;">HK</th>
+                                <th style="padding: 6px;">HD</th>
+                                <th style="padding: 6px;">PSW</th>
+                                <th style="padding: 6px;">HT</th>
+                                <th style="padding: 6px;">PSW 1</th>
+                                <th style="padding: 6px;">PSW 2</th>
+                                <th style="padding: 6px;">PSW 3</th>
+                                <th style="padding: 6px;">PSW 4</th>
+                                <th style="padding: 6px;">TL 1</th>
+                                <th style="padding: 6px;">TL 2</th>
+                                <th style="padding: 6px;">TL 3</th>
+                                <th style="padding: 6px;">TL 4</th>
                             </tr>
                         </thead>
                         <tbody id="badan-tabel-pegawai"></tbody>
@@ -425,25 +433,29 @@
                 return;
             }
             const dataTabel = bulan === 'Semua' ? semuaBulan.map(b => data.find(d => d.bulan === b)).filter(Boolean) : data;
-            const warna = v => parseFloat(v) === 0 ? 'color:#28a745;font-weight:bold' : 'color:#dc3545;font-weight:bold';
+            const tentukanWarnaSub = (teksAngka) => {
+                let nilai = parseFloat(teksAngka) || 0;
+                if (nilai === 0) return 'color: #28a745; font-weight: bold;'; 
+                return 'color: #dc3545; font-weight: bold;'; 
+            };
 
             dataTabel.forEach(item => {
                 const p = (v) => (Number(v)*100).toFixed(2);
                 tbody.innerHTML += `
-                    <tr style="border-bottom:1px solid #edf2f9;">
-                        <td style="padding:4px;font-weight:bold;font-size:11px;">${item.bulan}</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;">${item.hk}</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;">${item.hd}</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;color:#6f42c1;font-weight:bold;">${p(item.psw)}%</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;color:#f5a623;font-weight:bold;">${p(item.ht)}%</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;${warna(p(item.psw1))}">${p(item.psw1)}%</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;${warna(p(item.psw2))}">${p(item.psw2)}%</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;${warna(p(item.psw3))}">${p(item.psw3)}%</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;${warna(p(item.psw4))}">${p(item.psw4)}%</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;${warna(p(item.tl1))}">${p(item.tl1)}%</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;${warna(p(item.tl2))}">${p(item.tl2)}%</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;${warna(p(item.tl3))}">${p(item.tl3)}%</td>
-                        <td style="padding:4px;text-align:center;font-size:11px;${warna(p(item.tl4))}">${p(item.tl4)}%</td>
+                    <tr style="border-bottom: 1px solid #edf2f9;">
+                        <td style="padding: 8px; font-weight: bold;">${item.bulan}</td>
+                        <td style="padding: 8px;">${item.hk}</td>
+                        <td style="padding: 8px;">${item.hd}</td>
+                        <td style="padding: 8px; color: #6f42c1; font-weight: bold;">${p(item.psw)}%</td>
+                        <td style="padding: 8px; color: #f5a623; font-weight: bold;">${p(item.ht)}%</td>
+                        <td style="padding: 8px; ${tentukanWarnaSub(p(item.psw1))}">${p(item.psw1)}%</td>
+                        <td style="padding: 8px; ${tentukanWarnaSub(p(item.psw2))}">${p(item.psw2)}%</td>
+                        <td style="padding: 8px; ${tentukanWarnaSub(p(item.psw3))}">${p(item.psw3)}%</td>
+                        <td style="padding: 8px; ${tentukanWarnaSub(p(item.psw4))}">${p(item.psw4)}%</td>
+                        <td style="padding: 8px; ${tentukanWarnaSub(p(item.tl1))}">${p(item.tl1)}%</td>
+                        <td style="padding: 8px; ${tentukanWarnaSub(p(item.tl2))}">${p(item.tl2)}%</td>
+                        <td style="padding: 8px; ${tentukanWarnaSub(p(item.tl3))}">${p(item.tl3)}%</td>
+                        <td style="padding: 8px; ${tentukanWarnaSub(p(item.tl4))}">${p(item.tl4)}%</td>
                     </tr>`;
             });
         }
