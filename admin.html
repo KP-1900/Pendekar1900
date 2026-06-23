@@ -18,7 +18,7 @@
 
     <div class="area-kanan" style="justify-content: center; align-items: center;">
         <div style="display:flex; flex-direction:row; align-items:flex-start; justify-content:center; width:100%; max-width:850px; gap:20px; flex-wrap:wrap;">
-        <div class="kotak-form" style="flex:1; min-width:320px; max-width:400px; min-height:560px; background:white; padding:40px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); text-align:center; display:flex; flex-direction:column; justify-content:flex-start;">
+        <div class="kotak-form" style="flex:1; min-width:320px; max-width:400px; min-height:560px; background:white; padding:40px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); text-align:center; display:flex; flex-direction:column; justify-content:flex-start; align-items:center;">
             
             <img src="logo.png" style="height:50px; margin-bottom:15px;">
             <h2 style="margin:0 0 5px 0; color:#1a233a;">Login PENDEKAR</h2>
@@ -31,7 +31,7 @@
             </div>
 
             <!-- Form Pegawai -->
-            <div id="form-pegawai">
+            <div id="form-pegawai" style="width:100%;">
                 <input type="text" id="pegawai-nip" placeholder="NIP 9 digit" onkeydown="if(event.key==='Enter') loginPegawai()" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
                 <div style="position:relative; width:90%; margin-left:auto; margin-right:auto;">
                     <input type="password" id="pegawai-password" placeholder="Password (default: oke123456)" onkeydown="if(event.key==='Enter') loginPegawai()" style="width:100%; padding:12px; padding-right:40px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
@@ -47,7 +47,7 @@
             </div>
 
             <!-- Form Admin -->
-            <div id="form-admin" style="display:none;">
+            <div id="form-admin" style="display:none; width:100%;">
                 <input type="text" id="admin-username" placeholder="Username" onkeydown="if(event.key==='Enter') loginAdmin()" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
                 <div style="position:relative; width:90%; margin-left:auto; margin-right:auto;">
                     <input type="password" id="admin-password" placeholder="Password" onkeydown="if(event.key==='Enter') loginAdmin()" style="width:100%; padding:12px; padding-right:40px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
