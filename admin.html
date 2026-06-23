@@ -18,7 +18,7 @@
 
     <div class="area-kanan" style="justify-content: center; align-items: center;">
         <div style="display:flex; flex-direction:row; align-items:flex-start; justify-content:center; width:100%; max-width:850px; gap:20px; flex-wrap:wrap;">
-        <div class="kotak-form" style="flex:1; min-width:320px; max-width:400px; background:white; padding:40px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); text-align:center;">
+        <div class="kotak-form" style="flex:1; min-width:320px; max-width:400px; min-height:560px; background:white; padding:40px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); text-align:center; display:flex; flex-direction:column; justify-content:flex-start;">
             
             <img src="logo.png" style="height:50px; margin-bottom:15px;">
             <h2 style="margin:0 0 5px 0; color:#1a233a;">Login PENDEKAR</h2>
@@ -32,7 +32,7 @@
 
             <!-- Form Pegawai -->
             <div id="form-pegawai">
-                <input type="text" id="pegawai-nip" placeholder="NIP" onkeydown="if(event.key==='Enter') loginPegawai()" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
+                <input type="text" id="pegawai-nip" placeholder="NIP 9 digit" onkeydown="if(event.key==='Enter') loginPegawai()" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
                 <div style="position:relative; width:90%; margin-left:auto; margin-right:auto;">
                     <input type="password" id="pegawai-password" placeholder="Password (default: oke123456)" onkeydown="if(event.key==='Enter') loginPegawai()" style="width:100%; padding:12px; padding-right:40px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
                     <span onclick="toggleMata('pegawai-password', this)" style="position:absolute; right:12px; top:12px; cursor:pointer; user-select:none; color:#888;">
@@ -56,6 +56,7 @@
                     </span>
                 </div>
                 <button onclick="loginAdmin()" style="background:#2b6cb0; color:white; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; width:100%;">Masuk sebagai Admin</button>
+                <p style="margin:12px 0 0 0; height:17px;"></p>
             </div>
 
             <p id="pesan-login" style="font-size:13px; color:#dc3545; font-weight:bold; margin-top:15px;"></p>
@@ -65,7 +66,7 @@
             <h2 style="margin:0 0 5px 0; color:#1a233a; font-size:18px;">Lupa Password</h2>
             <p style="color:#888; font-size:13px; margin-bottom:25px;">Ajukan permintaan ubah password</p>
 
-            <input type="text" id="lupa-nip" placeholder="NIP" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
+            <input type="text" id="lupa-nip" placeholder="NIP 9 digit" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
             <div style="position:relative; width:90%; margin-left:auto; margin-right:auto;">
                 <input type="password" id="lupa-password-baru" placeholder="Password baru" onkeydown="if(event.key==='Enter') kirimPermintaanReset()" style="width:100%; padding:12px; padding-right:40px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
                 <span onclick="toggleMata('lupa-password-baru', this)" style="position:absolute; right:12px; top:12px; cursor:pointer; user-select:none; color:#888;">
