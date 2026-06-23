@@ -414,15 +414,18 @@
             grafikBatang = new Chart(document.getElementById('grafikBatang-pegawai').getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: ['PSW1','PSW2','PSW3','PSW4','TL1','TL2','TL3','TL4'],
+                    // Label diurutkan TL dulu baru PSW
+                    labels: ['TL 1','TL 2','TL 3','TL 4','PSW 1','PSW 2','PSW 3','PSW 4'],
                     datasets: [{ data: [
-                        ((tPsw1/n)*100).toFixed(2), ((tPsw2/n)*100).toFixed(2),
-                        ((tPsw3/n)*100).toFixed(2), ((tPsw4/n)*100).toFixed(2),
+                        // Data diurutkan TL dulu baru PSW
                         ((tTl1/n)*100).toFixed(2), ((tTl2/n)*100).toFixed(2),
-                        ((tTl3/n)*100).toFixed(2), ((tTl4/n)*100).toFixed(2)
+                        ((tTl3/n)*100).toFixed(2), ((tTl4/n)*100).toFixed(2),
+                        ((tPsw1/n)*100).toFixed(2), ((tPsw2/n)*100).toFixed(2),
+                        ((tPsw3/n)*100).toFixed(2), ((tPsw4/n)*100).toFixed(2)
                     ], backgroundColor: [
-                        'rgba(111,66,193,0.8)','rgba(111,66,193,0.8)','rgba(111,66,193,0.8)','rgba(111,66,193,0.8)',
-                        'rgba(245,166,35,0.8)','rgba(245,166,35,0.8)','rgba(245,166,35,0.8)','rgba(245,166,35,0.8)'
+                        // Warna oranye untuk TL, ungu untuk PSW
+                        'rgba(245,166,35,0.8)','rgba(245,166,35,0.8)','rgba(245,166,35,0.8)','rgba(245,166,35,0.8)',
+                        'rgba(111,66,193,0.8)','rgba(111,66,193,0.8)','rgba(111,66,193,0.8)','rgba(111,66,193,0.8)'
                     ], borderRadius: 4 }]
                 },
                 options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{font:{size:10}}}, x:{ticks:{font:{size:10}}}} }
