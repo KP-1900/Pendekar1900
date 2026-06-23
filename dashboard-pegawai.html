@@ -199,19 +199,19 @@
             <h3>🔑 Ubah Password</h3>
             <div style="display:flex; gap:8px; align-items:center;">
                 <div style="position:relative; flex:1;">
-                    <input type="password" id="password-lama" placeholder="Password lama" style="padding:7px 28px 7px 10px; border:1px solid #ddd; border-radius:8px; font-size:12px; width:100%; box-sizing:border-box;">
+                    <input type="password" id="password-lama" placeholder="Password lama" onkeydown="if(event.key==='Enter') ubahPassword()" style="padding:7px 28px 7px 10px; border:1px solid #ddd; border-radius:8px; font-size:12px; width:100%; box-sizing:border-box;">
                     <span onclick="toggleMata('password-lama', this)" style="position:absolute; right:7px; top:5px; cursor:pointer; user-select:none; color:#888;">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                     </span>
                 </div>
                 <div style="position:relative; flex:1;">
-                    <input type="password" id="password-baru" placeholder="Password baru" style="padding:7px 28px 7px 10px; border:1px solid #ddd; border-radius:8px; font-size:12px; width:100%; box-sizing:border-box;">
+                    <input type="password" id="password-baru" placeholder="Password baru" onkeydown="if(event.key==='Enter') ubahPassword()" style="padding:7px 28px 7px 10px; border:1px solid #ddd; border-radius:8px; font-size:12px; width:100%; box-sizing:border-box;">
                     <span onclick="toggleMata('password-baru', this)" style="position:absolute; right:7px; top:5px; cursor:pointer; user-select:none; color:#888;">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                     </span>
                 </div>
                 <div style="position:relative; flex:1;">
-                    <input type="password" id="password-konfirmasi" placeholder="Konfirmasi" style="padding:7px 28px 7px 10px; border:1px solid #ddd; border-radius:8px; font-size:12px; width:100%; box-sizing:border-box;">
+                    <input type="password" id="password-konfirmasi" placeholder="Konfirmasi" onkeydown="if(event.key==='Enter') ubahPassword()" style="padding:7px 28px 7px 10px; border:1px solid #ddd; border-radius:8px; font-size:12px; width:100%; box-sizing:border-box;">
                     <span onclick="toggleMata('password-konfirmasi', this)" style="position:absolute; right:7px; top:5px; cursor:pointer; user-select:none; color:#888;">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                     </span>

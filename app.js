@@ -86,7 +86,7 @@ async function tarikData() {
         const dataValid = dataMentah || [];
         const dataKartu = bulan === 'Semua' ? dataValid : dataValid.filter(d => d.bulan === bulan);
         
-        perbaruiKartu(dataKartu, bulan); 
+        perbaruiKartu(dataKartu, bulan, tahun); 
         perbaruiTabel(dataKartu, bulan);
         perbaruiGrafikBatang(dataKartu);
 
@@ -169,7 +169,7 @@ async function tarikData() {
 
 // === FUNGSI PERBARUAN LAYAR (UI) ===
 
-function perbaruiKartu(data, bulanDipilih) {
+function perbaruiKartu(data, bulanDipilih, tahunDipilih) {
     let totalHariKerja = 0, totalPsw = 0, totalHt = 0;
     let jumlahData = data.length;
 
@@ -194,6 +194,11 @@ function perbaruiKartu(data, bulanDipilih) {
                 if (d && d.jumlah_pegawai) { pegawaiAkhir = Number(d.jumlah_pegawai); break; }
             }
             
+            // Cek apakah tahun yang dipilih sudah "selesai" (sudah ada data bulan Desember)
+            // atau masih berjalan (belum ada data Desember) -> beda kalimat keterangan
+            let sudahAdaDesember = data.some(x => x.bulan === 'Desember');
+            let labelPerubahan = sudahAdaDesember ? "Awal vs Akhir Tahun" : "Awal Tahun vs Kondisi Terakhir";
+
             if (pegawaiAwal === pegawaiAkhir) {
                 htmlPegawai = pegawaiAwal;
                 teksBawahPegawai = "Stabil sepanjang tahun";
@@ -203,7 +208,7 @@ function perbaruiKartu(data, bulanDipilih) {
                 else if (pegawaiAkhir < pegawaiAwal) warnaPanah = '#dc3545'; 
                 
                 htmlPegawai = `${pegawaiAwal} <span style="color:${warnaPanah}; font-size:18px; margin:0 4px;">➔</span> ${pegawaiAkhir}`;
-                teksBawahPegawai = "Awal vs Akhir Tahun";
+                teksBawahPegawai = labelPerubahan;
             }
         } else {
             htmlPegawai = data[0].jumlah_pegawai || 0;
