@@ -69,18 +69,18 @@
                     <div class="kartu-pegawai">
                         <div class="kartu-hk"><div class="angka" id="angka-hk">-</div><div class="label">Hari Kerja</div></div>
                         <div class="kartu-hk"><div class="angka" id="angka-hd" style="color:#28a745;">-</div><div class="label">Hari Hadir</div></div>
-                        <div class="kartu-hk"><div class="angka" id="angka-ht" style="color:#f5a623;">-</div><div class="label">Rata-rata HT</div></div>
                         <div class="kartu-hk"><div class="angka" id="angka-psw" style="color:#6f42c1;">-</div><div class="label">Rata-rata PSW</div></div>
+                        <div class="kartu-hk"><div class="angka" id="angka-ht" style="color:#f5a623;">-</div><div class="label">Rata-rata HT</div></div>
                     </div>
                     
                     <div class="grid-2">
-                        <div class="grafik-box grafik-tren"><h3>Tren Persentase per Bulan (HT)</h3><canvas id="grafikHT-pegawai"></canvas></div>
-                        <div class="grafik-box grafik-tren"><h3>Tren Persentase per Bulan (PSW)</h3><canvas id="grafikPSW-pegawai"></canvas></div>
+                        <div class="grafik-box grafik-tren"><h3>Tren PSW per Bulan</h3><canvas id="grafikPSW-pegawai"></canvas></div>
+                        <div class="grafik-box grafik-tren"><h3>Tren HT per Bulan</h3><canvas id="grafikHT-pegawai"></canvas></div>
                     </div>
 
                     <div style="display: flex; gap: 10px; flex: 1; min-height: 0;">
                         <div class="grafik-box grafik-batang" style="flex: 1;">
-                            <h3>Rata-rata per Kategori (%)</h3>
+                            <h3>Total per Kategori</h3>
                             <canvas id="grafikBatang-pegawai"></canvas>
                         </div>
                         <div class="tabel-box" style="flex: 1.8;">
@@ -90,9 +90,9 @@
                                     <thead style="position: sticky; top: 0; background-color: #f4f7fe; z-index: 1;">
                                         <tr>
                                             <th style="padding: 6px 2px; text-align: left;">Bulan</th>
-                                            <th style="padding: 6px 2px;">HK</th><th style="padding: 6px 2px;">HD</th><th style="padding: 6px 2px;">HT</th>
+                                            <th style="padding: 6px 2px;">HK</th><th style="padding: 6px 2px;">HD</th><th style="padding: 6px 2px;">PSW</th><th style="padding: 6px 2px;">HT</th>
+                                            <th style="padding: 6px 2px;">PSW 1</th><th style="padding: 6px 2px;">PSW 2</th><th style="padding: 6px 2px;">PSW 3</th><th style="padding: 6px 2px;">PSW 4</th>
                                             <th style="padding: 6px 2px;">TL 1</th><th style="padding: 6px 2px;">TL 2</th><th style="padding: 6px 2px;">TL 3</th><th style="padding: 6px 2px;">TL 4</th>
-                                            <th style="padding: 6px 2px;">PSW</th><th style="padding: 6px 2px;">PSW 1</th><th style="padding: 6px 2px;">PSW 2</th><th style="padding: 6px 2px;">PSW 3</th><th style="padding: 6px 2px;">PSW 4</th>
                                         </tr>
                                     </thead>
                                     <tbody id="badan-tabel-pegawai"></tbody>
@@ -333,8 +333,8 @@
             daftarAnggota.forEach((anggota, index) => {
                 const idCanvas = `chart-tim-${index}`;
                 
-                const dataHT = semuaBulan.map(b => anggota.dataBulanan[b] ? (Number(anggota.dataBulanan[b].ht)*100).toFixed(2) : 0);
-                const dataPSW = semuaBulan.map(b => anggota.dataBulanan[b] ? (Number(anggota.dataBulanan[b].psw)*100).toFixed(2) : 0);
+                const dataHT = semuaBulan.map(b => anggota.dataBulanan[b] ? Number(anggota.dataBulanan[b].ht) : 0);
+                const dataPSW = semuaBulan.map(b => anggota.dataBulanan[b] ? Number(anggota.dataBulanan[b].psw) : 0);
                 
                 const ctx = document.getElementById(idCanvas).getContext('2d');
                 chartTimInstances[idCanvas] = new Chart(ctx, {
@@ -342,14 +342,14 @@
                     data: {
                         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
                         datasets: [
-                            { label: 'HT (%)', data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 },
-                            { label: 'PSW (%)', data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 }
+                            { label: 'HT', data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 },
+                            { label: 'PSW', data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 }
                         ]
                     },
                     options: { 
                         responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, 
                         scales: { 
-                            y: { beginAtZero: true, ticks: { font: { size: 9 }, stepSize: 20 } }, 
+                            y: { beginAtZero: true, ticks: { font: { size: 9 }, precision: 0 } }, 
                             x: { ticks: { font: { size: 9 } } } 
                         } 
                     }
@@ -375,8 +375,8 @@
                 semuaBulan.forEach(b => {
                     const baris = data.find(d => d.bulan === b);
                     labelBulan.push(b);
-                    dataPSW.push(baris ? (Number(baris.psw) * 100).toFixed(2) : 0);
-                    dataHT.push(baris ? (Number(baris.ht) * 100).toFixed(2) : 0);
+                    dataPSW.push(baris ? Number(baris.psw) : 0);
+                    dataHT.push(baris ? Number(baris.ht) : 0);
                 });
             } else {
                 const idx = semuaBulan.indexOf(bulan);
@@ -384,14 +384,14 @@
                 const sesudah = idx < 11 ? semuaBulan[idx+1] : 'Januari';
                 labelBulan = [sebelum, bulan, sesudah];
                 dataPSW = [
-                    ((Number((data.find(d=>d.bulan===sebelum)||{}).psw)||0)*100).toFixed(2),
-                    ((Number((data.find(d=>d.bulan===bulan)||{}).psw)||0)*100).toFixed(2),
-                    ((Number((data.find(d=>d.bulan===sesudah)||{}).psw)||0)*100).toFixed(2)
+                    (Number((data.find(d=>d.bulan===sebelum)||{}).psw)||0),
+                    (Number((data.find(d=>d.bulan===bulan)||{}).psw)||0),
+                    (Number((data.find(d=>d.bulan===sesudah)||{}).psw)||0)
                 ];
                 dataHT = [
-                    ((Number((data.find(d=>d.bulan===sebelum)||{}).ht)||0)*100).toFixed(2),
-                    ((Number((data.find(d=>d.bulan===bulan)||{}).ht)||0)*100).toFixed(2),
-                    ((Number((data.find(d=>d.bulan===sesudah)||{}).ht)||0)*100).toFixed(2)
+                    (Number((data.find(d=>d.bulan===sebelum)||{}).ht)||0),
+                    (Number((data.find(d=>d.bulan===bulan)||{}).ht)||0),
+                    (Number((data.find(d=>d.bulan===sesudah)||{}).ht)||0)
                 ];
             }
             perbaruiGrafikPribadi(labelBulan, dataPSW, dataHT, bulan);
@@ -400,32 +400,31 @@
         function perbaruiKartu(data, bulan) {
             let tHk=0, tHd=0, tPsw=0, tHt=0;
             data.forEach(d => { tHk += Number(d.hk)||0; tHd += Number(d.hd)||0; tPsw += Number(d.psw)||0; tHt += Number(d.ht)||0; });
-            const n = data.length || 1;
             document.getElementById('angka-hk').innerText = tHk;
             document.getElementById('angka-hd').innerText = tHd;
-            document.getElementById('angka-psw').innerText = ((tPsw/n)*100).toFixed(2) + '%';
-            document.getElementById('angka-ht').innerText = ((tHt/n)*100).toFixed(2) + '%';
+            document.getElementById('angka-psw').innerText = tHd > 0 ? ((tPsw/tHd)*100).toFixed(2) + '%' : '0.00%';
+            document.getElementById('angka-ht').innerText = tHd > 0 ? ((tHt/tHd)*100).toFixed(2) + '%' : '0.00%';
         }
 
         function perbaruiGrafikPribadi(labelBulan, dataPSW, dataHT, bulan) {
             if (grafikPSW) grafikPSW.destroy();
             if (grafikHT) grafikHT.destroy();
-            const opsi = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 9 } } } } };
+            const opsi = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: { size: 10 }, precision: 0 } }, x: { ticks: { font: { size: 9 } } } } };
             grafikHT = new Chart(document.getElementById('grafikHT-pegawai').getContext('2d'), { type: 'line', data: { labels: labelBulan, datasets: [{ data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 3 }] }, options: opsi });
             grafikPSW = new Chart(document.getElementById('grafikPSW-pegawai').getContext('2d'), { type: 'line', data: { labels: labelBulan, datasets: [{ data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 3 }] }, options: opsi });
         }
 
         function perbaruiGrafikBatang(data) {
             if (grafikBatang) grafikBatang.destroy();
-            let tPsw1=0,tPsw2=0,tPsw3=0,tPsw4=0,tTl1=0,tTl2=0,tTl3=0,tTl4=0; const n = data.length || 1;
+            let tPsw1=0,tPsw2=0,tPsw3=0,tPsw4=0,tTl1=0,tTl2=0,tTl3=0,tTl4=0; 
             data.forEach(d => { tPsw1+=Number(d.psw1)||0; tPsw2+=Number(d.psw2)||0; tPsw3+=Number(d.psw3)||0; tPsw4+=Number(d.psw4)||0; tTl1+=Number(d.tl1)||0; tTl2+=Number(d.tl2)||0; tTl3+=Number(d.tl3)||0; tTl4+=Number(d.tl4)||0; });
             grafikBatang = new Chart(document.getElementById('grafikBatang-pegawai').getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: ['TL 1','TL 2','TL 3','TL 4','PSW 1','PSW 2','PSW 3','PSW 4'],
-                    datasets: [{ data: [ ((tTl1/n)*100).toFixed(2), ((tTl2/n)*100).toFixed(2), ((tTl3/n)*100).toFixed(2), ((tTl4/n)*100).toFixed(2), ((tPsw1/n)*100).toFixed(2), ((tPsw2/n)*100).toFixed(2), ((tPsw3/n)*100).toFixed(2), ((tPsw4/n)*100).toFixed(2) ], backgroundColor: [ 'rgba(245,166,35,0.8)','rgba(245,166,35,0.8)','rgba(245,166,35,0.8)','rgba(245,166,35,0.8)', 'rgba(111,66,193,0.8)','rgba(111,66,193,0.8)','rgba(111,66,193,0.8)','rgba(111,66,193,0.8)' ], borderRadius: 4 }]
+                    datasets: [{ data: [ tTl1, tTl2, tTl3, tTl4, tPsw1, tPsw2, tPsw3, tPsw4 ], backgroundColor: [ 'rgba(245,166,35,0.8)','rgba(245,166,35,0.8)','rgba(245,166,35,0.8)','rgba(245,166,35,0.8)', 'rgba(111,66,193,0.8)','rgba(111,66,193,0.8)','rgba(111,66,193,0.8)','rgba(111,66,193,0.8)' ], borderRadius: 4 }]
                 },
-                options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{font:{size:10}}}, x:{ticks:{font:{size:10}}}} }
+                options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{font:{size:10}, precision: 0}}, x:{ticks:{font:{size:10}}}} }
             });
         }
 
@@ -435,15 +434,15 @@
             const dataTabel = bulan === 'Semua' ? semuaBulan.map(b => data.find(d => d.bulan === b)).filter(Boolean) : data;
             const t = (v) => parseFloat(v) === 0 ? 'color: #28a745; font-weight: bold;' : 'color: #dc3545; font-weight: bold;';
             dataTabel.forEach(item => {
-                const p = (v) => (Number(v)*100).toFixed(2);
+                const v = (val) => Number(val) || 0;
                 tbody.innerHTML += `
                     <tr style="border-bottom: 1px solid #edf2f9;">
                         <td style="padding: 6px 2px; text-align: left; font-weight: bold;">${item.bulan}</td>
-                        <td style="padding: 6px 2px;">${item.hk}</td><td style="padding: 6px 2px;">${item.hd}</td>
-                        <td style="padding: 6px 2px; color: #f5a623; font-weight: bold;">${p(item.ht)}%</td>
-                        <td style="padding: 6px 2px; ${t(p(item.tl1))}">${p(item.tl1)}%</td><td style="padding: 6px 2px; ${t(p(item.tl2))}">${p(item.tl2)}%</td><td style="padding: 6px 2px; ${t(p(item.tl3))}">${p(item.tl3)}%</td><td style="padding: 6px 2px; ${t(p(item.tl4))}">${p(item.tl4)}%</td>
-                        <td style="padding: 6px 2px; color: #6f42c1; font-weight: bold;">${p(item.psw)}%</td>
-                        <td style="padding: 6px 2px; ${t(p(item.psw1))}">${p(item.psw1)}%</td><td style="padding: 6px 2px; ${t(p(item.psw2))}">${p(item.psw2)}%</td><td style="padding: 6px 2px; ${t(p(item.psw3))}">${p(item.psw3)}%</td><td style="padding: 6px 2px; ${t(p(item.psw4))}">${p(item.psw4)}%</td>
+                        <td style="padding: 6px 2px;">${v(item.hk)}</td><td style="padding: 6px 2px;">${v(item.hd)}</td>
+                        <td style="padding: 6px 2px; color: #6f42c1; font-weight: bold;">${v(item.psw)}</td>
+                        <td style="padding: 6px 2px; color: #f5a623; font-weight: bold;">${v(item.ht)}</td>
+                        <td style="padding: 6px 2px; ${t(v(item.psw1))}">${v(item.psw1)}</td><td style="padding: 6px 2px; ${t(v(item.psw2))}">${v(item.psw2)}</td><td style="padding: 6px 2px; ${t(v(item.psw3))}">${v(item.psw3)}</td><td style="padding: 6px 2px; ${t(v(item.psw4))}">${v(item.psw4)}</td>
+                        <td style="padding: 6px 2px; ${t(v(item.tl1))}">${v(item.tl1)}</td><td style="padding: 6px 2px; ${t(v(item.tl2))}">${v(item.tl2)}</td><td style="padding: 6px 2px; ${t(v(item.tl3))}">${v(item.tl3)}</td><td style="padding: 6px 2px; ${t(v(item.tl4))}">${v(item.tl4)}</td>
                     </tr>`;
             });
         }
