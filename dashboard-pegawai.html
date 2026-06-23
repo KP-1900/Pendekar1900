@@ -10,7 +10,7 @@
         * { box-sizing: border-box; }
         .area-kanan {
             padding: 12px 16px !important;
-            overflow: hidden !important; /* Kunci agar layar utama tidak bisa scroll */
+            overflow: hidden !important; 
             height: 100vh;
             display: flex;
             flex-direction: column;
@@ -76,7 +76,7 @@
         .grafik-batang { 
             display: flex; 
             flex-direction: column; 
-            min-height: 0; /* Penting agar patuh pada batas grid */
+            min-height: 0; 
         }
         .grafik-batang canvas { 
             flex: 1; 
@@ -94,10 +94,10 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            min-height: 0; /* Penting agar isi tabel tidak menjebol layar ke bawah */
+            min-height: 0; 
         }
         .tabel-box > div {
-            overflow-y: auto; /* Ini yang bikin tabelnya bisa di-scroll secara independen */
+            overflow-y: auto; 
             overflow-x: auto;
             flex: 1;
             min-height: 0;
@@ -119,7 +119,7 @@
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
-            min-height: 0; /* Penting agar patuh pada batas grid */
+            min-height: 0; 
         }
         .ubah-password-box h3 {
             margin: 0 0 10px 0;
@@ -129,9 +129,10 @@
             flex-shrink: 0;
         }
         
+        /* Area bawah diatur agar tabel (1.8fr) mendapat porsi lebar yang lebih banyak */
         .grid-bawah {
             display: grid;
-            grid-template-columns: 1fr 1.6fr 220px; 
+            grid-template-columns: 1fr 1.8fr 220px; 
             gap: 10px;
             flex: 1;
             min-height: 0;
@@ -203,22 +204,22 @@
             <div class="tabel-box">
                 <h3>Ringkasan per Bulan</h3>
                 <div>
-                    <table style="font-size: 11.5px; text-align: left; border-collapse: collapse; white-space: nowrap; width: 100%;">
+                    <table style="font-size: 10px; text-align: center; border-collapse: collapse; white-space: nowrap; width: 100%;">
                         <thead style="position: sticky; top: 0; background-color: #f4f7fe; z-index: 1;">
                             <tr>
-                                <th style="padding: 6px 4px;">Bulan</th>
-                                <th style="padding: 6px 4px;">HK</th>
-                                <th style="padding: 6px 4px;">HD</th>
-                                <th style="padding: 6px 4px;">HT</th>
-                                <th style="padding: 6px 4px;">TL 1</th>
-                                <th style="padding: 6px 4px;">TL 2</th>
-                                <th style="padding: 6px 4px;">TL 3</th>
-                                <th style="padding: 6px 4px;">TL 4</th>
-                                <th style="padding: 6px 4px;">PSW</th>
-                                <th style="padding: 6px 4px;">PSW 1</th>
-                                <th style="padding: 6px 4px;">PSW 2</th>
-                                <th style="padding: 6px 4px;">PSW 3</th>
-                                <th style="padding: 6px 4px;">PSW 4</th>
+                                <th style="padding: 6px 2px; text-align: left;">Bulan</th>
+                                <th style="padding: 6px 2px;">HK</th>
+                                <th style="padding: 6px 2px;">HD</th>
+                                <th style="padding: 6px 2px;">HT</th>
+                                <th style="padding: 6px 2px;">TL 1</th>
+                                <th style="padding: 6px 2px;">TL 2</th>
+                                <th style="padding: 6px 2px;">TL 3</th>
+                                <th style="padding: 6px 2px;">TL 4</th>
+                                <th style="padding: 6px 2px;">PSW</th>
+                                <th style="padding: 6px 2px;">PSW 1</th>
+                                <th style="padding: 6px 2px;">PSW 2</th>
+                                <th style="padding: 6px 2px;">PSW 3</th>
+                                <th style="padding: 6px 2px;">PSW 4</th>
                             </tr>
                         </thead>
                         <tbody id="badan-tabel-pegawai"></tbody>
@@ -457,19 +458,19 @@
                 const p = (v) => (Number(v)*100).toFixed(2);
                 tbody.innerHTML += `
                     <tr style="border-bottom: 1px solid #edf2f9;">
-                        <td style="padding: 6px 4px; font-weight: bold;">${item.bulan}</td>
-                        <td style="padding: 6px 4px;">${item.hk}</td>
-                        <td style="padding: 6px 4px;">${item.hd}</td>
-                        <td style="padding: 6px 4px; color: #f5a623; font-weight: bold;">${p(item.ht)}%</td>
-                        <td style="padding: 6px 4px; ${tentukanWarnaSub(p(item.tl1))}">${p(item.tl1)}%</td>
-                        <td style="padding: 6px 4px; ${tentukanWarnaSub(p(item.tl2))}">${p(item.tl2)}%</td>
-                        <td style="padding: 6px 4px; ${tentukanWarnaSub(p(item.tl3))}">${p(item.tl3)}%</td>
-                        <td style="padding: 6px 4px; ${tentukanWarnaSub(p(item.tl4))}">${p(item.tl4)}%</td>
-                        <td style="padding: 6px 4px; color: #6f42c1; font-weight: bold;">${p(item.psw)}%</td>
-                        <td style="padding: 6px 4px; ${tentukanWarnaSub(p(item.psw1))}">${p(item.psw1)}%</td>
-                        <td style="padding: 6px 4px; ${tentukanWarnaSub(p(item.psw2))}">${p(item.psw2)}%</td>
-                        <td style="padding: 6px 4px; ${tentukanWarnaSub(p(item.psw3))}">${p(item.psw3)}%</td>
-                        <td style="padding: 6px 4px; ${tentukanWarnaSub(p(item.psw4))}">${p(item.psw4)}%</td>
+                        <td style="padding: 6px 2px; text-align: left; font-weight: bold;">${item.bulan}</td>
+                        <td style="padding: 6px 2px;">${item.hk}</td>
+                        <td style="padding: 6px 2px;">${item.hd}</td>
+                        <td style="padding: 6px 2px; color: #f5a623; font-weight: bold;">${p(item.ht)}%</td>
+                        <td style="padding: 6px 2px; ${tentukanWarnaSub(p(item.tl1))}">${p(item.tl1)}%</td>
+                        <td style="padding: 6px 2px; ${tentukanWarnaSub(p(item.tl2))}">${p(item.tl2)}%</td>
+                        <td style="padding: 6px 2px; ${tentukanWarnaSub(p(item.tl3))}">${p(item.tl3)}%</td>
+                        <td style="padding: 6px 2px; ${tentukanWarnaSub(p(item.tl4))}">${p(item.tl4)}%</td>
+                        <td style="padding: 6px 2px; color: #6f42c1; font-weight: bold;">${p(item.psw)}%</td>
+                        <td style="padding: 6px 2px; ${tentukanWarnaSub(p(item.psw1))}">${p(item.psw1)}%</td>
+                        <td style="padding: 6px 2px; ${tentukanWarnaSub(p(item.psw2))}">${p(item.psw2)}%</td>
+                        <td style="padding: 6px 2px; ${tentukanWarnaSub(p(item.psw3))}">${p(item.psw3)}%</td>
+                        <td style="padding: 6px 2px; ${tentukanWarnaSub(p(item.psw4))}">${p(item.psw4)}%</td>
                     </tr>`;
             });
         }
