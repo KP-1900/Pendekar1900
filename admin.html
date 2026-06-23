@@ -32,14 +32,20 @@
             <!-- Form Pegawai -->
             <div id="form-pegawai">
                 <input type="text" id="pegawai-nip" placeholder="NIP" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
-                <input type="password" id="pegawai-password" placeholder="Password (default: oke123456)" style="width:90%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
+                <div style="position:relative; width:90%; margin-left:auto; margin-right:auto;">
+                    <input type="password" id="pegawai-password" placeholder="Password (default: oke123456)" style="width:100%; padding:12px; padding-right:40px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
+                    <span onclick="toggleMata('pegawai-password', this)" style="position:absolute; right:12px; top:14px; cursor:pointer; font-size:16px; user-select:none;">👁️</span>
+                </div>
                 <button onclick="loginPegawai()" style="background:#28a745; color:white; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; width:100%;">Masuk sebagai Pegawai</button>
             </div>
 
             <!-- Form Admin -->
             <div id="form-admin" style="display:none;">
                 <input type="text" id="admin-username" placeholder="Username" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
-                <input type="password" id="admin-password" placeholder="Password" style="width:90%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
+                <div style="position:relative; width:90%; margin-left:auto; margin-right:auto;">
+                    <input type="password" id="admin-password" placeholder="Password" style="width:100%; padding:12px; padding-right:40px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
+                    <span onclick="toggleMata('admin-password', this)" style="position:absolute; right:12px; top:14px; cursor:pointer; font-size:16px; user-select:none;">👁️</span>
+                </div>
                 <button onclick="loginAdmin()" style="background:#2b6cb0; color:white; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; width:100%;">Masuk sebagai Admin</button>
             </div>
 
@@ -51,6 +57,18 @@
         const _URL = 'https://gnytuyapiiickrieoboh.supabase.co';
         const _KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueXR1eWFwaWlpY2tyaWVvYm9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NDAzMzksImV4cCI6MjA5NzMxNjMzOX0.-oa4YA-U8TDzWfrSHd9EkbnLNB8IyObFw0SziIkIpQo';
         const db = window.supabase.createClient(_URL, _KEY);
+
+        // Toggle tampil/sembunyi password
+        function toggleMata(idInput, ikon) {
+            const input = document.getElementById(idInput);
+            if (input.type === 'password') {
+                input.type = 'text';
+                ikon.style.opacity = '0.5';
+            } else {
+                input.type = 'password';
+                ikon.style.opacity = '1';
+            }
+        }
 
         function gantiTab(tab) {
             if (tab === 'admin') {
