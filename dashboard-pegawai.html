@@ -174,16 +174,19 @@
         }
 
         function gantiMode(mode) {
+            const filterBulan = document.getElementById('filter-bulan-pegawai');
             if (mode === 'pribadi') {
                 document.getElementById('btn-mode-pribadi').className = 'btn-toggle aktif';
                 document.getElementById('btn-mode-tim').className = 'btn-toggle nonaktif';
                 document.getElementById('wadah-mode-pribadi').style.display = 'flex';
                 document.getElementById('wadah-mode-tim').style.display = 'none';
+                filterBulan.style.display = 'inline-block'; // Tampilkan lagi
             } else {
                 document.getElementById('btn-mode-tim').className = 'btn-toggle aktif';
                 document.getElementById('btn-mode-pribadi').className = 'btn-toggle nonaktif';
                 document.getElementById('wadah-mode-tim').style.display = 'flex';
                 document.getElementById('wadah-mode-pribadi').style.display = 'none';
+                filterBulan.style.display = 'none'; // Sembunyikan khusus mode tim
             }
         }
 
@@ -196,7 +199,6 @@
         document.getElementById('filter-bulan-pegawai').addEventListener('change', tarikDataSemua);
 
         async function inisialisasiAwal() {
-            // Ambil nama & jabatan yang paling update dari database
             const { data: dataRole } = await db.from('absensi_pegawai').select('tahun, bulan, tim, jabatan, nama').eq('nip', nipPegawai);
             if (dataRole && dataRole.length > 0) {
                 dataRole.sort((a, b) => {
@@ -265,7 +267,6 @@
             
             if (!allData || !dataTahunIni) return;
 
-            // Cari tahun & bulan paling update di seluruh database
             let maxTahun = 0;
             allData.forEach(d => { if(d.tahun > maxTahun) maxTahun = d.tahun; });
             let maxBulanIdx = -1;
@@ -277,7 +278,6 @@
             });
             const bulanTerakhir = semuaBulan[maxBulanIdx];
 
-            // Petakan profil update terakhir setiap pegawai
             const infoTerakhir = {};
             allData.forEach(d => {
                 if (!infoTerakhir[d.nip]) {
@@ -290,34 +290,38 @@
                 }
             });
 
-            // Saring: Hanya masukkan pegawai yang ada datanya di (Tahun & Bulan Paling Akhir Global)
-            let dataTersaring = dataTahunIni.filter(d => {
-                if (!infoTerakhir[d.nip] || infoTerakhir[d.nip].tahun !== maxTahun || infoTerakhir[d.nip].bulan !== bulanTerakhir) return false;
+            const petaAnggota = {};
+            dataTahunIni.forEach(d => {
+                // Filter 1: Jangan masukkan diri sendiri ke pangkalan hitung
+                if (d.nip === nipPegawai) return;
+                
+                // Filter 2: Harus ada datanya di bulan paling update
+                if (!infoTerakhir[d.nip] || infoTerakhir[d.nip].tahun !== maxTahun || infoTerakhir[d.nip].bulan !== bulanTerakhir) return;
                 
                 let infoOrangItu = infoTerakhir[d.nip];
                 let jabatanKita = roleAkses.toLowerCase();
+                
+                // Filter 3: Jika jabatannya Ketua (bukan admin/kepala), filter khusus tim miliknya saja
                 if (jabatanKita === 'ketua' && !isKepalaAtauAdmin) {
-                    if (infoOrangItu.tim !== namaTimAkses) return false;
+                    if (infoOrangItu.tim !== namaTimAkses) return;
                 }
-                return true;
-            });
 
-            const petaAnggota = {};
-            dataTersaring.forEach(d => {
                 if (!petaAnggota[d.nip]) {
-                    let infoAkhir = infoTerakhir[d.nip];
-                    petaAnggota[d.nip] = { nip: d.nip, nama: infoAkhir.nama, jabatan: infoAkhir.jabatan || 'Anggota', tim: infoAkhir.tim, dataBulanan: {} };
+                    petaAnggota[d.nip] = { nip: d.nip, nama: infoOrangItu.nama, jabatan: infoOrangItu.jabatan || 'Anggota', tim: infoOrangItu.tim, dataBulanan: {} };
                 }
                 petaAnggota[d.nip].dataBulanan[d.bulan] = { ht: d.ht || 0, psw: d.psw || 0 };
             });
 
-            const bobotJabatan = { 'kepala': 1, 'admin': 2, 'ketua': 3, 'anggota': 4 };
-            const daftarAnggota = Object.values(petaAnggota).sort((a, b) => {
-                const bobotA = bobotJabatan[(a.jabatan || '').toLowerCase()] || 99;
-                const bobotB = bobotJabatan[(b.jabatan || '').toLowerCase()] || 99;
-                if (bobotA !== bobotB) return bobotA - bobotB;
-                return a.nama.localeCompare(b.nama);
-            });
+            // Filter Ekstra Aman: Buang diri sendiri saat penyusunan list final (jika sempat lolos)
+            const daftarAnggota = Object.values(petaAnggota)
+                .filter(a => a.nip !== nipPegawai)
+                .sort((a, b) => {
+                    const bobotJabatan = { 'kepala': 1, 'admin': 2, 'ketua': 3, 'anggota': 4 };
+                    const bobotA = bobotJabatan[(a.jabatan || '').toLowerCase()] || 99;
+                    const bobotB = bobotJabatan[(b.jabatan || '').toLowerCase()] || 99;
+                    if (bobotA !== bobotB) return bobotA - bobotB;
+                    return a.nama.localeCompare(b.nama);
+                });
 
             renderModeTim(daftarAnggota);
         }
@@ -330,7 +334,7 @@
             chartTimInstances = {};
 
             if (daftarAnggota.length === 0) {
-                wadah.innerHTML = '<p style="text-align:center; color:#888; font-size:13px; margin-top:20px;">Tidak ada data tim yang ditemukan untuk periode ini.</p>';
+                wadah.innerHTML = '<p style="text-align:center; color:#888; font-size:13px; margin-top:20px;">Tidak ada data anggota tim yang ditemukan untuk periode ini.</p>';
                 return;
             }
 
@@ -343,11 +347,10 @@
                     warnaJabatan = 'background:#e6f0fa; color:#007bff;'; 
                 }
 
-                // Menggunakan 2 canvas berdampingan untuk HT dan PSW
                 const htmlKartu = `
                     <div class="kartu-anggota-tim">
                         <div class="info-anggota-tim">
-                            <h4 style="margin: 0 0 4px 0; color: #1a233a; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${anggota.nama}">${anggota.nama}</h4>
+                            <h4 style="margin: 0 0 4px 0; color: #1a233a; font-size: 13px; line-height: 1.3;" title="${anggota.nama}">${anggota.nama}</h4>
                             <p style="margin: 0; font-size: 10px; color: #888;">NIP: ${anggota.nip}</p>
                             ${isKepalaAtauAdmin ? `<p style="margin: 3px 0 0 0; font-size: 10px; color: #555;"><b>Tim:</b> ${anggota.tim || '-'}</p>` : ''}
                             <span style="display: inline-block; margin-top: 8px; padding: 3px 8px; font-size: 10px; border-radius: 4px; font-weight: bold; ${warnaJabatan}">${anggota.jabatan}</span>
