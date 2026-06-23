@@ -8,15 +8,20 @@ let grafikGarisPSW, grafikGarisHT, grafikBatangKategori;
 
 const semuaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-// === LISTENER FILTER ===
+// === LISTENER FILTER DENGAN SESSION STORAGE ===
 document.getElementById('filter-tahun').addEventListener('change', async () => {
     const tahun = parseInt(document.getElementById('filter-tahun').value);
     document.getElementById('filter-bulan').value = 'Semua';
+    sessionStorage.setItem('global_filter_tahun', tahun);
+    sessionStorage.setItem('global_filter_bulan', 'Semua');
     await isiDropdownBulan(tahun);
     tarikData();
 });
 
-document.getElementById('filter-bulan').addEventListener('change', tarikData);
+document.getElementById('filter-bulan').addEventListener('change', () => {
+    sessionStorage.setItem('global_filter_bulan', document.getElementById('filter-bulan').value);
+    tarikData();
+});
 
 // === INISIALISASI AWAL ===
 isiDropdownTahun().then(async () => {
@@ -45,9 +50,15 @@ async function isiDropdownTahun() {
         dropdown.appendChild(option);
     });
 
-    dropdown.value = tahunUnik[tahunUnik.length - 1];
+    // Cek memori browser, gunakan jika ada
+    const savedTahun = sessionStorage.getItem('global_filter_tahun');
+    if (savedTahun && tahunUnik.includes(parseInt(savedTahun))) {
+        dropdown.value = savedTahun;
+    } else {
+        dropdown.value = tahunUnik[tahunUnik.length - 1];
+        sessionStorage.setItem('global_filter_tahun', dropdown.value);
+    }
 
-    // Tampilkan filter setelah data siap — mencegah kedip nilai default
     const areaFilter = document.getElementById('area-filter');
     if (areaFilter) areaFilter.style.visibility = 'visible';
 }
@@ -72,6 +83,15 @@ async function isiDropdownBulan(tahun) {
         option.text = b;
         dropdown.appendChild(option);
     });
+
+    // Cek memori browser, gunakan jika ada
+    const savedBulan = sessionStorage.getItem('global_filter_bulan');
+    if (savedBulan && (savedBulan === 'Semua' || bulanTersedia.includes(savedBulan))) {
+        dropdown.value = savedBulan;
+    } else {
+        dropdown.value = 'Semua';
+        sessionStorage.setItem('global_filter_bulan', 'Semua');
+    }
 }
 
 // === FUNGSI UTAMA: MENARIK DATA DARI SUPABASE ===
@@ -171,8 +191,6 @@ async function tarikData() {
     }
 }
 
-// === FUNGSI PERBARUAN LAYAR (UI) ===
-
 function perbaruiKartu(data, bulanDipilih, tahunDipilih) {
     let totalHariKerja = 0, totalPsw = 0, totalHt = 0;
     let jumlahData = data.length;
@@ -198,8 +216,6 @@ function perbaruiKartu(data, bulanDipilih, tahunDipilih) {
                 if (d && d.jumlah_pegawai) { pegawaiAkhir = Number(d.jumlah_pegawai); break; }
             }
             
-            // Cek apakah tahun yang dipilih sudah "selesai" (sudah ada data bulan Desember)
-            // atau masih berjalan (belum ada data Desember) -> beda kalimat keterangan
             let sudahAdaDesember = data.some(x => x.bulan === 'Desember');
             let labelPerubahan = sudahAdaDesember ? "Awal vs Akhir Tahun" : "Awal Tahun vs Kondisi Terakhir";
 

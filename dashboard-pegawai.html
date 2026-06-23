@@ -180,23 +180,30 @@
                 document.getElementById('btn-mode-tim').className = 'btn-toggle nonaktif';
                 document.getElementById('wadah-mode-pribadi').style.display = 'flex';
                 document.getElementById('wadah-mode-tim').style.display = 'none';
-                filterBulan.style.display = 'inline-block'; // Tampilkan lagi
+                filterBulan.style.display = 'inline-block';
             } else {
                 document.getElementById('btn-mode-tim').className = 'btn-toggle aktif';
                 document.getElementById('btn-mode-pribadi').className = 'btn-toggle nonaktif';
                 document.getElementById('wadah-mode-tim').style.display = 'flex';
                 document.getElementById('wadah-mode-pribadi').style.display = 'none';
-                filterBulan.style.display = 'none'; // Sembunyikan khusus mode tim
+                filterBulan.style.display = 'none';
             }
         }
 
+        // === LISTENER FILTER DENGAN SESSION STORAGE ===
         document.getElementById('filter-tahun-pegawai').addEventListener('change', async () => {
             const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
+            sessionStorage.setItem('global_filter_tahun', tahun);
+            sessionStorage.setItem('global_filter_bulan', 'Semua');
             await isiDropdownBulan(tahun);
             document.getElementById('filter-bulan-pegawai').value = 'Semua';
             tarikDataSemua();
         });
-        document.getElementById('filter-bulan-pegawai').addEventListener('change', tarikDataSemua);
+
+        document.getElementById('filter-bulan-pegawai').addEventListener('change', () => {
+            sessionStorage.setItem('global_filter_bulan', document.getElementById('filter-bulan-pegawai').value);
+            tarikDataSemua();
+        });
 
         async function inisialisasiAwal() {
             const { data: dataRole } = await db.from('absensi_pegawai').select('tahun, bulan, tim, jabatan, nama').eq('nip', nipPegawai);
@@ -230,7 +237,15 @@
                 opt.value = t; opt.text = t;
                 dropdown.appendChild(opt);
             });
-            dropdown.value = tahunUnik[tahunUnik.length - 1];
+            
+            // Cek memori browser
+            const savedTahun = sessionStorage.getItem('global_filter_tahun');
+            if (savedTahun && tahunUnik.includes(parseInt(savedTahun))) {
+                dropdown.value = savedTahun;
+            } else {
+                dropdown.value = tahunUnik[tahunUnik.length - 1];
+                sessionStorage.setItem('global_filter_tahun', dropdown.value);
+            }
 
             const tahunTerpilih = parseInt(dropdown.value);
             await isiDropdownBulan(tahunTerpilih);
@@ -250,6 +265,15 @@
                     opt.value = b; opt.text = b;
                     dropdown.appendChild(opt);
                 });
+                
+                // Cek memori browser
+                const savedBulan = sessionStorage.getItem('global_filter_bulan');
+                if (savedBulan && (savedBulan === 'Semua' || bulanTersedia.includes(savedBulan))) {
+                    dropdown.value = savedBulan;
+                } else {
+                    dropdown.value = 'Semua';
+                    sessionStorage.setItem('global_filter_bulan', 'Semua');
+                }
             }
         }
 
@@ -292,16 +316,12 @@
 
             const petaAnggota = {};
             dataTahunIni.forEach(d => {
-                // Filter 1: Jangan masukkan diri sendiri ke pangkalan hitung
                 if (d.nip === nipPegawai) return;
-                
-                // Filter 2: Harus ada datanya di bulan paling update
                 if (!infoTerakhir[d.nip] || infoTerakhir[d.nip].tahun !== maxTahun || infoTerakhir[d.nip].bulan !== bulanTerakhir) return;
                 
                 let infoOrangItu = infoTerakhir[d.nip];
                 let jabatanKita = roleAkses.toLowerCase();
                 
-                // Filter 3: Jika jabatannya Ketua (bukan admin/kepala), filter khusus tim miliknya saja
                 if (jabatanKita === 'ketua' && !isKepalaAtauAdmin) {
                     if (infoOrangItu.tim !== namaTimAkses) return;
                 }
@@ -312,7 +332,6 @@
                 petaAnggota[d.nip].dataBulanan[d.bulan] = { ht: d.ht || 0, psw: d.psw || 0 };
             });
 
-            // Filter Ekstra Aman: Buang diri sendiri saat penyusunan list final (jika sempat lolos)
             const daftarAnggota = Object.values(petaAnggota)
                 .filter(a => a.nip !== nipPegawai)
                 .sort((a, b) => {
