@@ -8,18 +8,18 @@ let grafikGarisPSW, grafikGarisHT, grafikBatangKategori;
 
 const semuaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-// === LISTENER FILTER DENGAN SESSION STORAGE ===
+// === LISTENER FILTER DENGAN SESSION STORAGE (KHUSUS BERANDA) ===
 document.getElementById('filter-tahun').addEventListener('change', async () => {
     const tahun = parseInt(document.getElementById('filter-tahun').value);
     document.getElementById('filter-bulan').value = 'Semua';
-    sessionStorage.setItem('global_filter_tahun', tahun);
-    sessionStorage.setItem('global_filter_bulan', 'Semua');
+    sessionStorage.setItem('beranda_filter_tahun', tahun);
+    sessionStorage.setItem('beranda_filter_bulan', 'Semua');
     await isiDropdownBulan(tahun);
     tarikData();
 });
 
 document.getElementById('filter-bulan').addEventListener('change', () => {
-    sessionStorage.setItem('global_filter_bulan', document.getElementById('filter-bulan').value);
+    sessionStorage.setItem('beranda_filter_bulan', document.getElementById('filter-bulan').value);
     tarikData();
 });
 
@@ -50,13 +50,13 @@ async function isiDropdownTahun() {
         dropdown.appendChild(option);
     });
 
-    // Cek memori browser, gunakan jika ada
-    const savedTahun = sessionStorage.getItem('global_filter_tahun');
+    // Cek memori browser khusus beranda
+    const savedTahun = sessionStorage.getItem('beranda_filter_tahun');
     if (savedTahun && tahunUnik.includes(parseInt(savedTahun))) {
         dropdown.value = savedTahun;
     } else {
         dropdown.value = tahunUnik[tahunUnik.length - 1];
-        sessionStorage.setItem('global_filter_tahun', dropdown.value);
+        sessionStorage.setItem('beranda_filter_tahun', dropdown.value);
     }
 
     const areaFilter = document.getElementById('area-filter');
@@ -84,13 +84,13 @@ async function isiDropdownBulan(tahun) {
         dropdown.appendChild(option);
     });
 
-    // Cek memori browser, gunakan jika ada
-    const savedBulan = sessionStorage.getItem('global_filter_bulan');
+    // Cek memori browser khusus beranda
+    const savedBulan = sessionStorage.getItem('beranda_filter_bulan');
     if (savedBulan && (savedBulan === 'Semua' || bulanTersedia.includes(savedBulan))) {
         dropdown.value = savedBulan;
     } else {
         dropdown.value = 'Semua';
-        sessionStorage.setItem('global_filter_bulan', 'Semua');
+        sessionStorage.setItem('beranda_filter_bulan', 'Semua');
     }
 }
 
@@ -457,4 +457,4 @@ function perbaruiGrafikBatang(data) {
     });
 }
 
-})(); // tutup IIFE
+})();

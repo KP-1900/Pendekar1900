@@ -190,18 +190,18 @@
             }
         }
 
-        // === LISTENER FILTER DENGAN SESSION STORAGE ===
+        // === LISTENER FILTER DENGAN SESSION STORAGE (KHUSUS PEGAWAI) ===
         document.getElementById('filter-tahun-pegawai').addEventListener('change', async () => {
             const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
-            sessionStorage.setItem('global_filter_tahun', tahun);
-            sessionStorage.setItem('global_filter_bulan', 'Semua');
+            sessionStorage.setItem('pegawai_filter_tahun', tahun);
+            sessionStorage.setItem('pegawai_filter_bulan', 'Semua');
             await isiDropdownBulan(tahun);
             document.getElementById('filter-bulan-pegawai').value = 'Semua';
             tarikDataSemua();
         });
 
         document.getElementById('filter-bulan-pegawai').addEventListener('change', () => {
-            sessionStorage.setItem('global_filter_bulan', document.getElementById('filter-bulan-pegawai').value);
+            sessionStorage.setItem('pegawai_filter_bulan', document.getElementById('filter-bulan-pegawai').value);
             tarikDataSemua();
         });
 
@@ -238,13 +238,13 @@
                 dropdown.appendChild(opt);
             });
             
-            // Cek memori browser
-            const savedTahun = sessionStorage.getItem('global_filter_tahun');
+            // Cek memori browser khusus pegawai
+            const savedTahun = sessionStorage.getItem('pegawai_filter_tahun');
             if (savedTahun && tahunUnik.includes(parseInt(savedTahun))) {
                 dropdown.value = savedTahun;
             } else {
                 dropdown.value = tahunUnik[tahunUnik.length - 1];
-                sessionStorage.setItem('global_filter_tahun', dropdown.value);
+                sessionStorage.setItem('pegawai_filter_tahun', dropdown.value);
             }
 
             const tahunTerpilih = parseInt(dropdown.value);
@@ -266,13 +266,13 @@
                     dropdown.appendChild(opt);
                 });
                 
-                // Cek memori browser
-                const savedBulan = sessionStorage.getItem('global_filter_bulan');
+                // Cek memori browser khusus pegawai
+                const savedBulan = sessionStorage.getItem('pegawai_filter_bulan');
                 if (savedBulan && (savedBulan === 'Semua' || bulanTersedia.includes(savedBulan))) {
                     dropdown.value = savedBulan;
                 } else {
                     dropdown.value = 'Semua';
-                    sessionStorage.setItem('global_filter_bulan', 'Semua');
+                    sessionStorage.setItem('pegawai_filter_bulan', 'Semua');
                 }
             }
         }
