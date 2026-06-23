@@ -70,13 +70,22 @@
             font-size: 12px;
         }
         .grafik-tren canvas { height: 110px !important; }
-        .grafik-batang canvas { height: 90px !important; }
+        .grafik-batang { display: flex; flex-direction: column; }
+        .grafik-batang canvas { height: 90px !important; flex-shrink: 0; }
         .tabel-box {
             background: white;
             border-radius: 12px;
             padding: 10px 14px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             flex-shrink: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .tabel-box > div {
+            overflow-y: auto;
+            overflow-x: auto;
+            max-height: 200px;
         }
         .tabel-box h3 {
             margin: 0 0 6px 0;
@@ -123,8 +132,8 @@
                 <div id="nip-pegawai" style="font-size:11px; color:#888;">NIP: -</div>
             </div>
             <div style="display:flex; gap:8px; align-items:center;">
-                <select id="filter-tahun-pegawai" style="padding:6px 10px; border:1px solid #ddd; border-radius:8px; font-size:13px;"></select>
-                <select id="filter-bulan-pegawai" style="padding:6px 10px; border:1px solid #ddd; border-radius:8px; font-size:13px;"></select>
+                <select id="filter-tahun-pegawai" style="padding:6px 10px; border:1px solid #ddd; border-radius:8px; font-size:13px; min-width:72px; width:72px;"></select>
+                <select id="filter-bulan-pegawai" style="padding:6px 10px; border:1px solid #ddd; border-radius:8px; font-size:13px; min-width:110px; width:110px;"></select>
                 <button onclick="prosesKeluar()" style="padding:6px 14px; background:#dc3545; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:12px;">Keluar</button>
             </div>
         </div>
@@ -256,8 +265,7 @@
         // Pintar: arahkan ke panel sesuai siapa yang sedang login
         async function kePanelOrang() {
             if (sessionStorage.getItem('pegawai_nip')) {
-                window.location.href = 'dashboard-pegawai.html';
-                return;
+                return; // sudah di halaman ini, tidak perlu reload
             }
             const { data: { session } } = await db.auth.getSession();
             window.location.href = session ? 'admin-panel.html' : 'admin.html';
@@ -265,8 +273,8 @@
 
         document.getElementById('filter-tahun-pegawai').addEventListener('change', async () => {
             const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
-            document.getElementById('filter-bulan-pegawai').value = 'Semua';
             await isiDropdownBulan(tahun);
+            document.getElementById('filter-bulan-pegawai').value = 'Semua';
             tarikData();
         });
         document.getElementById('filter-bulan-pegawai').addEventListener('change', tarikData);
