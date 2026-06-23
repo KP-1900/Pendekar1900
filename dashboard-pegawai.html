@@ -33,7 +33,8 @@
         .btn-toggle.nonaktif:hover { background: #e2e8f0; }
         .kartu-anggota-tim { background: white; border-radius: 12px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #edf2f9; display: flex; align-items: center; gap: 15px; }
         .info-anggota-tim { width: 180px; flex-shrink: 0; border-right: 1px solid #edf2f9; padding-right: 10px; }
-        .canvas-wadah-tim { flex: 1; position: relative; height: 90px; }
+        .canvas-wadah-tim { flex: 1; display: flex; gap: 10px; }
+        .canvas-wadah-tim > div { flex: 1; position: relative; height: 90px; }
     </style>
 </head>
 <body>
@@ -69,13 +70,13 @@
                     <div class="kartu-pegawai">
                         <div class="kartu-hk"><div class="angka" id="angka-hk">-</div><div class="label">Hari Kerja</div></div>
                         <div class="kartu-hk"><div class="angka" id="angka-hd" style="color:#28a745;">-</div><div class="label">Hari Hadir</div></div>
-                        <div class="kartu-hk"><div class="angka" id="angka-psw" style="color:#6f42c1;">-</div><div class="label">Rata-rata PSW</div></div>
                         <div class="kartu-hk"><div class="angka" id="angka-ht" style="color:#f5a623;">-</div><div class="label">Rata-rata HT</div></div>
+                        <div class="kartu-hk"><div class="angka" id="angka-psw" style="color:#6f42c1;">-</div><div class="label">Rata-rata PSW</div></div>
                     </div>
                     
                     <div class="grid-2">
-                        <div class="grafik-box grafik-tren"><h3>Tren PSW per Bulan</h3><canvas id="grafikPSW-pegawai"></canvas></div>
                         <div class="grafik-box grafik-tren"><h3>Tren HT per Bulan</h3><canvas id="grafikHT-pegawai"></canvas></div>
+                        <div class="grafik-box grafik-tren"><h3>Tren PSW per Bulan</h3><canvas id="grafikPSW-pegawai"></canvas></div>
                     </div>
 
                     <div style="display: flex; gap: 10px; flex: 1; min-height: 0;">
@@ -90,9 +91,9 @@
                                     <thead style="position: sticky; top: 0; background-color: #f4f7fe; z-index: 1;">
                                         <tr>
                                             <th style="padding: 6px 2px; text-align: left;">Bulan</th>
-                                            <th style="padding: 6px 2px;">HK</th><th style="padding: 6px 2px;">HD</th><th style="padding: 6px 2px;">PSW</th><th style="padding: 6px 2px;">HT</th>
-                                            <th style="padding: 6px 2px;">PSW 1</th><th style="padding: 6px 2px;">PSW 2</th><th style="padding: 6px 2px;">PSW 3</th><th style="padding: 6px 2px;">PSW 4</th>
+                                            <th style="padding: 6px 2px;">HK</th><th style="padding: 6px 2px;">HD</th><th style="padding: 6px 2px;">HT</th>
                                             <th style="padding: 6px 2px;">TL 1</th><th style="padding: 6px 2px;">TL 2</th><th style="padding: 6px 2px;">TL 3</th><th style="padding: 6px 2px;">TL 4</th>
+                                            <th style="padding: 6px 2px;">PSW</th><th style="padding: 6px 2px;">PSW 1</th><th style="padding: 6px 2px;">PSW 2</th><th style="padding: 6px 2px;">PSW 3</th><th style="padding: 6px 2px;">PSW 4</th>
                                         </tr>
                                     </thead>
                                     <tbody id="badan-tabel-pegawai"></tbody>
@@ -110,7 +111,7 @@
             <div class="panel-kanan-statis">
                 
                 <div id="box-pilihan-mode" class="box-toggle-tim" style="display: none;">
-                    <h3 style="margin: 0; color: #1a233a; font-size: 13px; text-align: center;">👁️ Tampilan Dashboard</h3>
+                    <h3 style="margin: 0; color: #1a233a; font-size: 13px; text-align: center;">Tampilan Dashboard</h3>
                     <button id="btn-mode-pribadi" class="btn-toggle aktif" onclick="gantiMode('pribadi')">👤 Mode Pribadi</button>
                     <button id="btn-mode-tim" class="btn-toggle nonaktif" onclick="gantiMode('tim')">👥 Rangkuman Tim</button>
                 </div>
@@ -156,7 +157,6 @@
         let chartTimInstances = {}; 
 
         const nipPegawai = sessionStorage.getItem('pegawai_nip');
-        const namaPegawai = sessionStorage.getItem('pegawai_nama');
         
         let roleAkses = 'Anggota';
         let namaTimAkses = null;
@@ -164,7 +164,6 @@
 
         if (!nipPegawai) window.location.href = 'admin.html';
         else {
-            document.getElementById('nama-pegawai').innerText = namaPegawai || '-';
             document.getElementById('nip-pegawai').innerText = 'NIP: ' + nipPegawai;
         }
 
@@ -197,7 +196,8 @@
         document.getElementById('filter-bulan-pegawai').addEventListener('change', tarikDataSemua);
 
         async function inisialisasiAwal() {
-            const { data: dataRole } = await db.from('absensi_pegawai').select('tahun, bulan, tim, jabatan').eq('nip', nipPegawai);
+            // Ambil nama & jabatan yang paling update dari database
+            const { data: dataRole } = await db.from('absensi_pegawai').select('tahun, bulan, tim, jabatan, nama').eq('nip', nipPegawai);
             if (dataRole && dataRole.length > 0) {
                 dataRole.sort((a, b) => {
                     if (a.tahun !== b.tahun) return b.tahun - a.tahun;
@@ -205,15 +205,14 @@
                 });
                 roleAkses = dataRole[0].jabatan || 'Anggota';
                 namaTimAkses = dataRole[0].tim || null;
+                document.getElementById('nama-pegawai').innerText = dataRole[0].nama || '-';
                 
                 const jabatanDicek = roleAkses.toLowerCase();
                 const timDicek = (namaTimAkses || '').toLowerCase();
-                
                 isKepalaAtauAdmin = jabatanDicek === 'kepala' || (timDicek === 'umum' && jabatanDicek === 'admin');
             }
 
-            const jabatanDicek = roleAkses.toLowerCase();
-            if (jabatanDicek === 'ketua' || isKepalaAtauAdmin) {
+            if (roleAkses.toLowerCase() === 'ketua' || isKepalaAtauAdmin) {
                 document.getElementById('box-pilihan-mode').style.display = 'flex';
             } else {
                 document.getElementById('box-pilihan-mode').style.display = 'none';
@@ -254,28 +253,60 @@
 
         function tarikDataSemua() {
             tarikDataPribadi();
-            const jabatanDicek = roleAkses.toLowerCase();
-            if (jabatanDicek === 'ketua' || isKepalaAtauAdmin) {
+            if (roleAkses.toLowerCase() === 'ketua' || isKepalaAtauAdmin) {
                 tarikDataTimLengkap();
             }
         }
 
         async function tarikDataTimLengkap() {
             const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
+            const { data: dataTahunIni } = await db.from('absensi_pegawai').select('*').eq('tahun', tahun);
+            const { data: allData } = await db.from('absensi_pegawai').select('nip, nama, jabatan, tim, tahun, bulan');
             
-            const { data } = await db.from('absensi_pegawai').select('*').eq('tahun', tahun);
-            if (!data) return;
+            if (!allData || !dataTahunIni) return;
 
-            let dataTersaring = data;
-            const jabatanDicek = roleAkses.toLowerCase();
-            if (jabatanDicek === 'ketua' && !isKepalaAtauAdmin && namaTimAkses) {
-                dataTersaring = data.filter(d => d.tim === namaTimAkses);
-            }
+            // Cari tahun & bulan paling update di seluruh database
+            let maxTahun = 0;
+            allData.forEach(d => { if(d.tahun > maxTahun) maxTahun = d.tahun; });
+            let maxBulanIdx = -1;
+            allData.forEach(d => {
+                if(d.tahun === maxTahun) {
+                    let mIdx = semuaBulan.indexOf(d.bulan);
+                    if(mIdx > maxBulanIdx) maxBulanIdx = mIdx;
+                }
+            });
+            const bulanTerakhir = semuaBulan[maxBulanIdx];
+
+            // Petakan profil update terakhir setiap pegawai
+            const infoTerakhir = {};
+            allData.forEach(d => {
+                if (!infoTerakhir[d.nip]) {
+                    infoTerakhir[d.nip] = d;
+                } else {
+                    let cur = infoTerakhir[d.nip];
+                    if (d.tahun > cur.tahun || (d.tahun === cur.tahun && semuaBulan.indexOf(d.bulan) > semuaBulan.indexOf(cur.bulan))) {
+                        infoTerakhir[d.nip] = d;
+                    }
+                }
+            });
+
+            // Saring: Hanya masukkan pegawai yang ada datanya di (Tahun & Bulan Paling Akhir Global)
+            let dataTersaring = dataTahunIni.filter(d => {
+                if (!infoTerakhir[d.nip] || infoTerakhir[d.nip].tahun !== maxTahun || infoTerakhir[d.nip].bulan !== bulanTerakhir) return false;
+                
+                let infoOrangItu = infoTerakhir[d.nip];
+                let jabatanKita = roleAkses.toLowerCase();
+                if (jabatanKita === 'ketua' && !isKepalaAtauAdmin) {
+                    if (infoOrangItu.tim !== namaTimAkses) return false;
+                }
+                return true;
+            });
 
             const petaAnggota = {};
             dataTersaring.forEach(d => {
                 if (!petaAnggota[d.nip]) {
-                    petaAnggota[d.nip] = { nip: d.nip, nama: d.nama, jabatan: d.jabatan || 'Anggota', tim: d.tim, dataBulanan: {} };
+                    let infoAkhir = infoTerakhir[d.nip];
+                    petaAnggota[d.nip] = { nip: d.nip, nama: infoAkhir.nama, jabatan: infoAkhir.jabatan || 'Anggota', tim: infoAkhir.tim, dataBulanan: {} };
                 }
                 petaAnggota[d.nip].dataBulanan[d.bulan] = { ht: d.ht || 0, psw: d.psw || 0 };
             });
@@ -304,8 +335,6 @@
             }
 
             daftarAnggota.forEach((anggota, index) => {
-                const idCanvas = `chart-tim-${index}`;
-                
                 let warnaJabatan = 'background:#e6f6ee; color:#28a745;'; 
                 const jabAnggota = (anggota.jabatan || '').toLowerCase();
                 if (jabAnggota === 'kepala' || jabAnggota === 'admin') {
@@ -314,6 +343,7 @@
                     warnaJabatan = 'background:#e6f0fa; color:#007bff;'; 
                 }
 
+                // Menggunakan 2 canvas berdampingan untuk HT dan PSW
                 const htmlKartu = `
                     <div class="kartu-anggota-tim">
                         <div class="info-anggota-tim">
@@ -323,7 +353,8 @@
                             <span style="display: inline-block; margin-top: 8px; padding: 3px 8px; font-size: 10px; border-radius: 4px; font-weight: bold; ${warnaJabatan}">${anggota.jabatan}</span>
                         </div>
                         <div class="canvas-wadah-tim">
-                            <canvas id="${idCanvas}"></canvas>
+                            <div><canvas id="chart-tim-ht-${index}"></canvas></div>
+                            <div><canvas id="chart-tim-psw-${index}"></canvas></div>
                         </div>
                     </div>
                 `;
@@ -331,28 +362,29 @@
             });
 
             daftarAnggota.forEach((anggota, index) => {
-                const idCanvas = `chart-tim-${index}`;
-                
                 const dataHT = semuaBulan.map(b => anggota.dataBulanan[b] ? Number(anggota.dataBulanan[b].ht) : 0);
                 const dataPSW = semuaBulan.map(b => anggota.dataBulanan[b] ? Number(anggota.dataBulanan[b].psw) : 0);
                 
-                const ctx = document.getElementById(idCanvas).getContext('2d');
-                chartTimInstances[idCanvas] = new Chart(ctx, {
+                const opsiBase = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: { size: 9 }, precision: 0 } }, x: { ticks: { font: { size: 8 } } } } };
+                
+                const ctxHt = document.getElementById(`chart-tim-ht-${index}`).getContext('2d');
+                chartTimInstances[`chart-tim-ht-${index}`] = new Chart(ctxHt, {
                     type: 'line',
                     data: {
                         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
-                        datasets: [
-                            { label: 'HT', data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 },
-                            { label: 'PSW', data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 }
-                        ]
+                        datasets: [{ label: 'HT', data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 }]
                     },
-                    options: { 
-                        responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, 
-                        scales: { 
-                            y: { beginAtZero: true, ticks: { font: { size: 9 }, precision: 0 } }, 
-                            x: { ticks: { font: { size: 9 } } } 
-                        } 
-                    }
+                    options: opsiBase
+                });
+
+                const ctxPsw = document.getElementById(`chart-tim-psw-${index}`).getContext('2d');
+                chartTimInstances[`chart-tim-psw-${index}`] = new Chart(ctxPsw, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+                        datasets: [{ label: 'PSW', data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 }]
+                    },
+                    options: opsiBase
                 });
             });
         }
@@ -439,10 +471,10 @@
                     <tr style="border-bottom: 1px solid #edf2f9;">
                         <td style="padding: 6px 2px; text-align: left; font-weight: bold;">${item.bulan}</td>
                         <td style="padding: 6px 2px;">${v(item.hk)}</td><td style="padding: 6px 2px;">${v(item.hd)}</td>
-                        <td style="padding: 6px 2px; color: #6f42c1; font-weight: bold;">${v(item.psw)}</td>
                         <td style="padding: 6px 2px; color: #f5a623; font-weight: bold;">${v(item.ht)}</td>
-                        <td style="padding: 6px 2px; ${t(v(item.psw1))}">${v(item.psw1)}</td><td style="padding: 6px 2px; ${t(v(item.psw2))}">${v(item.psw2)}</td><td style="padding: 6px 2px; ${t(v(item.psw3))}">${v(item.psw3)}</td><td style="padding: 6px 2px; ${t(v(item.psw4))}">${v(item.psw4)}</td>
                         <td style="padding: 6px 2px; ${t(v(item.tl1))}">${v(item.tl1)}</td><td style="padding: 6px 2px; ${t(v(item.tl2))}">${v(item.tl2)}</td><td style="padding: 6px 2px; ${t(v(item.tl3))}">${v(item.tl3)}</td><td style="padding: 6px 2px; ${t(v(item.tl4))}">${v(item.tl4)}</td>
+                        <td style="padding: 6px 2px; color: #6f42c1; font-weight: bold;">${v(item.psw)}</td>
+                        <td style="padding: 6px 2px; ${t(v(item.psw1))}">${v(item.psw1)}</td><td style="padding: 6px 2px; ${t(v(item.psw2))}">${v(item.psw2)}</td><td style="padding: 6px 2px; ${t(v(item.psw3))}">${v(item.psw3)}</td><td style="padding: 6px 2px; ${t(v(item.psw4))}">${v(item.psw4)}</td>
                     </tr>`;
             });
         }
