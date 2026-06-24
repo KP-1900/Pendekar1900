@@ -266,7 +266,8 @@
                 btnKlaim.className = 'btn-toggle aktif';
                 wKlaim.style.display = 'flex';
                 filterBulan.style.display = 'none';
-                muatFormKlaim();
+                // Selalu fresh load saat pertama buka mode klaim
+                muatFormKlaim(false);
             }
         }
 
@@ -460,16 +461,19 @@
         }
 
         /* KODE DIPERKUAT: Mengamankan form klaim dari nge-blank */
-        async function muatFormKlaim() {
+        async function muatFormKlaim(skipLoadingText = false) {
             const listKlaim = document.getElementById('list-klaim-saya');
             const formBox = document.getElementById('form-klaim-box');
-            
-            listKlaim.innerHTML = '<p style="color:#999; font-size:12px;">Memuat data...</p>';
+
+            // Jangan reset innerHTML kalau dipanggil setelah optimistic inject
+            if (!skipLoadingText) {
+                listKlaim.innerHTML = '<p style="color:#999; font-size:12px;">Memuat data...</p>';
+            }
 
             try {
                 const { data: dKlaim, error: errKlaim } = await db.from('pengajuan_tim').select('*').eq('nip', nipPegawai).order('id', { ascending: true });
                 if (errKlaim) throw errKlaim;
-                
+
                 if (dKlaim && dKlaim.length > 0) {
                     listKlaim.innerHTML = dKlaim.map((k, i) => `
                         <div class="klaim-item">
@@ -573,6 +577,9 @@
 
             pesan.style.color='#28a745'; pesan.innerText="✅ Berhasil diajukan!";
             setTimeout(() => { pesan.innerText = ''; }, 2500);
+
+            // Sync di background setelah UI sudah update — pakai skipLoadingText agar tidak flicker
+            muatFormKlaim(true);
         }
 
         async function hapusKlaim(id_klaim) {
