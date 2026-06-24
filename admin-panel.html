@@ -19,8 +19,8 @@
 
     <div class="area-kanan" style="justify-content: center; align-items: center;">
         <div style="display:flex; flex-direction:row; align-items:flex-start; justify-content:center; width:100%; max-width:1000px; gap:20px; flex-wrap:wrap;">
+        
         <div class="kotak-form" style="flex:1; min-width:320px; max-width:550px; background:white; padding:40px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); text-align:center;">
-            
             <h2 style="margin-top:0; color:#1a233a;">Panel Admin</h2>
             <p style="color:#888; font-size:13px; margin-bottom:30px;">Pilih jenis data yang ingin diunggah</p>
 
@@ -29,14 +29,13 @@
                     📊 Agregat<br><span style="font-weight:normal; font-size:10px;">Ringkasan</span>
                 </button>
                 <button onclick="gantiMode('pegawai')" id="btn-pegawai" style="flex:1; padding:12px 5px; border:2px solid #ddd; border-radius:12px; background:white; color:#666; font-weight:bold; cursor:pointer; font-size:12px;">
-                    👤 Per Pegawai<br><span style="font-weight:normal; font-size:10px;">Absensi bulanan</span>
+                    👤 Per Pegawai<br><span style="font-weight:normal; font-size:10px;">Absen bulanan</span>
                 </button>
                 <button onclick="gantiMode('struktur')" id="btn-struktur" style="flex:1; padding:12px 5px; border:2px solid #ddd; border-radius:12px; background:white; color:#666; font-weight:bold; cursor:pointer; font-size:12px;">
-                    🏢 Struktur<br><span style="font-weight:normal; font-size:10px;">Tim & Jabatan</span>
+                    🏢 Daftar Tim<br><span style="font-weight:normal; font-size:10px;">List Tim (1 Kolom)</span>
                 </button>
             </div>
 
-            <!-- Teks Link Template Excel -->
             <p style="font-size:12px; color:#555; margin-top:0; margin-bottom:20px;">
                 Template excel unggah: <a href="https://s.bps.go.id/Pendekar1900Template" target="_blank" style="color:#2b6cb0; text-decoration:none; font-weight:bold;">s.bps.go.id/Pendekar1900Template</a>
             </p>
@@ -49,11 +48,24 @@
             <button onclick="prosesKeluar()" style="background:#dc3545; color:white; padding:10px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; width:100%; margin-top:20px;">Keluar</button>
         </div>
 
-        <div class="kotak-form" style="flex:1; min-width:320px; max-width:500px; background:white; padding:30px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); text-align:left;">
-            <h3 style="margin-top:0; color:#1a233a; font-size:16px;">Permintaan Reset Password Pegawai</h3>
-            <div id="daftar-reset">
-                <p style="color:#999; font-size:13px;">Memuat...</p>
+        <div class="kotak-form" style="flex:1; min-width:320px; max-width:500px; background:white; padding:30px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); text-align:left; display:flex; flex-direction:column; gap:20px;">
+            
+            <div>
+                <h3 style="margin-top:0; color:#1a233a; font-size:16px;">⏳ Persetujuan Klaim Tim</h3>
+                <div id="daftar-klaim" style="max-height: 250px; overflow-y: auto; padding-right: 5px;">
+                    <p style="color:#999; font-size:13px;">Memuat...</p>
+                </div>
             </div>
+
+            <hr style="border: none; border-top: 1px dashed #ddd; margin: 0;">
+
+            <div>
+                <h3 style="margin-top:0; color:#1a233a; font-size:16px;">🔑 Permintaan Reset Password</h3>
+                <div id="daftar-reset" style="max-height: 200px; overflow-y: auto; padding-right: 5px;">
+                    <p style="color:#999; font-size:13px;">Memuat...</p>
+                </div>
+            </div>
+
         </div>
         </div>
     </div>
@@ -68,24 +80,23 @@
         async function cekSesi() {
             const { data: { session } } = await db.auth.getSession();
             if (!session) window.location.href = 'admin.html';
-            else muatPermintaanReset();
+            else { muatPermintaanReset(); muatKlaimTim(); }
         }
         cekSesi();
 
         let daftarPermintaan = [];
-
         async function muatPermintaanReset() {
             const wadah = document.getElementById('daftar-reset');
             const { data, error } = await db.from('reset_password').select('*').eq('status', 'pending').order('dibuat_pada', { ascending: false });
-            if (error) { wadah.innerHTML = `<p style="color:#dc3545; font-size:13px;">Gagal memuat: ${error.message}</p>`; return; }
+            if (error) { wadah.innerHTML = `<p style="color:#dc3545; font-size:13px;">Gagal: ${error.message}</p>`; return; }
             daftarPermintaan = data || [];
-            if (daftarPermintaan.length === 0) { wadah.innerHTML = `<p style="color:#999; font-size:13px;">Tidak ada permintaan saat ini.</p>`; return; }
+            if (daftarPermintaan.length === 0) { wadah.innerHTML = `<p style="color:#999; font-size:13px;">Tidak ada permintaan reset saat ini.</p>`; return; }
             wadah.innerHTML = daftarPermintaan.map((r, i) => `
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border:1px solid #eee; border-radius:10px; margin-bottom:8px;">
                     <div><b style="font-size:13px;">${r.nama || '-'}</b><br><span style="color:#888; font-size:12px;">NIP: ${r.nip}</span></div>
                     <div style="display:flex; gap:6px;">
-                        <button onclick="terimaReset(${i})" style="background:#28a745; color:white; border:none; padding:8px 14px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:12px;">Terima</button>
-                        <button onclick="tolakReset(${i})" style="background:#dc3545; color:white; border:none; padding:8px 14px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:12px;">Tolak</button>
+                        <button onclick="terimaReset(${i})" style="background:#28a745; color:white; border:none; padding:8px 14px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:12px;">✔</button>
+                        <button onclick="tolakReset(${i})" style="background:#dc3545; color:white; border:none; padding:8px 14px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:12px;">✖</button>
                     </div>
                 </div>
             `).join('');
@@ -93,19 +104,42 @@
 
         async function tolakReset(i) {
             const r = daftarPermintaan[i];
-            if (!r) return;
-            if (!confirm(`Tolak permintaan ubah password dari ${r.nama || r.nip}?`)) return;
+            if (!confirm(`Tolak reset dari ${r.nama}?`)) return;
             await db.from('reset_password').update({ status: 'rejected' }).eq('id', r.id);
             muatPermintaanReset();
         }
 
         async function terimaReset(i) {
             const r = daftarPermintaan[i];
-            if (!r) return;
-            const { error: errUpdate } = await db.from('pegawai').update({ password: r.password_baru }).eq('nip', r.nip);
-            if (errUpdate) { alert('Gagal mengubah password: ' + errUpdate.message); return; }
+            const { error } = await db.from('pegawai').update({ password: r.password_baru }).eq('nip', r.nip);
+            if (error) { alert('Gagal: ' + error.message); return; }
             await db.from('reset_password').update({ status: 'approved' }).eq('id', r.id);
             muatPermintaanReset();
+        }
+
+        async function muatKlaimTim() {
+            const wadah = document.getElementById('daftar-klaim');
+            const { data, error } = await db.from('pengajuan_tim').select('*').eq('status', 'pending');
+            if (error) { wadah.innerHTML = `<p style="color:#dc3545; font-size:13px;">Gagal memuat: ${error.message}</p>`; return; }
+            if (!data || data.length === 0) { wadah.innerHTML = `<p style="color:#999; font-size:13px;">Tidak ada pengajuan klaim tim.</p>`; return; }
+            wadah.innerHTML = data.map(r => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border:1px solid #eee; border-radius:10px; margin-bottom:8px;">
+                    <div style="flex:1;">
+                        <b style="font-size:12px; color:#1a233a;">${r.nama}</b><br>
+                        <span style="font-size:11px; color:#888;">NIP: ${r.nip}</span><br>
+                        <span style="font-size:11px; color:#888;">Klaim: <b>${r.tim}</b> (<span style="color:#2b6cb0;">${r.jabatan}</span>)</span>
+                    </div>
+                    <div style="display:flex; gap:4px;">
+                        <button onclick="aksiKlaim(${r.id}, 'approved')" style="background:#28a745; color:white; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px;">✔</button>
+                        <button onclick="aksiKlaim(${r.id}, 'rejected')" style="background:#dc3545; color:white; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px;">✖</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function aksiKlaim(id, status) {
+            await db.from('pengajuan_tim').update({ status: status }).eq('id', id);
+            muatKlaimTim();
         }
 
         async function kePanelOrang() {
@@ -133,10 +167,7 @@
             const fileInput = document.getElementById('file-excel');
             const statusPesan = document.getElementById('status-pesan');
 
-            if (fileInput.files.length === 0) {
-                statusPesan.style.color = '#dc3545'; statusPesan.innerText = "Pilih file Excel terlebih dahulu."; return;
-            }
-
+            if (fileInput.files.length === 0) { statusPesan.style.color = '#dc3545'; statusPesan.innerText = "Pilih file Excel terlebih dahulu."; return; }
             statusPesan.style.color = '#2b6cb0'; statusPesan.innerText = "Membaca file Excel...";
 
             const file = fileInput.files[0];
@@ -166,21 +197,22 @@
                             ht: b['HT'] || 0, tl1: b['TL1'] || b['TL 1'] || 0, tl2: b['TL2'] || b['TL 2'] || 0, tl3: b['TL3'] || b['TL 3'] || 0, tl4: b['TL4'] || b['TL 4'] || 0
                         })).filter(b => b.tahun && b.bulan && b.nip);
                         ({ error } = await db.from('absensi_pegawai').upsert(dataSiap, { onConflict: 'tahun,bulan,nip' }));
-
-                    } else if (modeSaatIni === 'struktur') {
-                        dataSiap = dataMentah.map(b => ({
-                            nip: b['NIP'] ? b['NIP'].toString() : null,
-                            nama: b['Nama'] || b['NAMA'] || null,
-                            tim: b['TIM'] || b['Tim'] || null,
-                            jabatan: b['JABATAN'] || b['Jabatan'] || null
-                        })).filter(b => b.nip);
-                        ({ error } = await db.from('struktur_kantor').upsert(dataSiap, { onConflict: 'nip' }));
                         
-                        // Buatkan akun sekalian bagi yang baru masuk struktur
                         if (!error) {
                             const akunBaru = dataSiap.map(d => ({ nip: d.nip, nama: d.nama, password: 'oke123456' }));
                             await db.from('pegawai').upsert(akunBaru, { onConflict: 'nip', ignoreDuplicates: true });
                         }
+
+                    } else if (modeSaatIni === 'struktur') {
+                        dataSiap = dataMentah.map(b => ({
+                            nama_tim: b['Nama Tim'] || b['Tim'] || b['TIM'] || null
+                        })).filter(b => b.nama_tim);
+
+                        // HAPUS SEMUA DAFTAR TIM LAMA TERLEBIH DAHULU (Wipe and Replace)
+                        await db.from('daftar_tim').delete().not('nama_tim', 'is', null);
+
+                        // MASUKKAN DAFTAR TIM BARU
+                        ({ error } = await db.from('daftar_tim').insert(dataSiap));
                     }
 
                     if (error) throw error;
