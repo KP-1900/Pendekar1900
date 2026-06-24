@@ -92,7 +92,6 @@
             
             <div style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
                 
-                <!-- WADAH 1: MODE PRIBADI -->
                 <div id="wadah-mode-pribadi" style="display: none; flex-direction: column; gap: 10px; height: 100%; min-height: 0;">
                     <div class="kartu-pegawai">
                         <div class="kartu-hk"><div class="angka" id="angka-hk">-</div><div class="label">Hari Kerja</div></div>
@@ -130,11 +129,9 @@
                     </div>
                 </div>
 
-                <!-- WADAH 2: MODE TIM -->
                 <div id="wadah-mode-tim" style="display: none; flex-direction: column; gap: 10px; flex: 1; overflow-y: auto; padding-right: 5px;">
                 </div>
 
-                <!-- WADAH 3: KLAIM TIM -->
                 <div id="wadah-mode-klaim" style="display: none; flex-direction: column; gap: 10px; flex: 1; min-height: 0;">
                     <div class="grafik-box" style="flex:1; overflow-y:auto;">
                         <h2 style="margin-top:0; color:#1a233a;">📝 Klaim Tim & Jabatan</h2>
@@ -148,28 +145,24 @@
                             <h4 style="margin:0 0 15px 0; color:#1a233a;">Ajukan Tim Baru</h4>
                             <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-start;">
                                 
-                                <!-- CUSTOM DROPDOWN TIM (selalu muncul ke bawah) -->
                                 <div id="wrapper-dropdown-tim" style="flex:1; min-width:200px; position:relative;">
                                     <div id="display-tim" onclick="toggleDropdownTim()" style="padding:10px 32px 10px 10px; border-radius:8px; border:1px solid #ddd; background:white; cursor:pointer; font-size:14px; color:#1a233a; user-select:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; position:relative;">
                                         Tim
                                         <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none; color:#888; font-size:10px;">▼</span>
                                     </div>
-                                    <div id="list-dropdown-tim" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:white; border:1px solid #ddd; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:9999; max-height:220px; overflow-y:auto;">
-                                    </div>
-                                    <!-- Input hidden untuk menyimpan nilai terpilih -->
+                                    <div id="list-dropdown-tim" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:white; border:1px solid #ddd; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:9999; max-height:220px; overflow-y:auto;"></div>
                                     <input type="hidden" id="pilihan-tim" value="">
                                 </div>
 
-                                <!-- CUSTOM DROPDOWN JABATAN -->
                                 <div id="wrapper-dropdown-jabatan" style="width:150px; position:relative; flex-shrink:0;">
                                     <div id="display-jabatan" onclick="toggleDropdownJabatan()" style="padding:10px 32px 10px 10px; border-radius:8px; border:1px solid #ddd; background:white; cursor:pointer; font-size:14px; color:#1a233a; user-select:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; position:relative;">
                                         Jabatan
                                         <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none; color:#888; font-size:10px;">▼</span>
                                     </div>
-                                    <div id="list-dropdown-jabatan" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:white; border:1px solid #ddd; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:9999; overflow:hidden;">
-                                    </div>
-                                    <input type="hidden" id="pilihan-jabatan" value="Anggota">
+                                    <div id="list-dropdown-jabatan" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:white; border:1px solid #ddd; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:9999; overflow:hidden;"></div>
+                                    <input type="hidden" id="pilihan-jabatan" value="">
                                 </div>
+
                                 <button onclick="ajukanKlaim()" style="background:#2b6cb0; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; cursor:pointer;">Ajukan</button>
                             </div>
                             <p id="pesan-klaim" style="font-size:12px; margin-top:10px; font-weight:bold;"></p>
@@ -256,7 +249,6 @@
             wTim.style.display = 'none';
             wKlaim.style.display = 'none';
 
-            // Simpan mode aktif ke sessionStorage agar bisa restore saat kembali
             sessionStorage.setItem('pegawai_mode_aktif', mode);
 
             if (mode === 'pribadi') {
@@ -275,8 +267,6 @@
             }
         }
 
-        // Listener filter sudah di-handle inline di dalam fungsi isiDropdownTahunPeg & isiDropdownBulanPeg
-
         async function inisialisasiAwal() {
             const { data: dataKlaim } = await db.from('pengajuan_tim').select('*').eq('nip', nipPegawai).eq('status', 'approved');
             
@@ -287,10 +277,11 @@
             if (dataKlaim && dataKlaim.length > 0) {
                 dataKlaim.forEach(k => {
                     const jab = k.jabatan.toLowerCase();
-                    const t = k.tim.toLowerCase();
-                    // Kepala BPS Provinsi atau Ketua Kepegawaian → bisa lihat semua rangkuman
-                    if (jab === 'kepala') isKepalaAtauAdmin = true;
-                    if (jab === 'ketua' && t.includes('kepegawaian')) isKepalaAtauAdmin = true;
+                    const t = k.tim; // Pertahankan case untuk validasi nama tim
+
+                    // Aturan Baru: Anggota atau Ketua "Sumber Daya Manusia dan Hukum" dianggap punya akses Admin/Kepala
+                    if (jab === 'kepala' || t === 'Sumber Daya Manusia dan Hukum') isKepalaAtauAdmin = true;
+                    
                     if (jab === 'ketua') {
                         isKetua = true;
                         daftarTimKepemimpinan.push(k.tim);
@@ -314,7 +305,6 @@
             const tahunTerpilih = parseInt(document.getElementById('filter-tahun-pegawai').value);
             await isiDropdownBulanPeg(tahunTerpilih);
 
-            // Restore mode SEBELUM tarikData agar tidak ada kedip ke mode pribadi dulu
             const modeTersimpan = sessionStorage.getItem('pegawai_mode_aktif') || 'pribadi';
             const btnTim = document.getElementById('btn-mode-tim');
             if (modeTersimpan === 'tim' && btnTim.style.display === 'none') {
@@ -327,8 +317,6 @@
         }
         
         inisialisasiAwal();
-
-        // isiDropdownBulan → sudah diganti isiDropdownBulanPeg
 
         function tarikDataSemua() {
             tarikDataPribadi();
@@ -427,7 +415,6 @@
             });
         }
 
-        /* --- FUNGSI MANAJEMEN KLAIM TIM --- */
         async function muatFormKlaim() {
             const listKlaim = document.getElementById('list-klaim-saya');
             const formBox = document.getElementById('form-klaim-box');
@@ -443,7 +430,6 @@
                         </div>
                         <div style="display:flex; gap:10px; align-items:center;">
                             <div class="status-badge status-${k.status}">${k.status.toUpperCase()}</div>
-                            <!-- TOMBOL HAPUS KLAIM -->
                             <button class="btn-hapus-klaim" onclick="hapusKlaim(${k.id})" title="Hapus Klaim">🗑️</button>
                         </div>
                     </div>
@@ -456,7 +442,7 @@
                 formBox.style.display = 'block';
                 const { data: dTim } = await db.from('daftar_tim').select('nama_tim').order('nama_tim', { ascending: true });
                 if(dTim) {
-                    nilaiTimTerpilih = ''; // reset pilihan sebelumnya
+                    nilaiTimTerpilih = ''; 
                     renderDropdownTim(dTim.map(t => t.nama_tim));
                 }
             } else {
@@ -469,9 +455,10 @@
             const pTim = document.getElementById('pilihan-tim').value;
             const pJabatan = document.getElementById('pilihan-jabatan').value;
 
-            if(!pTim) { pesan.style.color='#dc3545'; pesan.innerText="Pilih tim terlebih dahulu!"; return; }
+            // Aturan Baru: Mencegah submit kalau dropdown kosong
+            if(!pTim) { pesan.style.color='#dc3545'; pesan.innerText="⚠️ Pilih tim terlebih dahulu!"; return; }
+            if(!pJabatan) { pesan.style.color='#dc3545'; pesan.innerText="⚠️ Pilih jabatan terlebih dahulu!"; return; }
 
-            // Cek apakah sudah pernah klaim tim ini
             const { data: cekKlaim } = await db.from('pengajuan_tim').select('id').eq('nip', nipPegawai).eq('tim', pTim);
             if (cekKlaim && cekKlaim.length > 0) {
                 pesan.style.color='#dc3545'; pesan.innerText="Anda sudah mengklaim tim ini!"; return;
@@ -495,7 +482,6 @@
             }
         }
 
-        // FUNGSI HAPUS KLAIM
         async function hapusKlaim(id_klaim) {
             if (!confirm('Yakin ingin menghapus klaim ini?')) return;
             
@@ -503,7 +489,6 @@
             if (error) {
                 alert("Gagal menghapus: " + error.message);
             } else {
-                // Muat ulang data klaim & hak akses tanpa reload halaman, biar tetap di tab Klaim Tim
                 await muatFormKlaim();
                 await inisialisasiAwal();
             }
@@ -600,10 +585,9 @@
 
         /* === SISTEM CUSTOM DROPDOWN GENERIK === */
         let nilaiTimTerpilih = '';
-        const _ddTerbuka = {}; // track dropdown mana yang terbuka
+        const _ddTerbuka = {}; 
 
         function toggleDd(id) {
-            // Tutup semua dropdown lain dulu
             Object.keys(_ddTerbuka).forEach(k => {
                 if (k !== id) {
                     const el = document.getElementById('list-' + k);
@@ -623,7 +607,6 @@
             Object.keys(_ddTerbuka).forEach(k => _ddTerbuka[k] = false);
         }
 
-        // Klik di luar tutup semua dropdown
         document.addEventListener('click', function(e) {
             const dlList = document.querySelectorAll('[id^="wr-"], #wrapper-dropdown-tim, #wrapper-dropdown-jabatan');
             let dalamWrapper = false;
@@ -632,15 +615,9 @@
         });
 
         function toggleDropdownTim() { toggleDd('dropdown-tim'); }
-        function tutupDropdownTim() {
-            const list = document.getElementById('list-dropdown-tim');
-            if (list) list.style.display = 'none';
-        }
+        function tutupDropdownTim() { const list = document.getElementById('list-dropdown-tim'); if (list) list.style.display = 'none'; }
         function toggleDropdownJabatan() { toggleDd('dropdown-jabatan'); }
-        function tutupDropdownJabatan() {
-            const list = document.getElementById('list-dropdown-jabatan');
-            if (list) list.style.display = 'none';
-        }
+        function tutupDropdownJabatan() { const list = document.getElementById('list-dropdown-jabatan'); if (list) list.style.display = 'none'; }
 
         function pilihItemJabatan(nilai, teks) {
             document.getElementById('pilihan-jabatan').value = nilai;
@@ -656,7 +633,6 @@
             updateDropdownJabatan(nilai);
         }
 
-        /* === HELPER: buat item dropdown generik === */
         function buatItemDd(teks, onClick) {
             const item = document.createElement('div');
             item.textContent = teks;
@@ -667,7 +643,6 @@
             return item;
         }
 
-        /* === FILTER TAHUN PEGAWAI === */
         function isiDropdownTahunPeg(tahunList, savedTahun) {
             const list = document.getElementById('list-tahun-peg');
             const disp = document.getElementById('disp-tahun-peg');
@@ -690,7 +665,6 @@
             sessionStorage.setItem('pegawai_filter_tahun', val);
         }
 
-        /* === FILTER BULAN PEGAWAI === */
         async function isiDropdownBulanPeg(tahun) {
             const { data } = await db.from('absensi_pegawai').select('bulan').eq('nip', nipPegawai).eq('tahun', tahun);
             const list = document.getElementById('list-bulan-peg');
@@ -719,7 +693,6 @@
             if (!list) return;
             list.innerHTML = '';
             
-            // BPS Provinsi selalu di urutan pertama
             const semuaTim = ['BPS Provinsi', ...daftarTim.filter(t => t !== 'BPS Provinsi')];
             
             semuaTim.forEach(t => {
@@ -731,11 +704,9 @@
                 item.onclick = () => pilihItemTim(t, t);
                 list.appendChild(item);
             });
-            // Reset ke placeholder, jangan auto-pilih
             nilaiTimTerpilih = '';
             document.getElementById('pilihan-tim').value = '';
             document.getElementById('display-tim').childNodes[0].textContent = 'Tim';
-            // Reset jabatan juga ke placeholder
             resetPlaceholderJabatan();
         }
 
@@ -748,13 +719,10 @@
 
         function updateDropdownJabatan(namaTim) {
             const isBpsProvinsi = namaTim === 'BPS Provinsi';
-            // BPS Provinsi hanya Kepala; tim lain hanya Anggota & Ketua
             const opsiJabatan = isBpsProvinsi ? ['Kepala'] : ['Anggota', 'Ketua'];
             renderDropdownJabatan(opsiJabatan);
             
-            // BPS Provinsi hanya 1 opsi → langsung set otomatis Kepala
             if (isBpsProvinsi) pilihItemJabatan('Kepala', 'Kepala');
-            // Tim lain → biarkan user pilih sendiri (placeholder Jabatan)
             else {
                 document.getElementById('pilihan-jabatan').value = '';
                 document.getElementById('display-jabatan').childNodes[0].textContent = 'Jabatan';
@@ -775,8 +743,6 @@
                 list.appendChild(item);
             });
         }
-
-        // Klik luar sudah dihandle oleh tutupSemuaDd() di listener generik atas
     </script>
 </body>
 </html>
