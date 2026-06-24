@@ -126,27 +126,35 @@
                 .catch(error => console.error('Gagal memuat konten:', error));
         }
 
-        function muatUlangDashboard() {
-            // Simpan posisi animasi running text sebelum reload konten
+        // === SISTEM POSISI RUNNING TEXT YANG PERSISTEN (TAHAN RELOAD & GANTI HALAMAN) ===
+        const DURASI_MARQUEE = 80; // harus sama dengan durasi di CSS (80s)
+
+        function aturPosisiRunningText() {
             const teks = document.querySelector('.teks-berjalan');
-            if (teks) {
-                // Hitung sudah berapa detik animasi berjalan
-                const style = getComputedStyle(teks);
-                const durasi = 80; // harus sama dengan durasi di CSS (80s)
-                // animationDelay negatif = posisi saat ini
-                // Trik: set animationDelay ke nilai negatif agar posisi tidak berubah
-                const elapsed = (performance.now() / 1000) % durasi;
-                teks.style.animationDelay = `-${elapsed}s`;
-                // Restart animasi dengan delay yang sudah dihitung
-                teks.style.animationName = 'none';
-                requestAnimationFrame(() => {
-                    teks.style.animationName = '';
-                });
+            if (!teks) return;
+
+            // Simpan waktu "mulai" pertama kali (hanya sekali, tidak akan ditimpa lagi)
+            let waktuMulai = sessionStorage.getItem('runningtext_mulai');
+            if (!waktuMulai) {
+                waktuMulai = Date.now();
+                sessionStorage.setItem('runningtext_mulai', waktuMulai);
+            } else {
+                waktuMulai = parseInt(waktuMulai);
             }
+
+            // Hitung sudah berapa detik berjalan sejak waktu mulai tersebut
+            const elapsedDetik = ((Date.now() - waktuMulai) / 1000) % DURASI_MARQUEE;
+
+            // Terapkan sebagai delay negatif supaya posisi langsung "nyambung"
+            teks.style.animationDelay = `-${elapsedDetik}s`;
+        }
+
+        function muatUlangDashboard() {
             muatKontenDashboard();
         }
 
         muatKontenDashboard();
+        aturPosisiRunningText();
     </script>
 </body>
 </html>

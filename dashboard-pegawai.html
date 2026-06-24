@@ -81,7 +81,7 @@
                     <div id="disp-tahun-peg" onclick="toggleDd('tahun-peg')" style="padding:6px 24px 6px 10px; border:1px solid #ddd; border-radius:8px; font-size:13px; font-weight:700; color:#1a233a; background:white; cursor:pointer; user-select:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; position:relative;">
                         Tahun<span style="position:absolute;right:7px;top:50%;transform:translateY(-50%);font-size:9px;color:#888;pointer-events:none;">▼</span>
                     </div>
-                    <div id="list-tahun-peg" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;border:1px solid #ddd;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:9999;overflow:hidden;"></div>
+                    <div id="list-tahun-peg" class="dd-popup" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;border:1px solid #ddd;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:9999;overflow:hidden;"></div>
                     <input type="hidden" id="filter-tahun-pegawai" value="">
                 </div>
 
@@ -89,7 +89,7 @@
                     <div id="disp-bulan-peg" onclick="toggleDd('bulan-peg')" style="padding:6px 24px 6px 10px; border:1px solid #ddd; border-radius:8px; font-size:13px; font-weight:700; color:#1a233a; background:white; cursor:pointer; user-select:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; position:relative;">
                         Semua<span style="position:absolute;right:7px;top:50%;transform:translateY(-50%);font-size:9px;color:#888;pointer-events:none;">▼</span>
                     </div>
-                    <div id="list-bulan-peg" style="display:none;position:absolute;top:calc(100% + 4px);right:0;left:0;background:white;border:1px solid #ddd;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:9999;overflow:hidden;max-height:260px;overflow-y:auto;"></div>
+                    <div id="list-bulan-peg" class="dd-popup" style="display:none;position:absolute;top:calc(100% + 4px);right:0;left:0;background:white;border:1px solid #ddd;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:9999;overflow:hidden;max-height:260px;overflow-y:auto;"></div>
                     <input type="hidden" id="filter-bulan-pegawai" value="Semua">
                 </div>
 
@@ -159,7 +159,7 @@
                                         Pilih Tim...
                                         <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none; color:#888; font-size:10px;">▼</span>
                                     </div>
-                                    <div id="list-dropdown-tim" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:white; border:1px solid #ddd; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:9999; max-height:220px; overflow-y:auto;"></div>
+                                    <div id="list-dropdown-tim" class="dd-popup" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:white; border:1px solid #ddd; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:9999; max-height:220px; overflow-y:auto;"></div>
                                     <input type="hidden" id="pilihan-tim" value="">
                                 </div>
 
@@ -168,7 +168,7 @@
                                         Jabatan...
                                         <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none; color:#888; font-size:10px;">▼</span>
                                     </div>
-                                    <div id="list-dropdown-jabatan" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:white; border:1px solid #ddd; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:9999; overflow:hidden;"></div>
+                                    <div id="list-dropdown-jabatan" class="dd-popup" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:white; border:1px solid #ddd; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:9999; overflow:hidden;"></div>
                                     <input type="hidden" id="pilihan-jabatan" value="">
                                 </div>
 
@@ -709,7 +709,7 @@
         }
 
         function tutupSemuaDd() {
-            document.querySelectorAll('[id^="list-"]').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.dd-popup').forEach(el => el.style.display = 'none');
             Object.keys(_ddTerbuka).forEach(k => _ddTerbuka[k] = false);
         }
 
