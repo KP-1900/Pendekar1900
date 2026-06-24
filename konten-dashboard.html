@@ -1,4 +1,6 @@
-<div class="baris-atas">
+<div style="display: flex; flex-direction: column; height: 100%; min-height: 0; gap: 10px; padding-top: 10px; padding-bottom: 10px;">
+
+<div class="baris-atas" style="margin-bottom: 0; flex-shrink: 0;">
     <!-- KELOMPOK KIRI: Logo PENDEKAR dan Judul -->
     <div class="header-judul" style="display: flex; align-items: center; gap: 12px;">
         <img src="logo.png" alt="Logo PENDEKAR" style="height: 45px; width: auto; object-fit: contain;">
@@ -33,25 +35,25 @@
     </div>
 </div>
 
-<div class="grid-kartu">
+<div class="grid-kartu" style="margin-bottom: 0; flex-shrink: 0;">
     <div class="kartu"><div class="bungkus-ikon ikon-hijau">👥</div><div class="info-kartu"><h3>Jumlah Pegawai</h3><h2 id="angka-pegawai">0</h2><p>Total tahun terpilih</p></div></div>
     <div class="kartu"><div class="bungkus-ikon ikon-biru">💼</div><div class="info-kartu"><h3>Hari Kerja</h3><h2 id="angka-harikerja">0</h2><p>Total tahun terpilih</p></div></div>
     <div class="kartu"><div class="bungkus-ikon ikon-kuning">📉</div><div class="info-kartu"><h3>Rata-rata HT</h3><h2 id="angka-ht">0.00%</h2><p>Rata-rata tahun terpilih</p></div></div>
     <div class="kartu"><div class="bungkus-ikon ikon-ungu">⏱️</div><div class="info-kartu"><h3>Rata-rata PSW</h3><h2 id="angka-psw">0.00%</h2><p>Rata-rata tahun terpilih</p></div></div>
 </div>
 
-<div class="grid-grafik">
+<div class="grid-grafik" style="margin-bottom: 0; flex-shrink: 0;">
     <div class="kotak-grafik">
         <h3 class="judul-grafik">Tren Persentase per Bulan (HT)</h3>
-        <div style="position: relative; height: 120px; width: 100%;"><canvas id="grafikHT"></canvas></div>
+        <div style="position: relative; height: 110px; width: 100%;"><canvas id="grafikHT"></canvas></div>
     </div>
     <div class="kotak-grafik">
         <h3 class="judul-grafik">Tren Persentase per Bulan (PSW)</h3>
-        <div style="position: relative; height: 120px; width: 100%;"><canvas id="grafikPSW"></canvas></div>
+        <div style="position: relative; height: 110px; width: 100%;"><canvas id="grafikPSW"></canvas></div>
     </div>
 </div>
 
-<div class="grid-bawah">
+<div class="grid-bawah" style="flex: 1; min-height: 0;">
     <div class="kotak-bawah">
         <h3 class="judul-grafik">Rata-rata Persentase per Kategori</h3>
         <div class="wadah-grafik-bawah"><canvas id="grafikBatang"></canvas></div>
@@ -83,4 +85,6 @@
             </table>
         </div>
     </div>
+</div>
+
 </div>

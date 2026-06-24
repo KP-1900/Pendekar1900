@@ -133,7 +133,7 @@
             const { data, error } = await db.auth.signInWithPassword({ email: username, password });
             if (error) {
                 pesan.style.color = '#dc3545';
-                pesan.innerText = "Gagal: " + error.message;
+                pesan.innerText = "Username atau password salah.";
             } else {
                 window.location.href = 'admin-panel.html';
             }
