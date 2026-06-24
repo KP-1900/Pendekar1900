@@ -8,6 +8,17 @@ let grafikGarisPSW, grafikGarisHT, grafikBatangKategori;
 
 const semuaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
+// Biar klik di mana saja dalam kotak filter (bukan cuma teks/ikon) langsung membuka dropdown
+document.querySelectorAll('.kotak-filter').forEach(kotak => {
+    kotak.addEventListener('click', (e) => {
+        if (e.target.tagName === 'SELECT') return; // biar select tangani sendiri klik di dirinya
+        const sel = kotak.querySelector('select');
+        if (!sel) return;
+        if (sel.showPicker) { try { sel.showPicker(); } catch (err) { sel.focus(); } }
+        else sel.focus();
+    });
+});
+
 // === LISTENER FILTER DENGAN SESSION STORAGE (KHUSUS BERANDA) ===
 document.getElementById('filter-tahun').addEventListener('change', async () => {
     const tahun = parseInt(document.getElementById('filter-tahun').value);
