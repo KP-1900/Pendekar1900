@@ -261,82 +261,99 @@
             statusPesan.innerText = "Memeriksa acuan bulan dan tahun terakhir...";
 
             try {
-                // 1. Tarik seluruh data absensi_pegawai untuk mendeteksi periode terbaru
-                const { data: semuaAbsensi, error: errAbsensi } = await db.from('absensi_pegawai').select('tahun, bulan, nip');
+                // 1. Tarik semua data dari absensi_pegawai
+                const { data: semuaAbsensi, error: errAbsensi } = await db.from('absensi_pegawai').select('tahun, bulan, nip, nama');
                 if (errAbsensi) throw errAbsensi;
 
                 if (!semuaAbsensi || semuaAbsensi.length === 0) {
                     statusPesan.style.color = '#e67e22';
-                    statusPesan.innerText = "Tidak ada data di tabel absensi_pegawai untuk dijadikan acuan.";
+                    statusPesan.innerText = "Tidak ada data di tabel absensi_pegawai.";
                     return;
                 }
 
-                // 2. Cari tahun tertinggi secara dinamis
-                const daftarTahun = semuaAbsensi.map(d => Number(d.tahun));
-                const tahunTerakhir = Math.max(...daftarTahun);
-
-                // Filter data absensi hanya pada tahun tertinggi tersebut
+                // 2. Cari tahun tertinggi dan bulan terakhirnya
+                const tahunTerakhir = Math.max(...semuaAbsensi.map(d => Number(d.tahun)));
                 const absensiTahunTerakhir = semuaAbsensi.filter(d => Number(d.tahun) === tahunTerakhir);
-
-                // 3. Tentukan bulan terakhir (tertinggi) secara kronologis di tahun tersebut
+                
                 const semuaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-                let indeksBulanTerakhir = -1;
+                let indeksBulan = -1;
                 let bulanTerakhir = '';
-
                 absensiTahunTerakhir.forEach(d => {
                     const idx = semuaBulan.indexOf(d.bulan);
-                    if (idx > indeksBulanTerakhir) {
-                        indeksBulanTerakhir = idx;
-                        bulanTerakhir = d.bulan;
-                    }
+                    if (idx > indeksBulan) { indeksBulan = idx; bulanTerakhir = d.bulan; }
                 });
 
-                statusPesan.innerText = `Menyinkronkan data berdasarkan acuan: ${bulanTerakhir} ${tahunTerakhir}...`;
+                statusPesan.innerText = `Menyinkronkan dengan acuan: ${bulanTerakhir} ${tahunTerakhir}...`;
 
-                // 4. Ambil daftar NIP unik yang aktif/ada pada bulan dan tahun terakhir tersebut
-                const nipAktifTerakhir = new Set(
-                    absensiTahunTerakhir
-                        .filter(d => d.bulan === bulanTerakhir)
-                        .map(d => d.nip?.toString())
-                        .filter(Boolean)
-                );
+                // 3. Kumpulkan kombinasi NIP + Nama dari bulan terakhir
+                const absensiTerbaru = absensiTahunTerakhir.filter(d => d.bulan === bulanTerakhir);
+                const mapAbsensiTerbaru = new Map();
+                absensiTerbaru.forEach(d => {
+                    if(d.nip) mapAbsensiTerbaru.set(d.nip.toString(), d.nama);
+                });
 
-                // 5. Ambil seluruh data dari master tabel pegawai saat ini
-                const { data: masterPegawai, error: errPegawai } = await db.from('pegawai').select('nip, nama');
+                // 4. Ambil master pegawai saat ini
+                const { data: masterPegawai, error: errPegawai } = await db.from('pegawai').select('id, nip, nama');
                 if (errPegawai) throw errPegawai;
 
-                // 6. Evaluasi dan kumpulkan NIP yang sudah tidak ada di periode terakhir
-                const nipDihapus = [];
+                const idUntukDihapus = [];
+                const dataUntukDiupsert = [];
+
+                // 5. Evaluasi data di tabel pegawai
                 masterPegawai.forEach(p => {
-                    if (!nipAktifTerakhir.has(p.nip?.toString())) {
-                        nipDihapus.push(p.nip);
+                    const nipStr = p.nip?.toString();
+                    // Jika NIP tidak ada di absensi terbaru, ATAU NIP ada tapi namanya beda
+                    if (!mapAbsensiTerbaru.has(nipStr) || mapAbsensiTerbaru.get(nipStr) !== p.nama) {
+                        idUntukDihapus.push(p.id); // Tandai ID baris ini untuk dihapus
                     }
                 });
 
-                // Jika semua pegawai di master tabel masih aktif di periode terakhir
-                if (nipDihapus.length === 0) {
+                // 6. Cek NIP+Nama baru di absensi yang belum masuk ke tabel pegawai
+                const setPegawaiLama = new Set(masterPegawai.map(p => p.nip?.toString() + "||" + p.nama));
+                mapAbsensiTerbaru.forEach((namaBenar, nipBenar) => {
+                    const kunci = nipBenar + "||" + namaBenar;
+                    if (!setPegawaiLama.has(kunci)) {
+                        // Masukkan sebagai akun baru dengan password bawaan
+                        dataUntukDiupsert.push({ nip: nipBenar, nama: namaBenar, password: 'oke123456' });
+                    }
+                });
+
+                // 7. Jika tidak ada yang perlu diubah
+                if (idUntukDihapus.length === 0 && dataUntukDiupsert.length === 0) {
                     statusPesan.style.color = '#28a745';
-                    statusPesan.innerText = `Sinkronisasi selesai. Seluruh pegawai tetap terdaftar pada periode ${bulanTerakhir} ${tahunTerakhir}.`;
+                    statusPesan.innerText = `Sinkronisasi selesai. NIP & Nama sudah pas dengan absensi ${bulanTerakhir} ${tahunTerakhir}.`;
                     return;
                 }
 
-                // Tampilkan konfirmasi pop-up sebelum eksekusi penghapusan demi keamanan data
-                if (!confirm(`Ditemukan ${nipDihapus.length} pegawai yang sudah tidak terdaftar di absensi ${bulanTerakhir} ${tahunTerakhir}.\nApakah Anda yakin ingin menghapus data mereka dari master tabel pegawai?`)) {
+                // 8. Tampilkan konfirmasi ke admin
+                let pesanKonfirmasi = `Ditemukan perbedaan dengan absensi ${bulanTerakhir} ${tahunTerakhir}:\n`;
+                if (idUntukDihapus.length > 0) pesanKonfirmasi += `- ${idUntukDihapus.length} baris (nama salah/sudah pindah) akan dihapus.\n`;
+                if (dataUntukDiupsert.length > 0) pesanKonfirmasi += `- ${dataUntukDiupsert.length} baris (nama baru) akan ditambahkan.\n`;
+                pesanKonfirmasi += `Lanjutkan proses?`;
+
+                if (!confirm(pesanKonfirmasi)) {
                     statusPesan.style.color = '#e67e22';
-                    statusPesan.innerText = "Sinkronisasi dibatalkan oleh admin.";
+                    statusPesan.innerText = "Sinkronisasi dibatalkan.";
                     return;
                 }
 
-                // 7. Eksekusi penghapusan otomatis (bulk delete) di database via Supabase
-                const { error: errDelete } = await db.from('pegawai').delete().in('nip', nipDihapus);
-                if (errDelete) throw errDelete;
+                // 9. Eksekusi Hapus dan Tambah
+                if (idUntukDihapus.length > 0) {
+                    const { error: errDel } = await db.from('pegawai').delete().in('id', idUntukDihapus);
+                    if (errDel) throw errDel;
+                }
+
+                if (dataUntukDiupsert.length > 0) {
+                    const { error: errUp } = await db.from('pegawai').upsert(dataUntukDiupsert, { onConflict: 'nip' });
+                    if (errUp) throw errUp;
+                }
 
                 statusPesan.style.color = '#28a745';
-                statusPesan.innerText = `Sukses! ${nipDihapus.length} pegawai berhasil dihapus karena sudah tidak aktif di periode ${bulanTerakhir} ${tahunTerakhir}.`;
+                statusPesan.innerText = `Berhasil! Database pegawai sudah sinkron (NIP & Nama) dengan bulan ${bulanTerakhir} ${tahunTerakhir}.`;
 
             } catch (err) {
                 statusPesan.style.color = '#dc3545';
-                statusPesan.innerText = "Gagal melakukan sinkronisasi: " + err.message;
+                statusPesan.innerText = "Gagal: " + err.message;
             }
         }
 
