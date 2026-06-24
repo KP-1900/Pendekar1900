@@ -204,6 +204,9 @@
         const _KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueXR1eWFwaWlpY2tyaWVvYm9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NDAzMzksImV4cCI6MjA5NzMxNjMzOX0.-oa4YA-U8TDzWfrSHd9EkbnLNB8IyObFw0SziIkIpQo';
         const db = window.supabase.createClient(_URL, _KEY);
 
+        // Tambahkan variabel array di sini untuk manajemen data realtime klaim
+        let daftarKlaimSaya = []; 
+
         const semuaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
         let grafikPSW, grafikHT, grafikBatang;
         let chartTimInstances = {}; 
@@ -301,8 +304,11 @@
                 const { data: dKlaim, error: errKlaim } = await db.from('pengajuan_tim').select('*').eq('nip', nipPegawai).order('id', { ascending: false });
                 if (errKlaim) throw errKlaim;
                 
-                if (dKlaim && dKlaim.length > 0) {
-                    listKlaim.innerHTML = dKlaim.map((k) => {
+                // Simpan data ke variabel global array
+                daftarKlaimSaya = dKlaim || [];
+                
+                if (daftarKlaimSaya.length > 0) {
+                    listKlaim.innerHTML = daftarKlaimSaya.map((k) => {
                         let badgeColor = k.status === 'pending' ? 'status-pending' : (k.status === 'approved' ? 'status-approved' : 'status-rejected');
                         let badgeText = k.status === 'pending' ? 'Menunggu' : (k.status === 'approved' ? 'Disetujui' : 'Ditolak');
                         return `
@@ -322,7 +328,9 @@
                     listKlaim.innerHTML = '<p style="color:#666; font-size:12px; font-style:italic;">Anda belum mengklaim tim manapun.</p>';
                 }
 
-                if (!dKlaim || dKlaim.length < 3) {
+                // Form hanya muncul jika jumlah klaim aktif/menunggu/disetujui kurang dari 3
+                const jumlahKlaimAktif = daftarKlaimSaya.filter(k => k.status === 'pending' || k.status === 'approved').length;
+                if (jumlahKlaimAktif < 3) {
                     formBox.style.display = 'block';
                     const { data: dTim } = await db.from('daftar_tim').select('nama_tim').order('nama_tim', { ascending: true });
                     if (dTim && dTim.length > 0) {
@@ -336,7 +344,7 @@
             }
         }
 
-        /* 2. FUNGSI AJUKAN KLAIM (OPTIMISTIC UI: LANGSUNG SUNTIK KE PALING ATAS) */
+        /* 2. FUNGSI AJUKAN KLAIM (RESPONSIF & MENDUKUNG KLAIM ULANG JIKA REJECTED) */
         async function ajukanKlaim() {
             const pesan = document.getElementById('pesan-klaim');
             const pTim = document.getElementById('pilihan-tim').value;
@@ -345,9 +353,13 @@
             if(!pTim) { pesan.style.color='#dc3545'; pesan.innerText="⚠️ Pilih tim terlebih dahulu!"; return; }
             if(!pJabatan) { pesan.style.color='#dc3545'; pesan.innerText="⚠️ Pilih jabatan terlebih dahulu!"; return; }
 
-            const listKlaim = document.getElementById('list-klaim-saya');
-            if (listKlaim.innerHTML.includes(pTim)) {
-                pesan.style.color='#dc3545'; pesan.innerText="Anda sudah mengklaim tim ini!"; return;
+            // VALIDASI BARU: Cek apakah ada klaim yang sedang PENDING atau APPROVED pada tim ini
+            const adaKlaimAktif = daftarKlaimSaya.some(k => k.tim === pTim && (k.status === 'pending' || k.status === 'approved'));
+            
+            if (adaKlaimAktif) {
+                pesan.style.color='#dc3545'; 
+                pesan.innerText="⚠️ Anda sudah memiliki pengajuan aktif/disetujui untuk tim ini!"; 
+                return;
             }
 
             pesan.style.color='#2b6cb0'; pesan.innerText="Mengirim...";
@@ -365,7 +377,7 @@
             } else {
                 pesan.style.color='#28a745'; pesan.innerText="Berhasil diajukan!";
                 
-                // Reset input dropdown form
+                // Reset form dropdown
                 document.getElementById('pilihan-tim').value = '';
                 document.getElementById('display-tim').childNodes[0].textContent = 'Pilih Tim...';
                 document.getElementById('pilihan-jabatan').value = '';
@@ -374,6 +386,10 @@
                 if (dataBaru && dataBaru.length > 0) {
                     const k = dataBaru[0];
                     
+                    // Masukkan data baru ke dalam Array State di urutan paling depan
+                    daftarKlaimSaya.unshift(k);
+
+                    const listKlaim = document.getElementById('list-klaim-saya');
                     if (listKlaim.innerHTML.includes('belum mengklaim')) {
                         listKlaim.innerHTML = '';
                     }
@@ -391,10 +407,12 @@
                     </div>
                     `;
                     
-                    // LANGSUNG MASUK KE ATAS BARIS SECARA INSTAN & RESPONSIF!
+                    // LANGSUNG MUNCUL DI ATAS SECARA INSTAN & RESPONSIF!
                     listKlaim.insertAdjacentHTML('afterbegin', itemHtml);
                     
-                    if (listKlaim.querySelectorAll('.klaim-item').length >= 3) {
+                    // Sembunyikan form jika klaim aktif sudah mencapai limit maksimal 3
+                    const jumlahKlaimAktif = daftarKlaimSaya.filter(x => x.status === 'pending' || x.status === 'approved').length;
+                    if (jumlahKlaimAktif >= 3) {
                         document.getElementById('form-klaim-box').style.display = 'none';
                     }
                 }
@@ -404,7 +422,7 @@
             }
         }
 
-        /* 3. FUNGSI HAPUS KLAIM (INSTAN HAPUS DARI LAYAR) */
+        /* 3. FUNGSI HAPUS KLAIM */
         async function hapusKlaim(id_klaim) {
             if (!confirm('Apakah Anda yakin ingin membatalkan/menghapus klaim tim ini?')) return;
             
@@ -413,18 +431,22 @@
             if (error) {
                 alert("Gagal menghapus: " + error.message);
             } else {
-                // Hapus elemen secara instan detik itu juga tanpa reload data
+                // Hapus dari Array State
+                daftarKlaimSaya = daftarKlaimSaya.filter(k => k.id !== id_klaim);
+
+                // Hapus elemen dari layat detik itu juga
                 const elemenKlaim = document.getElementById(`klaim-${id_klaim}`);
                 if (elemenKlaim) elemenKlaim.remove();
 
                 const listKlaim = document.getElementById('list-klaim-saya');
-                const jumlahKlaim = listKlaim.querySelectorAll('.klaim-item').length;
+                const jumlahKlaimAktif = daftarKlaimSaya.filter(k => k.status === 'pending' || k.status === 'approved').length;
                 
-                if (jumlahKlaim < 3) {
+                if (jumlahKlaimAktif < 3) {
                     document.getElementById('form-klaim-box').style.display = 'block';
-                    if (jumlahKlaim === 0) {
-                        listKlaim.innerHTML = '<p style="color:#666; font-size:12px; font-style:italic;">Anda belum mengklaim tim manapun.</p>';
-                    }
+                }
+                
+                if (daftarKlaimSaya.length === 0) {
+                    listKlaim.innerHTML = '<p style="color:#666; font-size:12px; font-style:italic;">Anda belum mengklaim tim manapun.</p>';
                 }
 
                 evaluasiHakAkses();
