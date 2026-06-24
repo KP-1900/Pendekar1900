@@ -12,15 +12,19 @@
     <div style="display: flex; align-items: center; gap: 20px;">
         <!-- Area Filter -->
         <div class="area-filter" id="area-filter" style="visibility: hidden;">
-            <div class="kotak-filter">
-                <label>Tahun</label>
-                <select id="filter-tahun" style="min-width: 80px; width: 80px;"></select>
+            <!-- Custom Dropdown Tahun Beranda -->
+            <div class="kotak-filter" id="wr-tahun-beranda" style="position:relative; cursor:pointer;" onclick="toggleDdBeranda('tahun-beranda')">
+                <label style="pointer-events:none;">Tahun</label>
+                <div id="disp-tahun-beranda" style="font-size:15px; font-weight:900; color:#1a233a; white-space:nowrap; padding-right:4px; pointer-events:none;">—</div>
+                <div id="list-tahun-beranda" style="display:none; position:absolute; top:calc(100% + 6px); left:0; min-width:100%; background:white; border:1px solid #ddd; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:9999; overflow:hidden;"></div>
+                <input type="hidden" id="filter-tahun" value="">
             </div>
-            <div class="kotak-filter">
-                <label>Bulan</label>
-                <select id="filter-bulan" style="min-width: 120px; width: 120px;">
-                    <option value="Semua">Semua</option>
-                </select>
+            <!-- Custom Dropdown Bulan Beranda -->
+            <div class="kotak-filter" id="wr-bulan-beranda" style="position:relative; cursor:pointer;" onclick="toggleDdBeranda('bulan-beranda')">
+                <label style="pointer-events:none;">Bulan</label>
+                <div id="disp-bulan-beranda" style="font-size:15px; font-weight:900; color:#1a233a; white-space:nowrap; padding-right:4px; pointer-events:none;">Semua</div>
+                <div id="list-bulan-beranda" style="display:none; position:absolute; top:calc(100% + 6px); right:0; min-width:140px; background:white; border:1px solid #ddd; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:9999; overflow:hidden; max-height:260px; overflow-y:auto;"></div>
+                <input type="hidden" id="filter-bulan" value="Semua">
             </div>
         </div>
 

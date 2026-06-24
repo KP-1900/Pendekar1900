@@ -8,31 +8,9 @@ let grafikGarisPSW, grafikGarisHT, grafikBatangKategori;
 
 const semuaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-// Biar klik di mana saja dalam kotak filter (bukan cuma teks/ikon) langsung membuka dropdown
-document.querySelectorAll('.kotak-filter').forEach(kotak => {
-    kotak.addEventListener('click', (e) => {
-        if (e.target.tagName === 'SELECT') return; // biar select tangani sendiri klik di dirinya
-        const sel = kotak.querySelector('select');
-        if (!sel) return;
-        if (sel.showPicker) { try { sel.showPicker(); } catch (err) { sel.focus(); } }
-        else sel.focus();
-    });
-});
+// Klik kotak filter ditangani langsung via onclick di masing-masing div
 
-// === LISTENER FILTER DENGAN SESSION STORAGE (KHUSUS BERANDA) ===
-document.getElementById('filter-tahun').addEventListener('change', async () => {
-    const tahun = parseInt(document.getElementById('filter-tahun').value);
-    document.getElementById('filter-bulan').value = 'Semua';
-    sessionStorage.setItem('beranda_filter_tahun', tahun);
-    sessionStorage.setItem('beranda_filter_bulan', 'Semua');
-    await isiDropdownBulan(tahun);
-    tarikData();
-});
-
-document.getElementById('filter-bulan').addEventListener('change', () => {
-    sessionStorage.setItem('beranda_filter_bulan', document.getElementById('filter-bulan').value);
-    tarikData();
-});
+// Listener filter sudah dihandle inline di buatItemBeranda
 
 // === INISIALISASI AWAL ===
 isiDropdownTahun().then(async () => {
@@ -41,68 +19,106 @@ isiDropdownTahun().then(async () => {
     tarikData();
 });
 
-// === FUNGSI DROPDOWN TAHUN ===
+// === HELPER: buat item custom dropdown beranda ===
+function buatItemBeranda(teks, onClick) {
+    const item = document.createElement('div');
+    item.textContent = teks;
+    item.style.cssText = 'padding:9px 16px; cursor:pointer; font-size:13px; color:#1a233a; border-bottom:1px solid #f0f0f0; white-space:nowrap;';
+    item.onmouseover = () => item.style.background = '#e6f0fa';
+    item.onmouseout = () => item.style.background = '';
+    item.onclick = (e) => { e.stopPropagation(); onClick(); };
+    return item;
+}
+
+function toggleDdBeranda(id) {
+    const list = document.getElementById('list-' + id);
+    if (!list) return;
+    // Tutup semua dulu
+    ['list-tahun-beranda','list-bulan-beranda'].forEach(lid => {
+        if (lid !== 'list-' + id) {
+            const el = document.getElementById(lid);
+            if (el) el.style.display = 'none';
+        }
+    });
+    list.style.display = list.style.display === 'none' ? 'block' : 'none';
+}
+
+// Tutup dropdown beranda saat klik di luar
+document.addEventListener('click', function(e) {
+    const wT = document.getElementById('wr-tahun-beranda');
+    const wB = document.getElementById('wr-bulan-beranda');
+    if (wT && !wT.contains(e.target)) {
+        const l = document.getElementById('list-tahun-beranda');
+        if (l) l.style.display = 'none';
+    }
+    if (wB && !wB.contains(e.target)) {
+        const l = document.getElementById('list-bulan-beranda');
+        if (l) l.style.display = 'none';
+    }
+});
+
+// === FUNGSI DROPDOWN TAHUN BERANDA ===
 async function isiDropdownTahun() {
-    const { data, error } = await db
-        .from('absensi')
-        .select('tahun');
-    
+    const { data, error } = await db.from('absensi').select('tahun');
     if (error || !data) return;
 
     const tahunUnik = [...new Set(data.map(d => d.tahun))].sort();
-    
-    const dropdown = document.getElementById('filter-tahun');
-    dropdown.innerHTML = '';
-    
+    const list = document.getElementById('list-tahun-beranda');
+    const disp = document.getElementById('disp-tahun-beranda');
+    const inp = document.getElementById('filter-tahun');
+    if (!list || !disp || !inp) return;
+
+    list.innerHTML = '';
     tahunUnik.forEach(t => {
-        const option = document.createElement('option');
-        option.value = t;
-        option.text = t;
-        dropdown.appendChild(option);
+        list.appendChild(buatItemBeranda(String(t), () => {
+            inp.value = t;
+            disp.textContent = t;
+            list.style.display = 'none';
+            document.getElementById('filter-bulan').value = 'Semua';
+            document.getElementById('disp-bulan-beranda').textContent = 'Semua';
+            sessionStorage.setItem('beranda_filter_tahun', t);
+            sessionStorage.setItem('beranda_filter_bulan', 'Semua');
+            isiDropdownBulan(t).then(() => tarikData());
+        }));
     });
 
-    // Cek memori browser khusus beranda
     const savedTahun = sessionStorage.getItem('beranda_filter_tahun');
-    if (savedTahun && tahunUnik.includes(parseInt(savedTahun))) {
-        dropdown.value = savedTahun;
-    } else {
-        dropdown.value = tahunUnik[tahunUnik.length - 1];
-        sessionStorage.setItem('beranda_filter_tahun', dropdown.value);
-    }
+    const val = savedTahun && tahunUnik.includes(parseInt(savedTahun)) ? parseInt(savedTahun) : tahunUnik[tahunUnik.length - 1];
+    inp.value = val;
+    disp.textContent = val;
+    sessionStorage.setItem('beranda_filter_tahun', val);
 
     const areaFilter = document.getElementById('area-filter');
     if (areaFilter) areaFilter.style.visibility = 'visible';
 }
 
-// === FUNGSI DROPDOWN BULAN ===
+// === FUNGSI DROPDOWN BULAN BERANDA ===
 async function isiDropdownBulan(tahun) {
-    const { data, error } = await db
-        .from('absensi')
-        .select('bulan')
-        .eq('tahun', tahun);
-    
+    const { data, error } = await db.from('absensi').select('bulan').eq('tahun', tahun);
     if (error || !data) return;
 
-    const dropdown = document.getElementById('filter-bulan');
-    dropdown.innerHTML = '<option value="Semua">Semua</option>';
-    
     const bulanTersedia = semuaBulan.filter(b => data.some(d => d.bulan === b));
-    
-    bulanTersedia.forEach(b => {
-        const option = document.createElement('option');
-        option.value = b;
-        option.text = b;
-        dropdown.appendChild(option);
+    const list = document.getElementById('list-bulan-beranda');
+    const disp = document.getElementById('disp-bulan-beranda');
+    const inp = document.getElementById('filter-bulan');
+    if (!list || !disp || !inp) return;
+
+    list.innerHTML = '';
+    const opsi = ['Semua', ...bulanTersedia];
+    opsi.forEach(b => {
+        list.appendChild(buatItemBeranda(b, () => {
+            inp.value = b;
+            disp.textContent = b;
+            list.style.display = 'none';
+            sessionStorage.setItem('beranda_filter_bulan', b);
+            tarikData();
+        }));
     });
 
-    // Cek memori browser khusus beranda
     const savedBulan = sessionStorage.getItem('beranda_filter_bulan');
-    if (savedBulan && (savedBulan === 'Semua' || bulanTersedia.includes(savedBulan))) {
-        dropdown.value = savedBulan;
-    } else {
-        dropdown.value = 'Semua';
-        sessionStorage.setItem('beranda_filter_bulan', 'Semua');
-    }
+    const val = savedBulan && opsi.includes(savedBulan) ? savedBulan : 'Semua';
+    inp.value = val;
+    disp.textContent = val;
 }
 
 // === FUNGSI UTAMA: MENARIK DATA DARI SUPABASE ===

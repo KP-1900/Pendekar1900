@@ -65,8 +65,25 @@
                 <div id="nip-pegawai" style="font-size:11px; color:#888;">NIP: -</div>
             </div>
             <div style="display:flex; gap:8px; align-items:center;">
-                <select id="filter-tahun-pegawai" style="padding:6px 10px; border:1px solid #ddd; border-radius:8px; font-size:13px; min-width:72px; width:72px;"></select>
-                <select id="filter-bulan-pegawai" style="padding:6px 10px; border:1px solid #ddd; border-radius:8px; font-size:13px; min-width:110px; width:110px;"></select>
+
+                <!-- Custom Dropdown Tahun Pegawai -->
+                <div id="wr-tahun-peg" style="position:relative; width:80px;">
+                    <div id="disp-tahun-peg" onclick="toggleDd('tahun-peg')" style="padding:6px 24px 6px 10px; border:1px solid #ddd; border-radius:8px; font-size:13px; font-weight:700; color:#1a233a; background:white; cursor:pointer; user-select:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; position:relative;">
+                        Tahun<span style="position:absolute;right:7px;top:50%;transform:translateY(-50%);font-size:9px;color:#888;pointer-events:none;">▼</span>
+                    </div>
+                    <div id="list-tahun-peg" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;border:1px solid #ddd;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:9999;overflow:hidden;"></div>
+                    <input type="hidden" id="filter-tahun-pegawai" value="">
+                </div>
+
+                <!-- Custom Dropdown Bulan Pegawai -->
+                <div id="wr-bulan-peg" style="position:relative; width:115px;">
+                    <div id="disp-bulan-peg" onclick="toggleDd('bulan-peg')" style="padding:6px 24px 6px 10px; border:1px solid #ddd; border-radius:8px; font-size:13px; font-weight:700; color:#1a233a; background:white; cursor:pointer; user-select:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; position:relative;">
+                        Semua<span style="position:absolute;right:7px;top:50%;transform:translateY(-50%);font-size:9px;color:#888;pointer-events:none;">▼</span>
+                    </div>
+                    <div id="list-bulan-peg" style="display:none;position:absolute;top:calc(100% + 4px);right:0;left:0;background:white;border:1px solid #ddd;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:9999;overflow:hidden;max-height:260px;overflow-y:auto;"></div>
+                    <input type="hidden" id="filter-bulan-pegawai" value="Semua">
+                </div>
+
                 <button onclick="prosesKeluar()" style="padding:6px 14px; background:#dc3545; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:12px;">Keluar</button>
             </div>
         </div>
@@ -134,7 +151,7 @@
                                 <!-- CUSTOM DROPDOWN TIM (selalu muncul ke bawah) -->
                                 <div id="wrapper-dropdown-tim" style="flex:1; min-width:200px; position:relative;">
                                     <div id="display-tim" onclick="toggleDropdownTim()" style="padding:10px 32px 10px 10px; border-radius:8px; border:1px solid #ddd; background:white; cursor:pointer; font-size:14px; color:#1a233a; user-select:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; position:relative;">
-                                        Pilih Tim...
+                                        Tim
                                         <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none; color:#888; font-size:10px;">▼</span>
                                     </div>
                                     <div id="list-dropdown-tim" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:white; border:1px solid #ddd; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:9999; max-height:220px; overflow-y:auto;">
@@ -146,7 +163,7 @@
                                 <!-- CUSTOM DROPDOWN JABATAN -->
                                 <div id="wrapper-dropdown-jabatan" style="width:150px; position:relative; flex-shrink:0;">
                                     <div id="display-jabatan" onclick="toggleDropdownJabatan()" style="padding:10px 32px 10px 10px; border-radius:8px; border:1px solid #ddd; background:white; cursor:pointer; font-size:14px; color:#1a233a; user-select:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; position:relative;">
-                                        Anggota
+                                        Jabatan
                                         <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none; color:#888; font-size:10px;">▼</span>
                                     </div>
                                     <div id="list-dropdown-jabatan" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:white; border:1px solid #ddd; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:9999; overflow:hidden;">
@@ -258,19 +275,7 @@
             }
         }
 
-        document.getElementById('filter-tahun-pegawai').addEventListener('change', async () => {
-            const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
-            sessionStorage.setItem('pegawai_filter_tahun', tahun);
-            sessionStorage.setItem('pegawai_filter_bulan', 'Semua');
-            await isiDropdownBulan(tahun);
-            document.getElementById('filter-bulan-pegawai').value = 'Semua';
-            tarikDataSemua();
-        });
-
-        document.getElementById('filter-bulan-pegawai').addEventListener('change', () => {
-            sessionStorage.setItem('pegawai_filter_bulan', document.getElementById('filter-bulan-pegawai').value);
-            tarikDataSemua();
-        });
+        // Listener filter sudah di-handle inline di dalam fungsi isiDropdownTahunPeg & isiDropdownBulanPeg
 
         async function inisialisasiAwal() {
             const { data: dataKlaim } = await db.from('pengajuan_tim').select('*').eq('nip', nipPegawai).eq('status', 'approved');
@@ -302,24 +307,12 @@
             const { data: dataThn } = await db.from('absensi_pegawai').select('tahun').eq('nip', nipPegawai);
             if (!dataThn) return;
             const tahunUnik = [...new Set(dataThn.map(d => d.tahun))].sort();
-            const dropdown = document.getElementById('filter-tahun-pegawai');
-            dropdown.innerHTML = '';
-            tahunUnik.forEach(t => {
-                const opt = document.createElement('option');
-                opt.value = t; opt.text = t;
-                dropdown.appendChild(opt);
-            });
             
             const savedTahun = sessionStorage.getItem('pegawai_filter_tahun');
-            if (savedTahun && tahunUnik.includes(parseInt(savedTahun))) {
-                dropdown.value = savedTahun;
-            } else {
-                dropdown.value = tahunUnik[tahunUnik.length - 1];
-                sessionStorage.setItem('pegawai_filter_tahun', dropdown.value);
-            }
-
-            const tahunTerpilih = parseInt(dropdown.value);
-            await isiDropdownBulan(tahunTerpilih);
+            isiDropdownTahunPeg(tahunUnik, savedTahun);
+            
+            const tahunTerpilih = parseInt(document.getElementById('filter-tahun-pegawai').value);
+            await isiDropdownBulanPeg(tahunTerpilih);
 
             // Restore mode SEBELUM tarikData agar tidak ada kedip ke mode pribadi dulu
             const modeTersimpan = sessionStorage.getItem('pegawai_mode_aktif') || 'pribadi';
@@ -335,27 +328,7 @@
         
         inisialisasiAwal();
 
-        async function isiDropdownBulan(tahun) {
-            const { data } = await db.from('absensi_pegawai').select('bulan').eq('nip', nipPegawai).eq('tahun', tahun);
-            const dropdown = document.getElementById('filter-bulan-pegawai');
-            dropdown.innerHTML = '<option value="Semua">Semua</option>';
-            if (data) {
-                const bulanTersedia = semuaBulan.filter(b => data.some(d => d.bulan === b));
-                bulanTersedia.forEach(b => {
-                    const opt = document.createElement('option');
-                    opt.value = b; opt.text = b;
-                    dropdown.appendChild(opt);
-                });
-                
-                const savedBulan = sessionStorage.getItem('pegawai_filter_bulan');
-                if (savedBulan && (savedBulan === 'Semua' || bulanTersedia.includes(savedBulan))) {
-                    dropdown.value = savedBulan;
-                } else {
-                    dropdown.value = 'Semua';
-                    sessionStorage.setItem('pegawai_filter_bulan', 'Semua');
-                }
-            }
-        }
+        // isiDropdownBulan → sudah diganti isiDropdownBulanPeg
 
         function tarikDataSemua() {
             tarikDataPribadi();
@@ -625,24 +598,45 @@
 
         function prosesKeluar() { sessionStorage.removeItem('pegawai_nip'); sessionStorage.removeItem('pegawai_nama'); window.location.href = 'admin.html'; }
 
-        /* === CUSTOM DROPDOWN TIM === */
+        /* === SISTEM CUSTOM DROPDOWN GENERIK === */
         let nilaiTimTerpilih = '';
+        const _ddTerbuka = {}; // track dropdown mana yang terbuka
 
-        function toggleDropdownTim() {
-            const list = document.getElementById('list-dropdown-tim');
-            list.style.display = list.style.display === 'none' ? 'block' : 'none';
+        function toggleDd(id) {
+            // Tutup semua dropdown lain dulu
+            Object.keys(_ddTerbuka).forEach(k => {
+                if (k !== id) {
+                    const el = document.getElementById('list-' + k);
+                    if (el) el.style.display = 'none';
+                    _ddTerbuka[k] = false;
+                }
+            });
+            const list = document.getElementById('list-' + id);
+            if (!list) return;
+            const buka = list.style.display === 'none';
+            list.style.display = buka ? 'block' : 'none';
+            _ddTerbuka[id] = buka;
         }
 
+        function tutupSemuaDd() {
+            document.querySelectorAll('[id^="list-"]').forEach(el => el.style.display = 'none');
+            Object.keys(_ddTerbuka).forEach(k => _ddTerbuka[k] = false);
+        }
+
+        // Klik di luar tutup semua dropdown
+        document.addEventListener('click', function(e) {
+            const dlList = document.querySelectorAll('[id^="wr-"], #wrapper-dropdown-tim, #wrapper-dropdown-jabatan');
+            let dalamWrapper = false;
+            dlList.forEach(w => { if (w && w.contains(e.target)) dalamWrapper = true; });
+            if (!dalamWrapper) tutupSemuaDd();
+        });
+
+        function toggleDropdownTim() { toggleDd('dropdown-tim'); }
         function tutupDropdownTim() {
             const list = document.getElementById('list-dropdown-tim');
             if (list) list.style.display = 'none';
         }
-
-        function toggleDropdownJabatan() {
-            const list = document.getElementById('list-dropdown-jabatan');
-            list.style.display = list.style.display === 'none' ? 'block' : 'none';
-        }
-
+        function toggleDropdownJabatan() { toggleDd('dropdown-jabatan'); }
         function tutupDropdownJabatan() {
             const list = document.getElementById('list-dropdown-jabatan');
             if (list) list.style.display = 'none';
@@ -659,8 +653,65 @@
             document.getElementById('pilihan-tim').value = nilai;
             document.getElementById('display-tim').childNodes[0].textContent = teks;
             tutupDropdownTim();
-            // Update pilihan jabatan sesuai tim yang dipilih
             updateDropdownJabatan(nilai);
+        }
+
+        /* === HELPER: buat item dropdown generik === */
+        function buatItemDd(teks, onClick) {
+            const item = document.createElement('div');
+            item.textContent = teks;
+            item.style.cssText = 'padding:9px 14px; cursor:pointer; font-size:13px; color:#1a233a; border-bottom:1px solid #f0f0f0;';
+            item.onmouseover = () => item.style.background = '#e6f0fa';
+            item.onmouseout = () => item.style.background = '';
+            item.onclick = onClick;
+            return item;
+        }
+
+        /* === FILTER TAHUN PEGAWAI === */
+        function isiDropdownTahunPeg(tahunList, savedTahun) {
+            const list = document.getElementById('list-tahun-peg');
+            const disp = document.getElementById('disp-tahun-peg');
+            const inp = document.getElementById('filter-tahun-pegawai');
+            list.innerHTML = '';
+            tahunList.forEach(t => {
+                list.appendChild(buatItemDd(String(t), () => {
+                    inp.value = t;
+                    disp.childNodes[0].textContent = t;
+                    tutupSemuaDd();
+                    sessionStorage.setItem('pegawai_filter_tahun', t);
+                    sessionStorage.setItem('pegawai_filter_bulan', 'Semua');
+                    isiDropdownBulanPeg(t);
+                    tarikDataSemua();
+                }));
+            });
+            const val = savedTahun && tahunList.includes(parseInt(savedTahun)) ? parseInt(savedTahun) : tahunList[tahunList.length - 1];
+            inp.value = val;
+            disp.childNodes[0].textContent = val;
+            sessionStorage.setItem('pegawai_filter_tahun', val);
+        }
+
+        /* === FILTER BULAN PEGAWAI === */
+        async function isiDropdownBulanPeg(tahun) {
+            const { data } = await db.from('absensi_pegawai').select('bulan').eq('nip', nipPegawai).eq('tahun', tahun);
+            const list = document.getElementById('list-bulan-peg');
+            const disp = document.getElementById('disp-bulan-peg');
+            const inp = document.getElementById('filter-bulan-pegawai');
+            list.innerHTML = '';
+            const bulanTersedia = semuaBulan.filter(b => data && data.some(d => d.bulan === b));
+            const opsi = ['Semua', ...bulanTersedia];
+            opsi.forEach(b => {
+                list.appendChild(buatItemDd(b, () => {
+                    inp.value = b;
+                    disp.childNodes[0].textContent = b;
+                    tutupSemuaDd();
+                    sessionStorage.setItem('pegawai_filter_bulan', b);
+                    tarikDataSemua();
+                }));
+            });
+            const saved = sessionStorage.getItem('pegawai_filter_bulan');
+            const val = saved && opsi.includes(saved) ? saved : 'Semua';
+            inp.value = val;
+            disp.childNodes[0].textContent = val;
         }
 
         function renderDropdownTim(daftarTim) {
@@ -668,7 +719,7 @@
             if (!list) return;
             list.innerHTML = '';
             
-            // Tambahkan BPS Provinsi di urutan pertama
+            // BPS Provinsi selalu di urutan pertama
             const semuaTim = ['BPS Provinsi', ...daftarTim.filter(t => t !== 'BPS Provinsi')];
             
             semuaTim.forEach(t => {
@@ -680,22 +731,37 @@
                 item.onclick = () => pilihItemTim(t, t);
                 list.appendChild(item);
             });
-            // Pilih item pertama sebagai default
-            if (semuaTim.length > 0 && !nilaiTimTerpilih) {
-                pilihItemTim(semuaTim[0], semuaTim[0]);
-            }
+            // Reset ke placeholder, jangan auto-pilih
+            nilaiTimTerpilih = '';
+            document.getElementById('pilihan-tim').value = '';
+            document.getElementById('display-tim').childNodes[0].textContent = 'Tim';
+            // Reset jabatan juga ke placeholder
+            resetPlaceholderJabatan();
+        }
+
+        function resetPlaceholderJabatan() {
+            document.getElementById('pilihan-jabatan').value = '';
+            document.getElementById('display-jabatan').childNodes[0].textContent = 'Jabatan';
+            const list = document.getElementById('list-dropdown-jabatan');
+            if (list) list.innerHTML = '';
         }
 
         function updateDropdownJabatan(namaTim) {
             const isBpsProvinsi = namaTim === 'BPS Provinsi';
-            // BPS Provinsi hanya Kepala, tim lain hanya Anggota & Ketua
+            // BPS Provinsi hanya Kepala; tim lain hanya Anggota & Ketua
             const opsiJabatan = isBpsProvinsi ? ['Kepala'] : ['Anggota', 'Ketua'];
-            const defaultJabatan = opsiJabatan[0];
+            renderDropdownJabatan(opsiJabatan);
             
-            renderDropdownJabatan(opsiJabatan, defaultJabatan);
+            // BPS Provinsi hanya 1 opsi → langsung set otomatis Kepala
+            if (isBpsProvinsi) pilihItemJabatan('Kepala', 'Kepala');
+            // Tim lain → biarkan user pilih sendiri (placeholder Jabatan)
+            else {
+                document.getElementById('pilihan-jabatan').value = '';
+                document.getElementById('display-jabatan').childNodes[0].textContent = 'Jabatan';
+            }
         }
 
-        function renderDropdownJabatan(opsi, defaultVal) {
+        function renderDropdownJabatan(opsi) {
             const list = document.getElementById('list-dropdown-jabatan');
             if (!list) return;
             list.innerHTML = '';
@@ -708,16 +774,9 @@
                 item.onclick = () => pilihItemJabatan(o, o);
                 list.appendChild(item);
             });
-            pilihItemJabatan(defaultVal, defaultVal);
         }
 
-        // Tutup dropdown saat klik di luar
-        document.addEventListener('click', function(e) {
-            const wTim = document.getElementById('wrapper-dropdown-tim');
-            if (wTim && !wTim.contains(e.target)) tutupDropdownTim();
-            const wJab = document.getElementById('wrapper-dropdown-jabatan');
-            if (wJab && !wJab.contains(e.target)) tutupDropdownJabatan();
-        });
+        // Klik luar sudah dihandle oleh tutupSemuaDd() di listener generik atas
     </script>
 </body>
 </html>
