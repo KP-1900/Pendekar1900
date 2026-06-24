@@ -30,10 +30,10 @@ function buatItemBeranda(teks, onClick) {
     return item;
 }
 
-function toggleDdBeranda(id) {
+// Expose ke global agar bisa dipanggil dari onclick di HTML
+window.toggleDdBeranda = function(id) {
     const list = document.getElementById('list-' + id);
     if (!list) return;
-    // Tutup semua dulu
     ['list-tahun-beranda','list-bulan-beranda'].forEach(lid => {
         if (lid !== 'list-' + id) {
             const el = document.getElementById(lid);
@@ -41,7 +41,7 @@ function toggleDdBeranda(id) {
         }
     });
     list.style.display = list.style.display === 'none' ? 'block' : 'none';
-}
+};
 
 // Tutup dropdown beranda saat klik di luar
 document.addEventListener('click', function(e) {
