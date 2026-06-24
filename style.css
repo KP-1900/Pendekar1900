@@ -397,3 +397,79 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
         transform: translateY(0); 
     }
 }
+
+/* ========================================================= */
+/* === PERBAIKAN TAMPILAN MOBILE & TABLET (RESPONSIVE) === */
+/* ========================================================= */
+
+@media (max-width: 992px), (orientation: portrait) {
+    /* 1. Cabut paksaan 100vh agar layar bisa discroll ke bawah secara natural */
+    body { 
+        display: block; 
+        overflow: auto !important; 
+        height: auto; 
+        min-height: 100vh; 
+    }
+    
+    /* 2. Pertahankan menu kiri melayang di posisinya */
+    .menu-kiri { 
+        position: fixed; 
+        left: 0; top: 0; bottom: 0; 
+        z-index: 100; 
+        height: calc(100vh - 30px); 
+    }
+    
+    /* 3. Geser area konten dan bebaskan dari batasan flex kaku */
+    .area-kanan { 
+        margin-left: 95px !important; 
+        height: auto !important; 
+        overflow: visible !important; 
+    }
+    .area-kanan > div[style*="flex: 1"] {
+        flex-direction: column !important;
+        height: auto !important;
+    }
+
+    #wadah-konten, #wadah-konten > div { 
+        height: auto !important; 
+        overflow: visible !important; 
+        display: flex !important;
+        flex-direction: column;
+    }
+
+    /* 4. Tumpuk elemen agar tidak gepeng di layar sempit */
+    .grid-kartu { grid-template-columns: repeat(2, 1fr); }
+    .grid-grafik { grid-template-columns: 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+    
+    /* 5. KUNCI TINGGI GRAFIK agar tidak melar berlebihan (Penyebab utama dari screenshot) */
+    .grid-bawah { display: flex; flex-direction: column; height: auto !important; }
+    .wadah-grafik-bawah, .grafik-batang { min-height: 300px !important; flex: none !important; }
+    .wadah-tabel, .tabel-box { min-height: 350px !important; overflow-x: auto; flex: none !important; }
+    
+    /* 6. Perbaiki susunan Header & Panel agar sejajar */
+    .baris-atas { flex-direction: column; align-items: flex-start; gap: 15px; }
+    .area-filter { flex-wrap: wrap; width: 100%; justify-content: flex-start; }
+    .panel-kanan-statis { width: 100%; margin-top: 15px; }
+    
+    /* 7. Perbaikan Khusus di halaman Dashboard Pegawai */
+    .info-pegawai { flex-direction: column; align-items: flex-start; }
+    .info-pegawai > div:last-child { width: 100%; justify-content: space-between; flex-wrap: wrap; margin-top: 10px;}
+    #wadah-mode-pribadi { height: auto !important; overflow: visible !important; }
+    #wadah-mode-pribadi > div:last-child { flex-direction: column; }
+}
+
+@media (max-width: 576px) {
+    /* Khusus Tampilan Layar HP Normal (Tanpa Desktop Site) */
+    .grid-kartu { grid-template-columns: 1fr; } /* Kartu presensi memanjang ke bawah */
+    .kartu-pegawai { flex-wrap: wrap; }
+    
+    /* Perkecil lebar sidebar kiri agar ruang konten lebih lega */
+    .menu-kiri { width: 60px; margin: 15px 0 15px 10px; }
+    .area-kanan { margin-left: 80px !important; padding: 15px 10px !important; }
+    
+    .area-filter { gap: 10px; }
+    .kotak-filter { flex: 1; }
+    
+    .wadah-running-text { margin: 0 0 12px 0 !important; }
+}
