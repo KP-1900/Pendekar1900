@@ -78,6 +78,26 @@
         let modeSaatIni = 'agregat';
 
         async function cekSesi() {
+            const adminViaNip = sessionStorage.getItem('admin_via_nip') === 'ya';
+            const nipPegawai = sessionStorage.getItem('pegawai_nip');
+            
+            if (adminViaNip && nipPegawai) {
+                // Login admin via NIP Ketua Kepegawaian — verifikasi ulang klaim
+                const { data: klaimCek } = await db.from('pengajuan_tim')
+                    .select('tim, jabatan')
+                    .eq('nip', nipPegawai)
+                    .eq('status', 'approved');
+                
+                const valid = klaimCek && klaimCek.some(k =>
+                    k.jabatan.toLowerCase() === 'ketua' &&
+                    k.tim.toLowerCase().includes('kepegawaian')
+                );
+
+                if (!valid) { sessionStorage.removeItem('admin_via_nip'); window.location.href = 'admin.html'; return; }
+                muatPermintaanReset(); muatKlaimTim();
+                return;
+            }
+
             const { data: { session } } = await db.auth.getSession();
             if (!session) window.location.href = 'admin.html';
             else { muatPermintaanReset(); muatKlaimTim(); }
@@ -147,6 +167,19 @@
             const { data: { session } } = await db.auth.getSession();
             window.location.href = session ? 'admin-panel.html' : 'admin.html';
         }
+
+        // Label info user yang sedang login
+        (function tampilkanUserInfo() {
+            const nip = sessionStorage.getItem('pegawai_nip');
+            const nama = sessionStorage.getItem('pegawai_nama');
+            if (nip && nama) {
+                const info = document.createElement('p');
+                info.style.cssText = 'font-size:12px; color:#888; text-align:center; margin:5px 0 0 0;';
+                info.innerText = nama + ' (' + nip + ')';
+                const judul = document.querySelector('.kotak-form h2');
+                if (judul) judul.after(info);
+            }
+        })();
 
         function gantiMode(mode) {
             modeSaatIni = mode;
@@ -227,7 +260,13 @@
             reader.readAsArrayBuffer(file);
         }
 
-        async function prosesKeluar() { await db.auth.signOut(); window.location.href = 'admin.html'; }
+        async function prosesKeluar() {
+            sessionStorage.removeItem('admin_via_nip');
+            sessionStorage.removeItem('pegawai_nip');
+            sessionStorage.removeItem('pegawai_nama');
+            await db.auth.signOut();
+            window.location.href = 'admin.html';
+        }
     </script>
 </body>
 </html>

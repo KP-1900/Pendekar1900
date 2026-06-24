@@ -211,10 +211,31 @@
             if (error || !data) {
                 pesan.style.color = '#dc3545';
                 pesan.innerText = "NIP atau password salah.";
+                return;
+            }
+
+            // Cek apakah dia Ketua tim Kepegawaian yang approved → bisa masuk admin
+            const { data: klaimAdmin } = await db
+                .from('pengajuan_tim')
+                .select('tim, jabatan')
+                .eq('nip', nip)
+                .eq('status', 'approved');
+
+            const bisaAdmin = klaimAdmin && klaimAdmin.some(k =>
+                k.jabatan.toLowerCase() === 'ketua' &&
+                k.tim.toLowerCase().includes('kepegawaian')
+            );
+
+            // Simpan info pegawai di sessionStorage
+            sessionStorage.setItem('pegawai_nip', data.nip);
+            sessionStorage.setItem('pegawai_nama', data.nama);
+
+            if (bisaAdmin) {
+                // Tandai sebagai "admin via NIP" agar admin-panel tahu
+                sessionStorage.setItem('admin_via_nip', 'ya');
+                window.location.href = 'admin-panel.html';
             } else {
-                // Simpan info pegawai di sessionStorage
-                sessionStorage.setItem('pegawai_nip', data.nip);
-                sessionStorage.setItem('pegawai_nama', data.nama);
+                sessionStorage.removeItem('admin_via_nip');
                 window.location.href = 'dashboard-pegawai.html';
             }
         }

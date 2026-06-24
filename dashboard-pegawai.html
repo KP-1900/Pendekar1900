@@ -143,12 +143,16 @@
                                     <input type="hidden" id="pilihan-tim" value="">
                                 </div>
 
-                                <select id="pilihan-jabatan" style="width:150px; padding:10px; border-radius:8px; border:1px solid #ddd;">
-                                    <option value="Anggota">Anggota</option>
-                                    <option value="Ketua">Ketua</option>
-                                    <option value="Admin">Admin</option>
-                                    <option value="Kepala">Kepala</option>
-                                </select>
+                                <!-- CUSTOM DROPDOWN JABATAN -->
+                                <div id="wrapper-dropdown-jabatan" style="width:150px; position:relative; flex-shrink:0;">
+                                    <div id="display-jabatan" onclick="toggleDropdownJabatan()" style="padding:10px 32px 10px 10px; border-radius:8px; border:1px solid #ddd; background:white; cursor:pointer; font-size:14px; color:#1a233a; user-select:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; position:relative;">
+                                        Anggota
+                                        <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none; color:#888; font-size:10px;">▼</span>
+                                    </div>
+                                    <div id="list-dropdown-jabatan" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:white; border:1px solid #ddd; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:9999; overflow:hidden;">
+                                    </div>
+                                    <input type="hidden" id="pilihan-jabatan" value="Anggota">
+                                </div>
                                 <button onclick="ajukanKlaim()" style="background:#2b6cb0; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; cursor:pointer;">Ajukan</button>
                             </div>
                             <p id="pesan-klaim" style="font-size:12px; margin-top:10px; font-weight:bold;"></p>
@@ -279,7 +283,9 @@
                 dataKlaim.forEach(k => {
                     const jab = k.jabatan.toLowerCase();
                     const t = k.tim.toLowerCase();
-                    if (jab === 'kepala' || (t === 'umum' && jab === 'admin')) isKepalaAtauAdmin = true;
+                    // Kepala BPS Provinsi atau Ketua Kepegawaian → bisa lihat semua rangkuman
+                    if (jab === 'kepala') isKepalaAtauAdmin = true;
+                    if (jab === 'ketua' && t.includes('kepegawaian')) isKepalaAtauAdmin = true;
                     if (jab === 'ketua') {
                         isKetua = true;
                         daftarTimKepemimpinan.push(k.tim);
@@ -632,18 +638,40 @@
             if (list) list.style.display = 'none';
         }
 
+        function toggleDropdownJabatan() {
+            const list = document.getElementById('list-dropdown-jabatan');
+            list.style.display = list.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function tutupDropdownJabatan() {
+            const list = document.getElementById('list-dropdown-jabatan');
+            if (list) list.style.display = 'none';
+        }
+
+        function pilihItemJabatan(nilai, teks) {
+            document.getElementById('pilihan-jabatan').value = nilai;
+            document.getElementById('display-jabatan').childNodes[0].textContent = teks;
+            tutupDropdownJabatan();
+        }
+
         function pilihItemTim(nilai, teks) {
             nilaiTimTerpilih = nilai;
             document.getElementById('pilihan-tim').value = nilai;
             document.getElementById('display-tim').childNodes[0].textContent = teks;
             tutupDropdownTim();
+            // Update pilihan jabatan sesuai tim yang dipilih
+            updateDropdownJabatan(nilai);
         }
 
         function renderDropdownTim(daftarTim) {
             const list = document.getElementById('list-dropdown-tim');
             if (!list) return;
             list.innerHTML = '';
-            daftarTim.forEach(t => {
+            
+            // Tambahkan BPS Provinsi di urutan pertama
+            const semuaTim = ['BPS Provinsi', ...daftarTim.filter(t => t !== 'BPS Provinsi')];
+            
+            semuaTim.forEach(t => {
                 const item = document.createElement('div');
                 item.textContent = t;
                 item.style.cssText = 'padding:10px 14px; cursor:pointer; font-size:13px; color:#1a233a; border-bottom:1px solid #f0f0f0;';
@@ -653,15 +681,42 @@
                 list.appendChild(item);
             });
             // Pilih item pertama sebagai default
-            if (daftarTim.length > 0 && !nilaiTimTerpilih) {
-                pilihItemTim(daftarTim[0], daftarTim[0]);
+            if (semuaTim.length > 0 && !nilaiTimTerpilih) {
+                pilihItemTim(semuaTim[0], semuaTim[0]);
             }
+        }
+
+        function updateDropdownJabatan(namaTim) {
+            const isBpsProvinsi = namaTim === 'BPS Provinsi';
+            // BPS Provinsi hanya Kepala, tim lain hanya Anggota & Ketua
+            const opsiJabatan = isBpsProvinsi ? ['Kepala'] : ['Anggota', 'Ketua'];
+            const defaultJabatan = opsiJabatan[0];
+            
+            renderDropdownJabatan(opsiJabatan, defaultJabatan);
+        }
+
+        function renderDropdownJabatan(opsi, defaultVal) {
+            const list = document.getElementById('list-dropdown-jabatan');
+            if (!list) return;
+            list.innerHTML = '';
+            opsi.forEach(o => {
+                const item = document.createElement('div');
+                item.textContent = o;
+                item.style.cssText = 'padding:10px 14px; cursor:pointer; font-size:13px; color:#1a233a; border-bottom:1px solid #f0f0f0;';
+                item.onmouseover = () => item.style.background = '#e6f0fa';
+                item.onmouseout = () => item.style.background = '';
+                item.onclick = () => pilihItemJabatan(o, o);
+                list.appendChild(item);
+            });
+            pilihItemJabatan(defaultVal, defaultVal);
         }
 
         // Tutup dropdown saat klik di luar
         document.addEventListener('click', function(e) {
-            const wrapper = document.getElementById('wrapper-dropdown-tim');
-            if (wrapper && !wrapper.contains(e.target)) tutupDropdownTim();
+            const wTim = document.getElementById('wrapper-dropdown-tim');
+            if (wTim && !wTim.contains(e.target)) tutupDropdownTim();
+            const wJab = document.getElementById('wrapper-dropdown-jabatan');
+            if (wJab && !wJab.contains(e.target)) tutupDropdownJabatan();
         });
     </script>
 </body>
