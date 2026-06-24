@@ -337,7 +337,6 @@
             }
         }
 
-        /* LOGIKA TAMPILAN TIM (Admin Lihat Semua Orang Yg Ada Di Absen) */
         async function tarikDataTimLengkap() {
             const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
             const wadah = document.getElementById('wadah-mode-tim');
@@ -353,19 +352,17 @@
             let petaAnggota = {};
 
             if (isKepalaAtauAdmin) {
-                // Admin SDM melihat SEMUA NIP yang ada di absensi tahun ini (kecuali dia sendiri)
                 dataTahunIni.forEach(d => {
                     if (d.nip === nipPegawai) return;
 
                     if (!petaAnggota[d.nip]) {
-                        // Cari data klaimnya, kalau tidak ada biarkan default
                         let klaim = allApproved ? allApproved.filter(a => a.nip === d.nip) : [];
                         let jabatans = klaim.map(k => k.jabatan);
                         let tims = klaim.map(k => k.tim);
 
                         petaAnggota[d.nip] = {
                             nip: d.nip,
-                            nama: d.nama, // Ambil nama dari absensi
+                            nama: d.nama,
                             jabatan: jabatans.length > 0 ? [...new Set(jabatans)] : ['Pegawai'],
                             tim: tims.length > 0 ? [...new Set(tims)] : ['Belum pilih tim'],
                             dataBulanan: {}
@@ -375,7 +372,6 @@
                 });
 
             } else if (isKetua) {
-                // Ketua hanya melihat NIP yang punya klaim Approved di timnya
                 let orangTerlihat = allApproved ? allApproved.filter(a => a.nip !== nipPegawai && daftarTimKepemimpinan.includes(a.tim)) : [];
 
                 orangTerlihat.forEach(o => {
@@ -454,32 +450,36 @@
             });
         }
 
-        /* KODE DIPERKUAT: Mengamankan form klaim dari nge-blank */
+        /* --- FUNGSI BARU YANG RESPONSIVE --- */
         async function muatFormKlaim() {
             const listKlaim = document.getElementById('list-klaim-saya');
             const formBox = document.getElementById('form-klaim-box');
             
-            listKlaim.innerHTML = '<p style="color:#999; font-size:12px;">Memuat data...</p>';
+            listKlaim.innerHTML = '<p style="color:#999; font-size:12px;">Memuat data klaim terbaru...</p>';
 
             try {
-                const { data: dKlaim, error: errKlaim } = await db.from('pengajuan_tim').select('*').eq('nip', nipPegawai).order('id', { ascending: true });
+                const { data: dKlaim, error: errKlaim } = await db.from('pengajuan_tim').select('*').eq('nip', nipPegawai).order('id', { ascending: false });
                 if (errKlaim) throw errKlaim;
                 
                 if (dKlaim && dKlaim.length > 0) {
-                    listKlaim.innerHTML = dKlaim.map((k, i) => `
+                    listKlaim.innerHTML = dKlaim.map((k, i) => {
+                        let badgeColor = k.status === 'pending' ? 'status-pending' : (k.status === 'approved' ? 'status-approved' : 'status-rejected');
+                        let badgeText = k.status === 'pending' ? 'Menunggu' : (k.status === 'approved' ? 'Disetujui' : 'Ditolak');
+                        return `
                         <div class="klaim-item">
                             <div>
-                                <span style="font-size:12px; font-weight:bold; color:#1a233a;">${i+1}. ${k.tim}</span>
-                                <span style="font-size:11px; color:#666; margin-left:5px;">sebagai ${k.jabatan}</span>
+                                <strong style="font-size:14px; color:#1a233a;">${k.tim}</strong><br>
+                                <span style="font-size:12px; color:#888;">Sebagai: <b style="color:#2b6cb0;">${k.jabatan}</b></span>
                             </div>
-                            <div style="display:flex; gap:10px; align-items:center;">
-                                <div class="status-badge status-${k.status}">${k.status.toUpperCase()}</div>
-                                <button class="btn-hapus-klaim" onclick="hapusKlaim(${k.id})" title="Hapus Klaim">🗑️</button>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span class="status-badge ${badgeColor}">${badgeText}</span>
+                                <button class="btn-hapus-klaim" onclick="hapusKlaim(${k.id})" title="Batalkan/Hapus">✖</button>
                             </div>
                         </div>
-                    `).join('');
+                        `;
+                    }).join('');
                 } else {
-                    listKlaim.innerHTML = '<p style="color:#999; font-size:12px;">Anda belum mengklaim tim manapun.</p>';
+                    listKlaim.innerHTML = '<p style="color:#666; font-size:12px; font-style:italic;">Anda belum mengklaim tim manapun.</p>';
                 }
 
                 if (!dKlaim || dKlaim.length < 3) {
@@ -525,20 +525,29 @@
                 pesan.style.color='#dc3545'; pesan.innerText="Gagal: " + error.message;
             } else {
                 pesan.style.color='#28a745'; pesan.innerText="Berhasil diajukan!";
-                // Refresh list instan tanpa delay timer aneh-aneh
+                
+                // --- Reset Dropdown secara instan ---
+                document.getElementById('pilihan-tim').value = '';
+                document.getElementById('display-tim').childNodes[0].textContent = 'Pilih Tim...';
+                document.getElementById('pilihan-jabatan').value = '';
+                document.getElementById('display-jabatan').childNodes[0].textContent = 'Jabatan...';
+
+                // --- Panggil ulang UI agar langsung update (RESPONSIVE) ---
                 await muatFormKlaim(); 
-                pesan.innerText=""; 
+                await evaluasiHakAkses();
+                
+                setTimeout(() => { pesan.innerText=""; }, 3000);
             }
         }
 
         async function hapusKlaim(id_klaim) {
-            if (!confirm('Yakin ingin menghapus klaim ini?')) return;
+            if (!confirm('Apakah Anda yakin ingin membatalkan/menghapus klaim tim ini?')) return;
             
             const { error } = await db.from('pengajuan_tim').delete().eq('id', id_klaim);
             if (error) {
                 alert("Gagal menghapus: " + error.message);
             } else {
-                // Secara ajaib memuat ulang data tanpa me-refresh paksa browser
+                // --- Panggil ulang UI agar hilang langsung dari layar (RESPONSIVE) ---
                 await muatFormKlaim();
                 await evaluasiHakAkses();
                 if (isKetua || isKepalaAtauAdmin) {
@@ -546,6 +555,7 @@
                 }
             }
         }
+        /* --- AKHIR FUNGSI BARU --- */
 
         async function tarikDataPribadi() {
             const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
