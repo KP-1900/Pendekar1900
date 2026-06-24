@@ -59,6 +59,126 @@
             transition: opacity 0.18s ease; z-index: 99999;
         }
         #fade-overlay.aktif { opacity: 1; pointer-events: all; }
+
+        /* =====================================================
+           RESPONSIVE FIX: Dashboard Pegawai di Mobile/Portrait
+           ===================================================== */
+        @media (max-width: 992px), (orientation: portrait) {
+            /* Override paksa overflow:hidden dan height:100vh dari rule di atas */
+            .area-kanan {
+                height: auto !important;
+                overflow: visible !important;
+                overflow-x: hidden !important;
+                display: flex !important;
+                flex-direction: column !important;
+                padding: 10px 12px !important;
+                gap: 10px !important;
+            }
+
+            /* Flex row (konten + panel kanan) → tumpuk vertikal */
+            .area-kanan > div {
+                flex-direction: column !important;
+                height: auto !important;
+                min-height: 0 !important;
+                overflow: visible !important;
+            }
+
+            /* Panel kanan: full width, susun baris */
+            .panel-kanan-statis {
+                width: 100% !important;
+                flex-direction: row !important;
+                flex-wrap: wrap !important;
+                gap: 10px !important;
+            }
+            .panel-kanan-statis > div {
+                flex: 1 1 140px !important;
+                min-width: 140px !important;
+            }
+            .ubah-password-box { flex: 1 !important; min-height: 0 !important; }
+
+            /* Info pegawai: tumpuk vertikal */
+            .info-pegawai {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+            }
+            .info-pegawai > div:last-child {
+                width: 100% !important;
+                flex-wrap: wrap !important;
+                justify-content: flex-start !important;
+                gap: 6px !important;
+            }
+
+            /* Kartu HK/HD/HT/PSW: 2 kolom */
+            .kartu-pegawai {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                flex-wrap: unset !important;
+            }
+
+            /* Tren grafik: 1 kolom */
+            .grid-2 { grid-template-columns: 1fr !important; }
+            .grafik-tren canvas { height: 150px !important; }
+
+            /* Wadah mode pribadi: bebaskan dari height & overflow */
+            #wadah-mode-pribadi {
+                height: auto !important;
+                overflow: visible !important;
+                min-height: 0 !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            #wadah-mode-pribadi > * {
+                height: auto !important;
+                overflow: visible !important;
+                min-height: 0 !important;
+            }
+            /* Baris bawah (grafik batang + tabel): tumpuk */
+            #wadah-mode-pribadi > div:last-child {
+                flex-direction: column !important;
+            }
+
+            /* Grafik batang: fixed height — INI KUNCI UTAMA */
+            .grafik-batang {
+                height: 260px !important;
+                min-height: 260px !important;
+                max-height: 260px !important;
+                flex: none !important;
+            }
+            .grafik-batang canvas {
+                height: 210px !important;
+                max-height: 210px !important;
+                flex: none !important;
+            }
+
+            /* Tabel ringkasan: auto height + scroll horizontal */
+            .tabel-box {
+                flex: none !important;
+                height: auto !important;
+                min-height: 0 !important;
+                overflow: visible !important;
+            }
+            .tabel-box > div {
+                overflow-x: auto !important;
+                overflow-y: auto !important;
+                max-height: 320px !important;
+                flex: none !important;
+            }
+
+            /* Mode tim & klaim */
+            #wadah-mode-tim,
+            #wadah-mode-klaim {
+                height: auto !important;
+                overflow: visible !important;
+                flex: none !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .area-kanan { padding: 8px !important; margin-left: 75px !important; }
+            .panel-kanan-statis { flex-direction: column !important; }
+            .panel-kanan-statis > div { width: 100% !important; min-width: unset !important; }
+            .kartu-hk .angka { font-size: 20px; }
+        }
     </style>
 </head>
 <body>

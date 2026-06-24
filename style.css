@@ -455,14 +455,114 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
     /* 7. Perbaikan Khusus di halaman Dashboard Pegawai */
     .info-pegawai { flex-direction: column; align-items: flex-start; }
     .info-pegawai > div:last-child { width: 100%; justify-content: space-between; flex-wrap: wrap; margin-top: 10px;}
-    #wadah-mode-pribadi { height: auto !important; overflow: visible !important; }
-    #wadah-mode-pribadi > div:last-child { flex-direction: column; }
+
+    /* Bebaskan area kanan pegawai dari height 100vh & overflow hidden agar bisa scroll */
+    .area-kanan {
+        height: auto !important;
+        overflow: visible !important;
+        display: block !important;
+    }
+
+    /* Wadah utama konten pegawai: tumpuk jadi kolom, bisa scroll */
+    .area-kanan > div[style*="flex: 1"],
+    .area-kanan > div[style*="display: flex"] {
+        flex-direction: column !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    /* Mode pribadi: biarkan mengalir ke bawah */
+    #wadah-mode-pribadi {
+        display: flex !important;
+        flex-direction: column !important;
+        height: auto !important;
+        overflow: visible !important;
+        min-height: 0 !important;
+    }
+
+    /* Baris kartu HK/HD/HT/PSW: bungkus 2 kolom */
+    .kartu-pegawai {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        flex-wrap: unset !important;
+    }
+
+    /* Tren grafik: tumpuk vertikal */
+    .grid-2 {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Kunci tinggi grafik tren agar tidak melar */
+    .grafik-tren canvas {
+        height: 160px !important;
+        max-height: 160px !important;
+    }
+
+    /* Baris bawah (grafik batang + tabel): tumpuk vertikal */
+    #wadah-mode-pribadi > div[style*="display: flex"]:last-child,
+    #wadah-mode-pribadi > div:last-child {
+        flex-direction: column !important;
+        height: auto !important;
+        min-height: 0 !important;
+    }
+
+    /* Grafik batang: beri tinggi tetap, jangan flex: 1 */
+    .grafik-batang {
+        flex: none !important;
+        height: 250px !important;
+        min-height: 250px !important;
+        max-height: 250px !important;
+    }
+
+    .grafik-batang canvas {
+        height: 200px !important;
+        max-height: 200px !important;
+    }
+
+    /* Tabel ringkasan: beri tinggi cukup, scroll horizontal */
+    .tabel-box {
+        flex: none !important;
+        height: auto !important;
+        min-height: 200px !important;
+        overflow-x: auto !important;
+    }
+
+    .tabel-box > div {
+        overflow-x: auto !important;
+        overflow-y: auto !important;
+        max-height: 300px !important;
+    }
+
+    /* Panel kanan (Menu Navigasi, Kamus, Ubah Password): full width, di bawah konten */
+    .panel-kanan-statis {
+        width: 100% !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+        margin-top: 10px !important;
+    }
+
+    .panel-kanan-statis > div {
+        flex: 1 !important;
+        min-width: 140px !important;
+    }
+
+    /* Mode tim & klaim: biarkan scroll */
+    #wadah-mode-tim,
+    #wadah-mode-klaim {
+        height: auto !important;
+        overflow: visible !important;
+        min-height: 0 !important;
+    }
 }
 
 @media (max-width: 576px) {
     /* Khusus Tampilan Layar HP Normal (Tanpa Desktop Site) */
     .grid-kartu { grid-template-columns: 1fr; } /* Kartu presensi memanjang ke bawah */
-    .kartu-pegawai { flex-wrap: wrap; }
+    .kartu-pegawai { 
+        grid-template-columns: 1fr 1fr !important; 
+        flex-wrap: unset !important; 
+    }
     
     /* Perkecil lebar sidebar kiri agar ruang konten lebih lega */
     .menu-kiri { width: 60px; margin: 15px 0 15px 10px; }
@@ -472,4 +572,21 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
     .kotak-filter { flex: 1; }
     
     .wadah-running-text { margin: 0 0 12px 0 !important; }
+
+    /* Grafik batang lebih compact di HP kecil */
+    .grafik-batang {
+        height: 220px !important;
+        min-height: 220px !important;
+        max-height: 220px !important;
+    }
+
+    /* Panel kanan: tumpuk vertikal di HP kecil */
+    .panel-kanan-statis {
+        flex-direction: column !important;
+    }
+
+    .panel-kanan-statis > div {
+        min-width: unset !important;
+        width: 100% !important;
+    }
 }
