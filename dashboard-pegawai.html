@@ -491,9 +491,9 @@
 
             // TAMPILKAN JUDUL GRAFIK SEKALI SAJA SEBAGAI HEADER DI ATAS
             let htmlHeader = `
-                <div style="display: flex; padding: 4px 12px; margin-bottom: 4px; position: sticky; top: 0; background: #f4f7fe; z-index: 10; align-items: center; gap: 15px; flex-shrink: 0;">
-                    <div style="width: 180px; flex-shrink: 0;"></div>
-                    <div style="flex: 1; display: flex; gap: 10px; text-align: center;">
+                <div style="display: flex; padding: 4px 14px; margin-bottom: 2px; position: sticky; top: 0; background: #f4f7fe; z-index: 10; align-items: center; gap: 15px; flex-shrink: 0;">
+                    <div style="width: 190px; flex-shrink: 0;"></div>
+                    <div style="flex: 1; display: flex; gap: 15px; text-align: center;">
                         <div style="flex: 1; font-size: 12px; font-weight: 900; color: #1a233a;">Tren HT per Bulan</div>
                         <div style="flex: 1; font-size: 12px; font-weight: 900; color: #1a233a;">Tren PSW per Bulan</div>
                     </div>
@@ -504,32 +504,25 @@
             daftarAnggota.forEach((anggota, index) => {
                 let stringJabatan = anggota.jabatan.join(' / ');
                 
-                // KUSTOMISASI: Jika jabatannya Anggota, tambahkan nama Tim di belakangnya
-                if (stringJabatan === 'Anggota') {
-                    stringJabatan = `Anggota Tim ${anggota.tim.join(', ')}`;
-                }
-
-                let warnaJabatan = 'background:#e6f6ee; color:#28a745;'; 
+                // Badge hanya dibuat jika perannya adalah struktural/khusus (Ketua / Kepala / Admin)
+                // Sesuai request, teks hijau "Anggota" dihapus total karena sudah diwakili baris Tim
+                let htmlBadge = '';
                 if (stringJabatan.toLowerCase().includes('kepala') || stringJabatan.toLowerCase().includes('admin')) { 
-                    warnaJabatan = 'background:#f0e6fa; color:#6f42c1;'; 
+                    htmlBadge = `<span style="display: inline-block; margin-top: 6px; padding: 3px 6px; font-size: 9px; border-radius: 4px; font-weight: bold; background:#f0e6fa; color:#6f42c1; line-height: 1.2;">${stringJabatan}</span>`; 
                 } else if (stringJabatan.toLowerCase().includes('ketua')) { 
-                    warnaJabatan = 'background:#e6f0fa; color:#007bff;'; 
-                } else if (stringJabatan.toLowerCase().includes('anggota')) { 
-                    warnaJabatan = 'background:#e6f6ee; color:#28a745;'; // Tetap hijau estetik untuk anggota tim
-                } else if (stringJabatan === 'Pegawai') { 
-                    warnaJabatan = 'background:#f4f7fe; color:#666; border: 1px solid #ddd;'; 
+                    htmlBadge = `<span style="display: inline-block; margin-top: 6px; padding: 3px 6px; font-size: 9px; border-radius: 4px; font-weight: bold; background:#e6f0fa; color:#007bff; line-height: 1.2;">${stringJabatan}</span>`; 
                 }
 
-                // Tampilan kartu disesuaikan agar grafik pas berada di dalam background rectangle putih
+                // Tinggi kartu disesuaikan (padding 10px 14px) agar presisi mengitari grafik & teks
                 const htmlKartu = `
-                    <div class="kartu-anggota-tim" style="margin-bottom: 10px; background: white; border-radius: 12px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #edf2f9; display: flex; align-items: center; gap: 15px;">
-                        <div class="info-anggota-tim" style="width: 180px; flex-shrink: 0; border-right: 1px solid #edf2f9; padding-right: 10px;">
-                            <h4 style="margin: 0 0 4px 0; color: #1a233a; font-size: 13px; line-height: 1.3;">${anggota.nama}</h4>
+                    <div class="kartu-anggota-tim" style="margin-bottom: 8px; background: white; border-radius: 12px; padding: 10px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #edf2f9; display: flex; align-items: center; gap: 15px;">
+                        <div class="info-anggota-tim" style="width: 190px; flex-shrink: 0; border-right: 1px solid #edf2f9; padding-right: 10px; display: flex; flex-direction: column; justify-content: center;">
+                            <h4 style="margin: 0 0 3px 0; color: #1a233a; font-size: 12px; line-height: 1.3; font-weight: 700;">${anggota.nama}</h4>
                             <p style="margin: 0; font-size: 10px; color: #888;">NIP: ${anggota.nip}</p>
-                            <p style="margin: 3px 0 0 0; font-size: 10px; color: #555;"><b>Tim:</b> ${anggota.tim.join(', ')}</p>
-                            <span style="display: inline-block; margin-top: 8px; padding: 4px 8px; font-size: 10px; border-radius: 4px; font-weight: bold; line-height: 1.2; ${warnaJabatan}">${stringJabatan}</span>
+                            <p style="margin: 2px 0 0 0; font-size: 10px; color: #555; line-height: 1.2;"><b>Tim:</b> ${anggota.tim.join(', ')}</p>
+                            ${htmlBadge}
                         </div>
-                        <div class="canvas-wadah-tim" style="flex: 1; display: flex; gap: 10px; height: 75px;">
+                        <div class="canvas-wadah-tim" style="flex: 1; display: flex; gap: 15px; height: 75px;">
                             <div style="flex: 1; position: relative; height: 100%;"><canvas id="chart-tim-ht-${index}"></canvas></div>
                             <div style="flex: 1; position: relative; height: 100%;"><canvas id="chart-tim-psw-${index}"></canvas></div>
                         </div>
