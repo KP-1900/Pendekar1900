@@ -195,6 +195,55 @@
                     <button id="btn-mode-klaim" class="btn-toggle nonaktif" onclick="gantiMode('klaim')">📝 Klaim Tim</button>
                 </div>
 
+                <!-- Box Kamus -->
+                <div style="background:white; border-radius:12px; padding:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); border:1px solid #edf2f9; position:relative;">
+                    <h3 style="margin:0 0 8px 0; color:#1a233a; font-size:13px; font-weight:900;">📖 Kamus Kode</h3>
+                    <button onclick="toggleKamusPegawai()" class="btn-kamus" style="width:100%; text-align:center; padding:8px;">📖 Lihat Kamus</button>
+                    <!-- Popup Kamus -->
+                    <div id="popup-kamus-pegawai" style="
+                        display:none;
+                        position:absolute;
+                        bottom: calc(100% + 8px);
+                        right:0;
+                        width:560px;
+                        background:white;
+                        border-radius:16px;
+                        box-shadow:0 8px 24px rgba(0,0,0,0.13);
+                        border:1px solid #e2e8f0;
+                        padding:16px 18px 14px 18px;
+                        z-index:10000;
+                        animation: slideUpKamus 0.2s ease;
+                    ">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <span style="font-size:15px; font-weight:800; color:#1a233a;">📖 Kamus Kode PENDEKAR</span>
+                            <button onclick="toggleKamusPegawai()" style="background:transparent; border:none; font-size:18px; color:#888; cursor:pointer; line-height:1; padding:0;">✕</button>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                            <div>
+                                <div style="font-size:11px; font-weight:800; color:#2b6cb0; margin-bottom:6px; padding-bottom:4px; border-bottom:2px solid #e6f0fa;">📅 Kehadiran Dasar</div>
+                                <div class="pk-item"><span class="pk-kode">HK</span><span class="pk-desc">Hari Kerja dalam 1 bulan</span></div>
+                                <div class="pk-item"><span class="pk-kode">HD</span><span class="pk-desc">Hadir dalam 1 bulan</span></div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px; font-weight:800; color:#2b6cb0; margin-bottom:6px; padding-bottom:4px; border-bottom:2px solid #e6f0fa;">⏰ Hadir Terlambat (HT)</div>
+                                <div class="pk-item"><span class="pk-kode">HT</span><span class="pk-desc">Jumlah TL1+TL2+TL3+TL4</span></div>
+                                <div class="pk-item"><span class="pk-kode">TL 1</span><span class="pk-desc">≤ 30 menit</span></div>
+                                <div class="pk-item"><span class="pk-kode">TL 2</span><span class="pk-desc">30 – 60 menit</span></div>
+                                <div class="pk-item"><span class="pk-kode">TL 3</span><span class="pk-desc">60 – 90 menit</span></div>
+                                <div class="pk-item"><span class="pk-kode">TL 4</span><span class="pk-desc">&gt; 90 menit / tidak absen</span></div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px; font-weight:800; color:#2b6cb0; margin-bottom:6px; padding-bottom:4px; border-bottom:2px solid #e6f0fa;">🚪 Pulang Sebelum Waktu</div>
+                                <div class="pk-item"><span class="pk-kode">PSW</span><span class="pk-desc">Pulang Sebelum Waktunya</span></div>
+                                <div class="pk-item"><span class="pk-kode">PSW 1</span><span class="pk-desc">≤ 30 menit</span></div>
+                                <div class="pk-item"><span class="pk-kode">PSW 2</span><span class="pk-desc">30 – 60 menit</span></div>
+                                <div class="pk-item"><span class="pk-kode">PSW 3</span><span class="pk-desc">60 – 90 menit</span></div>
+                                <div class="pk-item"><span class="pk-kode">PSW 4</span><span class="pk-desc">&gt; 90 menit / tidak absen</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="ubah-password-box">
                     <h3>🔑 Ubah Password</h3>
                     <div style="display:flex; flex-direction:column; gap:10px; margin-top:5px; flex:1;">
@@ -700,6 +749,19 @@
             if (errUpdate) { pesan.style.color='#dc3545'; pesan.innerText="Gagal: " + errUpdate.message; } 
             else { pesan.style.color='#28a745'; pesan.innerText="Password berhasil diubah!"; document.getElementById('password-lama').value=''; document.getElementById('password-baru').value=''; document.getElementById('password-konfirmasi').value=''; }
         }
+
+        function toggleKamusPegawai() {
+            const popup = document.getElementById('popup-kamus-pegawai');
+            popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+        }
+
+        document.addEventListener('click', function(e) {
+            const popup = document.getElementById('popup-kamus-pegawai');
+            const boxKamus = popup && popup.closest('div[style*="position:relative"]');
+            if (popup && boxKamus && !boxKamus.contains(e.target)) {
+                popup.style.display = 'none';
+            }
+        });
 
         function prosesKeluar() { sessionStorage.removeItem('pegawai_nip'); sessionStorage.removeItem('pegawai_nama'); sessionStorage.removeItem('admin_via_nip'); window.location.href = 'admin.html'; }
 
