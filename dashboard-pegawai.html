@@ -48,9 +48,16 @@
             to   { opacity: 1; transform: translateY(0); }
         }
         .klaim-item-anim { animation: fadeInItem 0.35s ease forwards; }
+        #fade-overlay {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: #f4f7fe; opacity: 0; pointer-events: none;
+            transition: opacity 0.18s ease; z-index: 99999;
+        }
+        #fade-overlay.aktif { opacity: 1; pointer-events: all; }
     </style>
 </head>
 <body>
+    <div id="fade-overlay"></div>
     <div class="menu-kiri">
         <button class="ikon-menu" onclick="window.location.href='index.html'">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 3L4 9V21H9V14H15V21H20V9L12 3Z"/></svg>
@@ -205,6 +212,22 @@
     </div>
 
     <script>
+        // Fade in halus saat halaman selesai load (termasuk setelah reload)
+        window.addEventListener('load', () => {
+            const overlay = document.getElementById('fade-overlay');
+            // Mulai dari putih (opacity 1) lalu fade ke transparan
+            overlay.style.transition = 'none';
+            overlay.style.opacity = '1';
+            overlay.style.pointerEvents = 'all';
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    overlay.style.transition = 'opacity 0.25s ease';
+                    overlay.style.opacity = '0';
+                    overlay.style.pointerEvents = 'none';
+                });
+            });
+        });
+
         const _URL = 'https://gnytuyapiiickrieoboh.supabase.co';
         const _KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueXR1eWFwaWlpY2tyaWVvYm9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NDAzMzksImV4cCI6MjA5NzMxNjMzOX0.-oa4YA-U8TDzWfrSHd9EkbnLNB8IyObFw0SziIkIpQo';
         const db = window.supabase.createClient(_URL, _KEY);
@@ -538,48 +561,13 @@
                 return;
             }
 
-            // Hapus teks "belum klaim" jika ada
-            const kosong = listKlaim.querySelector('p');
-            if (kosong) kosong.remove();
+            // Simpan mode aktif agar setelah reload langsung ke klaim
+            sessionStorage.setItem('pegawai_mode_aktif', 'klaim');
 
-            // Hitung nomor urut
-            const nomorUrut = listKlaim.querySelectorAll('.klaim-item').length + 1;
-            const idBaru = inserted ? inserted.id : Date.now();
-
-            // Inject langsung ke DOM tanpa fetch ulang — langsung muncul smooth
-            const divBaru = document.createElement('div');
-            divBaru.className = 'klaim-item klaim-item-anim';
-            divBaru.dataset.tim = pTim;
-            divBaru.innerHTML = `
-                <div>
-                    <span style="font-size:12px; font-weight:bold; color:#1a233a;">${nomorUrut}. ${pTim}</span>
-                    <span style="font-size:11px; color:#666; margin-left:5px;">sebagai ${pJabatan}</span>
-                </div>
-                <div style="display:flex; gap:10px; align-items:center;">
-                    <div class="status-badge status-pending">PENDING</div>
-                    <button class="btn-hapus-klaim" onclick="hapusKlaim(${idBaru})" title="Hapus Klaim">🗑️</button>
-                </div>
-            `;
-            listKlaim.appendChild(divBaru);
-
-            // Sembunyikan form kalau sudah 3 klaim
-            const totalKlaim = listKlaim.querySelectorAll('.klaim-item').length;
-            if (totalKlaim >= 3) {
-                document.getElementById('form-klaim-box').style.display = 'none';
-            }
-
-            // Reset dropdown
-            document.getElementById('pilihan-tim').value = '';
-            document.getElementById('display-tim').childNodes[0].textContent = 'Pilih Tim...';
-            document.getElementById('pilihan-jabatan').value = '';
-            document.getElementById('display-jabatan').childNodes[0].textContent = 'Jabatan...';
-            document.getElementById('list-dropdown-jabatan').innerHTML = '';
-
-            pesan.style.color='#28a745'; pesan.innerText="✅ Berhasil diajukan!";
-            setTimeout(() => { pesan.innerText = ''; }, 2500);
-
-            // Sync di background setelah UI sudah update — pakai skipLoadingText agar tidak flicker
-            muatFormKlaim(true);
+            // Fade out halus lalu reload — cara paling andal agar data Supabase pasti fresh
+            const overlay = document.getElementById('fade-overlay');
+            overlay.classList.add('aktif');
+            setTimeout(() => { location.reload(); }, 180);
         }
 
         async function hapusKlaim(id_klaim) {
