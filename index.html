@@ -70,7 +70,7 @@
         <div id="wadah-konten" style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; padding: 0 25px;"></div>
 
         <!-- Wadah Teks Berjalan Kontekstual + Kamus -->
-        <div class="wadah-running-text" style="margin: 0 25px 12px 25px !important;">
+        <div class="wadah-running-text" style="margin: 0 25px 12px 25px !important; position: relative;">
             <span style="font-size: 16px;">📢</span>
             <div style="flex: 1; overflow: hidden; position: relative;">
                 <div class="teks-berjalan">
@@ -80,72 +80,50 @@
             <button onclick="bukaKamus()" class="btn-kamus">📖 Kamus</button>
         </div>
 
-        <!-- Modal Kamus -->
-        <div id="modal-kamus" class="modal-kamus-overlay" onclick="tutupKamus(event)">
-            <div class="modal-kamus-box" onclick="event.stopPropagation()">
-                <button class="tombol-close-kamus" onclick="tutupKamus()">✕</button>
-                <h2 style="margin: 0 0 20px 0; color: #1a233a; font-size: 20px; font-weight: 800;">📖 Kamus Kode PENDEKAR</h2>
-                
-                <div class="wadah-kamus-isi">
-                    <div class="kelompok-kamus">
-                        <h3 class="judul-kelompok-kamus">📅 Kehadiran Dasar</h3>
-                        <div class="item-kamus">
-                            <div class="kode-kamus">HK</div>
-                            <div class="deskripsi-kamus">Hari Kerja dalam 1 bulan</div>
-                        </div>
-                        <div class="item-kamus">
-                            <div class="kode-kamus">HD</div>
-                            <div class="deskripsi-kamus">Hadir dalam 1 bulan</div>
-                        </div>
-                    </div>
-
-                    <div class="kelompok-kamus">
-                        <h3 class="judul-kelompok-kamus">⏰ Hadir Terlambat (HT)</h3>
-                        <div class="item-kamus">
-                            <div class="kode-kamus">HT</div>
-                            <div class="deskripsi-kamus">Hadir Terlambat atau Jumlah dari TL1+TL2+TL3+TL4</div>
-                        </div>
-                        <div class="item-kamus">
-                            <div class="kode-kamus">TL 1</div>
-                            <div class="deskripsi-kamus">Keterlambatan ≤ 30 menit</div>
-                        </div>
-                        <div class="item-kamus">
-                            <div class="kode-kamus">TL 2</div>
-                            <div class="deskripsi-kamus">Keterlambatan 30 - 60 menit</div>
-                        </div>
-                        <div class="item-kamus">
-                            <div class="kode-kamus">TL 3</div>
-                            <div class="deskripsi-kamus">Keterlambatan 60 - 90 menit</div>
-                        </div>
-                        <div class="item-kamus">
-                            <div class="kode-kamus">TL 4</div>
-                            <div class="deskripsi-kamus">Keterlambatan > 90 menit atau tidak melakukan absensi</div>
-                        </div>
-                    </div>
-
-                    <div class="kelompok-kamus">
-                        <h3 class="judul-kelompok-kamus">🚪 Pulang Sebelum Waktunya (PSW)</h3>
-                        <div class="item-kamus">
-                            <div class="kode-kamus">PSW</div>
-                            <div class="deskripsi-kamus">Pulang Sebelum Waktunya</div>
-                        </div>
-                        <div class="item-kamus">
-                            <div class="kode-kamus">PSW 1</div>
-                            <div class="deskripsi-kamus">PSW ≤ 30 menit</div>
-                        </div>
-                        <div class="item-kamus">
-                            <div class="kode-kamus">PSW 2</div>
-                            <div class="deskripsi-kamus">PSW 30 - 60 menit</div>
-                        </div>
-                        <div class="item-kamus">
-                            <div class="kode-kamus">PSW 3</div>
-                            <div class="deskripsi-kamus">PSW 60 - 90 menit</div>
-                        </div>
-                        <div class="item-kamus">
-                            <div class="kode-kamus">PSW 4</div>
-                            <div class="deskripsi-kamus">PSW > 90 menit atau tidak melakukan absensi</div>
-                        </div>
-                    </div>
+        <!-- Popup Kamus Compact -->
+        <div id="popup-kamus" style="
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 8px);
+            right: 0;
+            width: 560px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.13);
+            border: 1px solid #e2e8f0;
+            padding: 16px 18px 14px 18px;
+            z-index: 10000;
+            animation: slideUpKamus 0.2s ease;
+        ">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <span style="font-size:15px; font-weight:800; color:#1a233a;">📖 Kamus Kode PENDEKAR</span>
+                <button onclick="tutupKamus()" style="background:transparent; border:none; font-size:18px; color:#888; cursor:pointer; line-height:1; padding:0;">✕</button>
+            </div>
+            <!-- 3 Kolom: Dasar | HT | PSW -->
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                <!-- Kolom 1: Dasar -->
+                <div>
+                    <div style="font-size:11px; font-weight:800; color:#2b6cb0; margin-bottom:6px; padding-bottom:4px; border-bottom:2px solid #e6f0fa;">📅 Kehadiran Dasar</div>
+                    <div class="pk-item"><span class="pk-kode">HK</span><span class="pk-desc">Hari Kerja dalam 1 bulan</span></div>
+                    <div class="pk-item"><span class="pk-kode">HD</span><span class="pk-desc">Hadir dalam 1 bulan</span></div>
+                </div>
+                <!-- Kolom 2: HT -->
+                <div>
+                    <div style="font-size:11px; font-weight:800; color:#2b6cb0; margin-bottom:6px; padding-bottom:4px; border-bottom:2px solid #e6f0fa;">⏰ Hadir Terlambat (HT)</div>
+                    <div class="pk-item"><span class="pk-kode">HT</span><span class="pk-desc">Jumlah TL1+TL2+TL3+TL4</span></div>
+                    <div class="pk-item"><span class="pk-kode">TL 1</span><span class="pk-desc">≤ 30 menit</span></div>
+                    <div class="pk-item"><span class="pk-kode">TL 2</span><span class="pk-desc">30 – 60 menit</span></div>
+                    <div class="pk-item"><span class="pk-kode">TL 3</span><span class="pk-desc">60 – 90 menit</span></div>
+                    <div class="pk-item"><span class="pk-kode">TL 4</span><span class="pk-desc">&gt; 90 menit / tidak absen</span></div>
+                </div>
+                <!-- Kolom 3: PSW -->
+                <div>
+                    <div style="font-size:11px; font-weight:800; color:#2b6cb0; margin-bottom:6px; padding-bottom:4px; border-bottom:2px solid #e6f0fa;">🚪 Pulang Sebelum Waktu</div>
+                    <div class="pk-item"><span class="pk-kode">PSW</span><span class="pk-desc">Pulang Sebelum Waktunya</span></div>
+                    <div class="pk-item"><span class="pk-kode">PSW 1</span><span class="pk-desc">≤ 30 menit</span></div>
+                    <div class="pk-item"><span class="pk-kode">PSW 2</span><span class="pk-desc">30 – 60 menit</span></div>
+                    <div class="pk-item"><span class="pk-kode">PSW 3</span><span class="pk-desc">60 – 90 menit</span></div>
+                    <div class="pk-item"><span class="pk-kode">PSW 4</span><span class="pk-desc">&gt; 90 menit / tidak absen</span></div>
                 </div>
             </div>
         </div>
@@ -173,27 +151,23 @@
             sessionStorage.setItem('sudahDisambut', 'ya');
         }
 
-        // === FUNGSI KAMUS ===
+        // === FUNGSI KAMUS (POPUP TOGGLE) ===
         function bukaKamus() {
-            const modal = document.getElementById('modal-kamus');
-            modal.classList.add('aktif');
+            const popup = document.getElementById('popup-kamus');
+            const sedangBuka = popup.style.display !== 'none';
+            popup.style.display = sedangBuka ? 'none' : 'block';
         }
 
         function tutupKamus(event) {
-            // Jika event ada, pastikan klik di overlay (bukan di box)
-            if (event && event.target.id !== 'modal-kamus') return;
-            
-            const modal = document.getElementById('modal-kamus');
-            modal.classList.remove('aktif');
+            document.getElementById('popup-kamus').style.display = 'none';
         }
 
-        // Tutup modal dengan tombol close
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                const modal = document.getElementById('modal-kamus');
-                if (modal && modal.classList.contains('aktif')) {
-                    tutupKamus();
-                }
+        // Tutup popup saat klik di luar
+        document.addEventListener('click', function(e) {
+            const popup = document.getElementById('popup-kamus');
+            const tombol = document.querySelector('.btn-kamus');
+            if (popup && !popup.contains(e.target) && tombol && !tombol.contains(e.target)) {
+                popup.style.display = 'none';
             }
         });
 
