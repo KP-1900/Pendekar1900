@@ -130,8 +130,8 @@
                         <div id="form-klaim-box" style="background:#f4f7fe; padding:20px; border-radius:12px; border:1px solid #edf2f9; display:none;">
                             <h4 style="margin:0 0 15px 0; color:#1a233a;">Ajukan Tim Baru</h4>
                             <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                                <select id="pilihan-tim" style="flex:1; min-width:200px; padding:10px; border-radius:8px; border:1px solid #ddd;" onmousedown="this.scrollIntoView({block:'start'})"></select>
-                                <select id="pilihan-jabatan" style="width:150px; padding:10px; border-radius:8px; border:1px solid #ddd;" onmousedown="this.scrollIntoView({block:'start'})">
+                                <select id="pilihan-tim" style="flex:1; min-width:200px; padding:10px; border-radius:8px; border:1px solid #ddd;"></select>
+                                <select id="pilihan-jabatan" style="width:150px; padding:10px; border-radius:8px; border:1px solid #ddd;">
                                     <option value="Anggota">Anggota</option>
                                     <option value="Ketua">Ketua</option>
                                     <option value="Admin">Admin</option>
@@ -223,6 +223,9 @@
             wTim.style.display = 'none';
             wKlaim.style.display = 'none';
 
+            // Simpan mode aktif ke sessionStorage agar bisa restore saat kembali
+            sessionStorage.setItem('pegawai_mode_aktif', mode);
+
             if (mode === 'pribadi') {
                 btnPribadi.className = 'btn-toggle aktif';
                 wPribadi.style.display = 'flex';
@@ -300,6 +303,17 @@
             const tahunTerpilih = parseInt(dropdown.value);
             await isiDropdownBulan(tahunTerpilih);
             tarikDataSemua();
+
+            // Restore mode terakhir yang aktif (klaim, tim, pribadi)
+            const modeTersimpan = sessionStorage.getItem('pegawai_mode_aktif');
+            if (modeTersimpan && modeTersimpan !== 'pribadi') {
+                const btnTim = document.getElementById('btn-mode-tim');
+                if (modeTersimpan === 'tim' && btnTim.style.display === 'none') {
+                    gantiMode('pribadi');
+                } else {
+                    gantiMode(modeTersimpan);
+                }
+            }
         }
         
         inisialisasiAwal();
