@@ -227,8 +227,71 @@
                             hk: b['HK'] || 0, hd: b['HD'] || 0, psw: b['PSW'] || 0, psw1: b['PSW1'] || b['PSW 1'] || 0, psw2: b['PSW2'] || b['PSW 2'] || 0, psw3: b['PSW3'] || b['PSW 3'] || 0, psw4: b['PSW4'] || b['PSW 4'] || 0,
                             ht: b['HT'] || 0, tl1: b['TL1'] || b['TL 1'] || 0, tl2: b['TL2'] || b['TL 2'] || 0, tl3: b['TL3'] || b['TL 3'] || 0, tl4: b['TL4'] || b['TL 4'] || 0
                         })).filter(b => b.tahun && b.bulan && b.nip);
+
+                        if (dataSiap.length === 0) {
+                            statusPesan.style.color = '#e67e22';
+                            statusPesan.innerText = "Tidak ada baris valid (Tahun/Bulan/NIP kosong) di file ini.";
+                            return;
+                        }
+
+                        // === CEK BARIS LAMA YANG TIDAK ADA DI FILE BARU (UNTUK DIHAPUS) ===
+                        statusPesan.innerText = "Memeriksa data lama yang mungkin perlu dihapus...";
+
+                        // Kumpulkan kombinasi unik tahun+bulan yang sedang diupload
+                        const kombinasiUnik = [...new Map(
+                            dataSiap.map(d => [`${d.tahun}||${d.bulan}`, { tahun: d.tahun, bulan: d.bulan }])
+                        ).values()];
+
+                        // Set NIP yang valid (ada di file baru) per kombinasi tahun+bulan
+                        const nipBaruSet = new Set(dataSiap.map(d => `${d.tahun}||${d.bulan}||${d.nip}`));
+
+                        // Ambil semua data lama yang match tahun+bulan yang sedang diupload
+                        let semuaBarisLama = [];
+                        for (const k of kombinasiUnik) {
+                            const { data: existing, error: errExisting } = await db
+                                .from('absensi_pegawai')
+                                .select('id, nip, nama')
+                                .eq('tahun', k.tahun)
+                                .eq('bulan', k.bulan);
+                            if (errExisting) throw errExisting;
+                            if (existing) semuaBarisLama = semuaBarisLama.concat(existing.map(e => ({ ...e, tahun: k.tahun, bulan: k.bulan })));
+                        }
+
+                        // Tentukan baris mana yang harus dihapus (NIP-nya tidak ada lagi di file baru)
+                        const barisUntukDihapus = semuaBarisLama.filter(
+                            e => !nipBaruSet.has(`${e.tahun}||${e.bulan}||${e.nip}`)
+                        );
+
+                        // Jika ada baris yang akan terhapus, minta konfirmasi dulu ke admin
+                        if (barisUntukDihapus.length > 0) {
+                            const daftarBulanTahun = [...new Set(barisUntukDihapus.map(b => `${b.bulan} ${b.tahun}`))].join(', ');
+                            const contohNama = barisUntukDihapus.slice(0, 10).map(b => `- ${b.nama} (NIP: ${b.nip})`).join('\n');
+                            const lebih = barisUntukDihapus.length > 10 ? `\n...dan ${barisUntukDihapus.length - 10} baris lainnya.` : '';
+
+                            const pesanKonfirmasi =
+                                `⚠️ PERHATIAN!\n\n` +
+                                `Ditemukan ${barisUntukDihapus.length} baris data lama pada periode (${daftarBulanTahun}) ` +
+                                `yang NIP-nya TIDAK ADA di file Excel yang baru diunggah.\n\n` +
+                                `Baris berikut akan DIHAPUS PERMANEN dari database absensi_pegawai:\n${contohNama}${lebih}\n\n` +
+                                `Apakah Anda yakin file ini sudah benar dan ingin melanjutkan?\n` +
+                                `(Klik Cancel jika Anda tidak yakin / file belum lengkap)`;
+
+                            if (!confirm(pesanKonfirmasi)) {
+                                statusPesan.style.color = '#e67e22';
+                                statusPesan.innerText = "Upload dibatalkan oleh admin.";
+                                return;
+                            }
+
+                            statusPesan.innerText = `Menghapus ${barisUntukDihapus.length} baris data lama...`;
+                            const idUntukDihapus = barisUntukDihapus.map(b => b.id);
+                            const { error: errHapus } = await db.from('absensi_pegawai').delete().in('id', idUntukDihapus);
+                            if (errHapus) throw errHapus;
+                        }
+
+                        // === UPSERT DATA BARU (UPDATE YANG SUDAH ADA + INSERT YANG BARU) ===
+                        statusPesan.innerText = "Menyimpan data baru/terupdate...";
                         ({ error } = await db.from('absensi_pegawai').upsert(dataSiap, { onConflict: 'tahun,bulan,nip' }));
-                        
+
                         if (!error) {
                             const akunBaru = dataSiap.map(d => ({ nip: d.nip, nama: d.nama, password: 'oke123456' }));
                             await db.from('pegawai').upsert(akunBaru, { onConflict: 'nip', ignoreDuplicates: true });
