@@ -29,6 +29,7 @@
                 <button id="tab-admin" onclick="gantiTab('admin')" style="flex:1; padding:10px; border:none; background:#f7f9fc; color:#666; font-weight:bold; cursor:pointer;">Admin</button>
             </div>
 
+            <!-- FORM PEGAWAI (Selalu diarahkan ke Dashboard Pegawai) -->
             <div id="form-pegawai" style="width:100%;">
                 <input type="text" id="pegawai-nip" placeholder="NIP 9 digit" onkeydown="if(event.key==='Enter') loginPegawai()" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
                 <div style="position:relative; width:90%; margin-left:auto; margin-right:auto;">
@@ -44,8 +45,9 @@
                 </p>
             </div>
 
+            <!-- FORM ADMIN (Bisa pakai akun superadmin ATAU NIP Tim SDM) -->
             <div id="form-admin" style="display:none; width:100%;">
-                <input type="text" id="admin-username" placeholder="Username" onkeydown="if(event.key==='Enter') loginAdmin()" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
+                <input type="text" id="admin-username" placeholder="Username / NIP SDM" onkeydown="if(event.key==='Enter') loginAdmin()" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
                 <div style="position:relative; width:90%; margin-left:auto; margin-right:auto;">
                     <input type="password" id="admin-password" placeholder="Password" onkeydown="if(event.key==='Enter') loginAdmin()" style="width:100%; padding:12px; padding-right:40px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
                     <span onclick="toggleMata('admin-password', this)" style="position:absolute; right:12px; top:12px; cursor:pointer; user-select:none; color:#888;">
@@ -112,23 +114,49 @@
             document.getElementById('pesan-login').innerText = '';
         }
 
+        // Fungsi Login untuk Tab Admin
         async function loginAdmin() {
             let username = document.getElementById('admin-username').value.trim();
             const password = document.getElementById('admin-password').value;
             const pesan = document.getElementById('pesan-login');
 
             if (!username || !password) { pesan.innerText = "Username dan password tidak boleh kosong."; return; }
-            if (username.toLowerCase() === 'admin') username = 'admin@pendekar.com';
 
             pesan.style.color = '#2b6cb0';
             pesan.innerText = "Memeriksa...";
 
-            const { data, error } = await db.auth.signInWithPassword({ email: username, password });
-            if (error) {
+            // 1. Coba login sebagai Super Admin (Auth Supabase)
+            if (username.toLowerCase() === 'admin' || username.includes('@')) {
+                let emailLogin = username.toLowerCase() === 'admin' ? 'admin@pendekar.com' : username;
+                const { data, error } = await db.auth.signInWithPassword({ email: emailLogin, password });
+                if (!error && data) {
+                    sessionStorage.removeItem('admin_via_nip'); // Bersihkan sisa sesi pegawai jika ada
+                    window.location.href = 'admin-panel.html';
+                    return;
+                }
+            }
+
+            // 2. Jika bukan Super Admin, cek apakah ini NIP Pegawai yang punya hak akses Admin
+            const { data: dataPegawai, error: errPegawai } = await db.from('pegawai').select('*').eq('nip', username).eq('password', password).single();
+            
+            if (errPegawai || !dataPegawai) {
                 pesan.style.color = '#dc3545';
-                pesan.innerText = "Username atau password salah.";
-            } else {
+                pesan.innerText = "Username/NIP atau password salah.";
+                return;
+            }
+
+            // Cek apakah NIP ini punya klaim yang di-ACC di tim SDM
+            const { data: klaimAdmin } = await db.from('pengajuan_tim').select('tim').eq('nip', username).eq('status', 'approved');
+            const bisaAdmin = klaimAdmin && klaimAdmin.some(k => k.tim.toLowerCase().includes('sumber daya manusia'));
+
+            if (bisaAdmin) {
+                sessionStorage.setItem('pegawai_nip', dataPegawai.nip);
+                sessionStorage.setItem('pegawai_nama', dataPegawai.nama);
+                sessionStorage.setItem('admin_via_nip', 'ya');
                 window.location.href = 'admin-panel.html';
+            } else {
+                pesan.style.color = '#dc3545';
+                pesan.innerText = "Akun ini tidak memiliki hak akses Admin.";
             }
         }
 
@@ -163,6 +191,7 @@
             }
         }
 
+        // Fungsi Login untuk Tab Pegawai (Selalu ke Dashboard Pegawai)
         async function loginPegawai() {
             const nip = document.getElementById('pegawai-nip').value.trim();
             const password = document.getElementById('pegawai-password').value;
@@ -179,20 +208,11 @@
                 return;
             }
 
-            // Pengecekan Case-Insensitive dan Partial Match
-            const { data: klaimAdmin } = await db.from('pengajuan_tim').select('tim').eq('nip', nip).eq('status', 'approved');
-            const bisaAdmin = klaimAdmin && klaimAdmin.some(k => k.tim.toLowerCase().includes('sumber daya manusia'));
-
+            // Bersihkan sesi admin_via_nip agar murni masuk sebagai Pegawai
             sessionStorage.setItem('pegawai_nip', data.nip);
             sessionStorage.setItem('pegawai_nama', data.nama);
-
-            if (bisaAdmin) {
-                sessionStorage.setItem('admin_via_nip', 'ya');
-                window.location.href = 'admin-panel.html';
-            } else {
-                sessionStorage.removeItem('admin_via_nip');
-                window.location.href = 'dashboard-pegawai.html';
-            }
+            sessionStorage.removeItem('admin_via_nip');
+            window.location.href = 'dashboard-pegawai.html';
         }
     </script>
 </body>
