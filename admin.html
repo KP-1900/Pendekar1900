@@ -24,13 +24,11 @@
             <h2 style="margin:0 0 5px 0; color:#1a233a;">Login PENDEKAR</h2>
             <p style="color:#888; font-size:13px; margin-bottom:25px;">Masuk sebagai Pegawai atau Admin</p>
 
-            <!-- Tab Pilihan -->
             <div style="display:flex; margin-bottom:25px; border-radius:10px; overflow:hidden; border:1px solid #e2e8f0;">
                 <button id="tab-pegawai" onclick="gantiTab('pegawai')" style="flex:1; padding:10px; border:none; background:#28a745; color:white; font-weight:bold; cursor:pointer;">Pegawai</button>
                 <button id="tab-admin" onclick="gantiTab('admin')" style="flex:1; padding:10px; border:none; background:#f7f9fc; color:#666; font-weight:bold; cursor:pointer;">Admin</button>
             </div>
 
-            <!-- Form Pegawai -->
             <div id="form-pegawai" style="width:100%;">
                 <input type="text" id="pegawai-nip" placeholder="NIP 9 digit" onkeydown="if(event.key==='Enter') loginPegawai()" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
                 <div style="position:relative; width:90%; margin-left:auto; margin-right:auto;">
@@ -46,7 +44,6 @@
                 </p>
             </div>
 
-            <!-- Form Admin -->
             <div id="form-admin" style="display:none; width:100%;">
                 <input type="text" id="admin-username" placeholder="Username" onkeydown="if(event.key==='Enter') loginAdmin()" style="width:90%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; display:block; margin-left:auto; margin-right:auto;">
                 <div style="position:relative; width:90%; margin-left:auto; margin-right:auto;">
@@ -84,7 +81,6 @@
         const _KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueXR1eWFwaWlpY2tyaWVvYm9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NDAzMzksImV4cCI6MjA5NzMxNjMzOX0.-oa4YA-U8TDzWfrSHd9EkbnLNB8IyObFw0SziIkIpQo';
         const db = window.supabase.createClient(_URL, _KEY);
 
-        // Toggle tampil/sembunyi password
         function toggleMata(idInput, ikon) {
             const input = document.getElementById(idInput);
             if (input.type === 'password') {
@@ -121,10 +117,7 @@
             const password = document.getElementById('admin-password').value;
             const pesan = document.getElementById('pesan-login');
 
-            if (!username || !password) {
-                pesan.innerText = "Username dan password tidak boleh kosong.";
-                return;
-            }
+            if (!username || !password) { pesan.innerText = "Username dan password tidak boleh kosong."; return; }
             if (username.toLowerCase() === 'admin') username = 'admin@pendekar.com';
 
             pesan.style.color = '#2b6cb0';
@@ -150,31 +143,14 @@
             const passwordBaru = document.getElementById('lupa-password-baru').value;
             const pesan = document.getElementById('pesan-lupa');
 
-            if (!nip || !passwordBaru) {
-                pesan.style.color = '#dc3545';
-                pesan.innerText = "NIP dan password baru tidak boleh kosong.";
-                return;
-            }
-
-            pesan.style.color = '#2b6cb0';
-            pesan.innerText = "Memeriksa NIP...";
+            if (!nip || !passwordBaru) { pesan.style.color = '#dc3545'; pesan.innerText = "NIP dan password baru tidak boleh kosong."; return; }
+            pesan.style.color = '#2b6cb0'; pesan.innerText = "Memeriksa NIP...";
 
             const { data: pegawai } = await db.from('pegawai').select('nip,nama').eq('nip', nip).single();
-
-            if (!pegawai) {
-                pesan.style.color = '#dc3545';
-                pesan.innerText = "NIP tidak ditemukan.";
-                return;
-            }
+            if (!pegawai) { pesan.style.color = '#dc3545'; pesan.innerText = "NIP tidak ditemukan."; return; }
 
             pesan.innerText = "Mengirim permintaan...";
-
-            const { error } = await db.from('reset_password').insert({
-                nip: pegawai.nip,
-                nama: pegawai.nama,
-                password_baru: passwordBaru,
-                status: 'pending'
-            });
+            const { error } = await db.from('reset_password').insert({ nip: pegawai.nip, nama: pegawai.nama, password_baru: passwordBaru, status: 'pending' });
 
             if (error) {
                 pesan.style.color = '#dc3545';
@@ -192,21 +168,10 @@
             const password = document.getElementById('pegawai-password').value;
             const pesan = document.getElementById('pesan-login');
 
-            if (!nip || !password) {
-                pesan.innerText = "NIP dan password tidak boleh kosong.";
-                return;
-            }
+            if (!nip || !password) { pesan.innerText = "NIP dan password tidak boleh kosong."; return; }
+            pesan.style.color = '#2b6cb0'; pesan.innerText = "Memeriksa...";
 
-            pesan.style.color = '#2b6cb0';
-            pesan.innerText = "Memeriksa...";
-
-            // Cek di tabel pegawai
-            const { data, error } = await db
-                .from('pegawai')
-                .select('*')
-                .eq('nip', nip)
-                .eq('password', password)
-                .single();
+            const { data, error } = await db.from('pegawai').select('*').eq('nip', nip).eq('password', password).single();
 
             if (error || !data) {
                 pesan.style.color = '#dc3545';
@@ -214,24 +179,14 @@
                 return;
             }
 
-            // Cek apakah dia Ketua tim Kepegawaian yang approved → bisa masuk admin
-            const { data: klaimAdmin } = await db
-                .from('pengajuan_tim')
-                .select('tim, jabatan')
-                .eq('nip', nip)
-                .eq('status', 'approved');
+            // Pengecekan Case-Insensitive dan Partial Match
+            const { data: klaimAdmin } = await db.from('pengajuan_tim').select('tim').eq('nip', nip).eq('status', 'approved');
+            const bisaAdmin = klaimAdmin && klaimAdmin.some(k => k.tim.toLowerCase().includes('sumber daya manusia'));
 
-            const bisaAdmin = klaimAdmin && klaimAdmin.some(k =>
-                k.jabatan.toLowerCase() === 'ketua' &&
-                k.tim.toLowerCase().includes('kepegawaian')
-            );
-
-            // Simpan info pegawai di sessionStorage
             sessionStorage.setItem('pegawai_nip', data.nip);
             sessionStorage.setItem('pegawai_nama', data.nama);
 
             if (bisaAdmin) {
-                // Tandai sebagai "admin via NIP" agar admin-panel tahu
                 sessionStorage.setItem('admin_via_nip', 'ya');
                 window.location.href = 'admin-panel.html';
             } else {

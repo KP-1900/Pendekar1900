@@ -82,16 +82,13 @@
             const nipPegawai = sessionStorage.getItem('pegawai_nip');
             
             if (adminViaNip && nipPegawai) {
-                // Login admin via NIP Ketua Kepegawaian — verifikasi ulang klaim
                 const { data: klaimCek } = await db.from('pengajuan_tim')
-                    .select('tim, jabatan')
+                    .select('tim')
                     .eq('nip', nipPegawai)
                     .eq('status', 'approved');
                 
-                const valid = klaimCek && klaimCek.some(k =>
-                    k.jabatan.toLowerCase() === 'ketua' &&
-                    k.tim.toLowerCase().includes('kepegawaian')
-                );
+                // Pengecekan Case-Insensitive dan Partial Match
+                const valid = klaimCek && klaimCek.some(k => k.tim.toLowerCase().includes('sumber daya manusia'));
 
                 if (!valid) { sessionStorage.removeItem('admin_via_nip'); window.location.href = 'admin.html'; return; }
                 muatPermintaanReset(); muatKlaimTim();
@@ -168,7 +165,6 @@
             window.location.href = session ? 'admin-panel.html' : 'admin.html';
         }
 
-        // Label info user yang sedang login
         (function tampilkanUserInfo() {
             const nip = sessionStorage.getItem('pegawai_nip');
             const nama = sessionStorage.getItem('pegawai_nama');
@@ -241,10 +237,7 @@
                             nama_tim: b['Nama Tim'] || b['Tim'] || b['TIM'] || null
                         })).filter(b => b.nama_tim);
 
-                        // HAPUS SEMUA DAFTAR TIM LAMA TERLEBIH DAHULU (Wipe and Replace)
                         await db.from('daftar_tim').delete().not('nama_tim', 'is', null);
-
-                        // MASUKKAN DAFTAR TIM BARU
                         ({ error } = await db.from('daftar_tim').insert(dataSiap));
                     }
 
