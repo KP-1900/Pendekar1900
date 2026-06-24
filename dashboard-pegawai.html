@@ -35,6 +35,34 @@
         .info-anggota-tim { width: 180px; flex-shrink: 0; border-right: 1px solid #edf2f9; padding-right: 10px; }
         .canvas-wadah-tim { flex: 1; display: flex; gap: 10px; }
         .canvas-wadah-tim > div { flex: 1; position: relative; height: 90px; }
+
+        /* KODE CSS UNTUK RUNNING TEXT */
+        .wadah-running-text {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 8px;
+            padding: 8px 12px;
+            overflow: hidden;
+            white-space: nowrap;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .teks-berjalan {
+            display: inline-block;
+            font-size: 13px;
+            font-weight: bold;
+            color: #856404;
+            animation: marquee 35s linear infinite;
+        }
+        .teks-berjalan:hover {
+            animation-play-state: paused;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
     </style>
 </head>
 <body>
@@ -139,6 +167,16 @@
 
         </div>
 
+        <!-- HTML UNTUK RUNNING TEXT -->
+        <div class="wadah-running-text">
+            <span style="font-size: 16px;">📢</span>
+            <div style="flex: 1; overflow: hidden; position: relative;">
+                <div class="teks-berjalan">
+                    Aturan bagi PNS (Pegawai Negeri Sipil) dan ASN yang tidak masuk kerja tanpa keterangan (tanpa kabar) diatur secara ketat dalam Peraturan Pemerintah (PP) Nomor 94 Tahun 2021 tentang Disiplin PNS. Berdasarkan peraturan tersebut, sanksi ketidakhadiran dihitung secara kumulatif dalam 1 tahun: 3 Hari Kerja: Mendapatkan hukuman disiplin ringan berupa teguran lisan. | 4–6 Hari Kerja: Mendapatkan hukuman disiplin ringan berupa teguran tertulis. | 7–10 Hari Kerja: Mendapatkan hukuman disiplin ringan berupa pernyataan tidak puas secara tertulis.
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -205,7 +243,6 @@
         });
 
         async function inisialisasiAwal() {
-            // Ambil Info dari Tabel Referensi Utama! (Sangat Stabil)
             const { data: dataRole } = await db.from('struktur_kantor').select('*').eq('nip', nipPegawai).single();
             
             if (dataRole) {
@@ -213,7 +250,6 @@
                 namaTimAkses = dataRole.tim || null;
                 document.getElementById('nama-pegawai').innerText = dataRole.nama || '-';
             } else {
-                // Berjaga-jaga kalau orangnya belum terdaftar di excel struktur baru
                 roleAkses = 'Anggota';
                 namaTimAkses = null;
                 document.getElementById('nama-pegawai').innerText = 'Data Struktur Belum Diupdate';
@@ -286,38 +322,25 @@
 
         async function tarikDataTimLengkap() {
             const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
-            
-            // Tarik data absen tahun ini dan daftar seluruh orang di kantor
             const { data: dataTahunIni } = await db.from('absensi_pegawai').select('*').eq('tahun', tahun);
             const { data: allStruktur } = await db.from('struktur_kantor').select('*');
             
             if (!allStruktur || !dataTahunIni) return;
 
-            // Memilih hanya yang relevan berdasarkan hak akses login
             let daftarStrukturTersaring = allStruktur.filter(d => {
-                if (d.nip === nipPegawai) return false; // Sembunyikan diri sendiri
-                
+                if (d.nip === nipPegawai) return false; 
                 let jabatanKita = roleAkses.toLowerCase();
                 if (jabatanKita === 'ketua' && !isKepalaAtauAdmin) {
-                    if (d.tim !== namaTimAkses) return false; // Ketua cuma lihat timnya
+                    if (d.tim !== namaTimAkses) return false; 
                 }
-                return true; // Kepala/Admin Umum lihat semua
+                return true; 
             });
 
             const petaAnggota = {};
-            
-            // Siapkan kanvas kosong per orang
             daftarStrukturTersaring.forEach(d => {
-                petaAnggota[d.nip] = { 
-                    nip: d.nip, 
-                    nama: d.nama, 
-                    jabatan: d.jabatan || 'Anggota', 
-                    tim: d.tim, 
-                    dataBulanan: {} 
-                };
+                petaAnggota[d.nip] = { nip: d.nip, nama: d.nama, jabatan: d.jabatan || 'Anggota', tim: d.tim, dataBulanan: {} };
             });
 
-            // Isikan nilai absen yang ditemukan
             dataTahunIni.forEach(d => {
                 if (petaAnggota[d.nip]) {
                     petaAnggota[d.nip].dataBulanan[d.bulan] = { ht: d.ht || 0, psw: d.psw || 0 };

@@ -6,6 +6,36 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* CSS UNTUK RUNNING TEXT MODERN */
+        .wadah-running-text {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 8px;
+            padding: 8px 12px;
+            overflow: hidden;
+            white-space: nowrap;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0 16px 12px 16px;
+        }
+        .teks-berjalan {
+            display: inline-block;
+            font-size: 13px;
+            font-weight: bold;
+            color: #856404;
+            animation: marquee 35s linear infinite;
+        }
+        .teks-berjalan:hover {
+            animation-play-state: paused;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+    </style>
 </head>
 <body>
 
@@ -31,18 +61,28 @@
         <button class="ikon-menu" onclick="kePanelOrang()">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"/></svg>
         </button>
-
     </div>
 
-    <div class="area-kanan" id="wadah-konten"></div>
+    <div class="area-kanan" style="display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding: 0 !important; gap: 12px;">
+        
+        <div id="wadah-konten" style="flex: 1; min-height: 0; overflow-y: auto;"></div>
+
+        <div class="wadah-running-text">
+            <span style="font-size: 16px;">📢</span>
+            <div style="flex: 1; overflow: hidden; position: relative;">
+                <div class="teks-berjalan">
+                    Aturan bagi PNS (Pegawai Negeri Sipil) dan ASN yang tidak masuk kerja tanpa keterangan (tanpa kabar) diatur secara ketat dalam Peraturan Pemerintah (PP) Nomor 94 Tahun 2021 tentang Disiplin PNS. Berdasarkan peraturan tersebut, sanksi ketidakhadiran dihitung secara kumulatif dalam 1 tahun: 3 Hari Kerja: Mendapatkan hukuman disiplin ringan berupa teguran lisan. | 4–6 Hari Kerja: Mendapatkan hukuman disiplin ringan berupa teguran tertulis. | 7–10 Hari Kerja: Mendapatkan hukuman disiplin ringan berupa pernyataan tidak puas secara tertulis.
+                </div>
+            </div>
+        </div>
+
+    </div>
 
     <script>
         const _URL = 'https://gnytuyapiiickrieoboh.supabase.co';
         const _KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueXR1eWFwaWlpY2tyaWVvYm9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NDAzMzksImV4cCI6MjA5NzMxNjMzOX0.-oa4YA-U8TDzWfrSHd9EkbnLNB8IyObFw0SziIkIpQo';
         const db = window.supabase.createClient(_URL, _KEY);
 
-        // Pintar: arahkan ke panel sesuai siapa yang sedang login
-        // Sidebar TIDAK memiliki ikon logout — logout dilakukan dari halaman panel masing-masing
         async function kePanelOrang() {
             if (sessionStorage.getItem('pegawai_nip')) {
                 window.location.href = 'dashboard-pegawai.html';
@@ -59,19 +99,16 @@
             sessionStorage.setItem('sudahDisambut', 'ya');
         }
 
-        // Sembunyikan modal sambutan SEBELUM render jika sudah pernah dibuka — langsung hide tanpa animasi
         if (sessionStorage.getItem('sudahDisambut') === 'ya') {
             document.getElementById('modal-sambutan').style.display = 'none';
         }
 
-        // Fungsi muat konten dashboard (bisa dipanggil ulang tanpa reload halaman)
         function muatKontenDashboard() {
             fetch('konten-dashboard.html')
                 .then(response => response.text())
                 .then(data => { 
                     document.getElementById('wadah-konten').innerHTML = data; 
                     
-                    // Hapus instance app.js lama jika ada, lalu muat ulang
                     const scriptLama = document.getElementById('script-app');
                     if (scriptLama) scriptLama.remove();
 
@@ -83,12 +120,10 @@
                 .catch(error => console.error('Gagal memuat konten:', error));
         }
 
-        // Tombol beranda: muat ulang konten tanpa reload halaman penuh
         function muatUlangDashboard() {
             muatKontenDashboard();
         }
 
-        // Muat konten saat pertama kali buka
         muatKontenDashboard();
     </script>
 </body>
