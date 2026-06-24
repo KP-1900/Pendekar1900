@@ -127,6 +127,22 @@
         }
 
         function muatUlangDashboard() {
+            // Simpan posisi animasi running text sebelum reload konten
+            const teks = document.querySelector('.teks-berjalan');
+            if (teks) {
+                // Hitung sudah berapa detik animasi berjalan
+                const style = getComputedStyle(teks);
+                const durasi = 80; // harus sama dengan durasi di CSS (80s)
+                // animationDelay negatif = posisi saat ini
+                // Trik: set animationDelay ke nilai negatif agar posisi tidak berubah
+                const elapsed = (performance.now() / 1000) % durasi;
+                teks.style.animationDelay = `-${elapsed}s`;
+                // Restart animasi dengan delay yang sudah dihitung
+                teks.style.animationName = 'none';
+                requestAnimationFrame(() => {
+                    teks.style.animationName = '';
+                });
+            }
             muatKontenDashboard();
         }
 

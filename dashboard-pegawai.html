@@ -290,7 +290,7 @@
                 wKlaim.style.display = 'flex';
                 filterBulan.style.display = 'none';
                 // Selalu fresh load saat pertama buka mode klaim
-                muatFormKlaim(false);
+                muatFormKlaim();
             }
         }
 
@@ -484,12 +484,13 @@
         }
 
         /* KODE DIPERKUAT: Mengamankan form klaim dari nge-blank */
-        async function muatFormKlaim(skipLoadingText = false) {
+        async function muatFormKlaim() {
             const listKlaim = document.getElementById('list-klaim-saya');
             const formBox = document.getElementById('form-klaim-box');
 
-            // Jangan reset innerHTML kalau dipanggil setelah optimistic inject
-            if (!skipLoadingText) {
+            // Kalau sudah ada item klaim di DOM, jangan reset — langsung fetch di background
+            const sudahAdaItem = listKlaim.querySelectorAll('.klaim-item').length > 0;
+            if (!sudahAdaItem) {
                 listKlaim.innerHTML = '<p style="color:#999; font-size:12px;">Memuat data...</p>';
             }
 
@@ -498,35 +499,48 @@
                 if (errKlaim) throw errKlaim;
 
                 if (dKlaim && dKlaim.length > 0) {
-                    listKlaim.innerHTML = dKlaim.map((k, i) => `
-                        <div class="klaim-item">
-                            <div>
-                                <span style="font-size:12px; font-weight:bold; color:#1a233a;">${i+1}. ${k.tim}</span>
-                                <span style="font-size:11px; color:#666; margin-left:5px;">sebagai ${k.jabatan}</span>
+                    // Render ulang hanya kalau jumlah item berbeda dari yang di DOM (ada perubahan)
+                    const jumlahDOM = listKlaim.querySelectorAll('.klaim-item').length;
+                    if (jumlahDOM !== dKlaim.length) {
+                        listKlaim.innerHTML = dKlaim.map((k, i) => `
+                            <div class="klaim-item">
+                                <div>
+                                    <span style="font-size:12px; font-weight:bold; color:#1a233a;">${i+1}. ${k.tim}</span>
+                                    <span style="font-size:11px; color:#666; margin-left:5px;">sebagai ${k.jabatan}</span>
+                                </div>
+                                <div style="display:flex; gap:10px; align-items:center;">
+                                    <div class="status-badge status-${k.status}">${k.status.toUpperCase()}</div>
+                                    <button class="btn-hapus-klaim" onclick="hapusKlaim(${k.id})" title="Hapus Klaim">🗑️</button>
+                                </div>
                             </div>
-                            <div style="display:flex; gap:10px; align-items:center;">
-                                <div class="status-badge status-${k.status}">${k.status.toUpperCase()}</div>
-                                <button class="btn-hapus-klaim" onclick="hapusKlaim(${k.id})" title="Hapus Klaim">🗑️</button>
-                            </div>
-                        </div>
-                    `).join('');
+                        `).join('');
+                    }
                 } else {
-                    listKlaim.innerHTML = '<p style="color:#999; font-size:12px;">Anda belum mengklaim tim manapun.</p>';
+                    if (listKlaim.querySelectorAll('.klaim-item').length === 0) {
+                        listKlaim.innerHTML = '<p style="color:#999; font-size:12px;">Anda belum mengklaim tim manapun.</p>';
+                    }
                 }
 
                 if (!dKlaim || dKlaim.length < 3) {
                     formBox.style.display = 'block';
-                    const { data: dTim } = await db.from('daftar_tim').select('nama_tim').order('nama_tim', { ascending: true });
-                    if (dTim && dTim.length > 0) {
-                        renderDropdownTim(dTim.map(t => t.nama_tim));
-                    } else {
-                        document.getElementById('display-tim').childNodes[0].textContent = 'Pilih Tim... (Data kosong)';
+                    // Hanya load dropdown tim kalau belum terisi
+                    const dispTim = document.getElementById('display-tim');
+                    const isiDropdownTim = document.getElementById('list-dropdown-tim');
+                    if (isiDropdownTim && isiDropdownTim.children.length === 0) {
+                        const { data: dTim } = await db.from('daftar_tim').select('nama_tim').order('nama_tim', { ascending: true });
+                        if (dTim && dTim.length > 0) {
+                            renderDropdownTim(dTim.map(t => t.nama_tim));
+                        } else {
+                            if (dispTim) dispTim.childNodes[0].textContent = 'Pilih Tim... (Data kosong)';
+                        }
                     }
                 } else {
                     formBox.style.display = 'none';
                 }
             } catch (e) {
-                listKlaim.innerHTML = `<p style="color:#dc3545; font-size:12px;">Gagal memuat: ${e.message}</p>`;
+                if (!listKlaim.querySelectorAll('.klaim-item').length) {
+                    listKlaim.innerHTML = `<p style="color:#dc3545; font-size:12px;">Gagal memuat: ${e.message}</p>`;
+                }
             }
         }
 
