@@ -481,7 +481,6 @@
         function renderModeTim(daftarAnggota) {
             const wadah = document.getElementById('wadah-mode-tim');
             wadah.innerHTML = '';
-            
             Object.values(chartTimInstances).forEach(chart => chart.destroy());
             chartTimInstances = {};
 
@@ -490,54 +489,60 @@
                 return;
             }
 
+            // TAMPILKAN JUDUL GRAFIK SEKALI SAJA SEBAGAI HEADER DI ATAS
+            let htmlHeader = `
+                <div style="display: flex; padding: 4px 12px; margin-bottom: 4px; position: sticky; top: 0; background: #f4f7fe; z-index: 10; align-items: center; gap: 15px; flex-shrink: 0;">
+                    <div style="width: 180px; flex-shrink: 0;"></div>
+                    <div style="flex: 1; display: flex; gap: 10px; text-align: center;">
+                        <div style="flex: 1; font-size: 12px; font-weight: 900; color: #1a233a;">Tren HT per Bulan</div>
+                        <div style="flex: 1; font-size: 12px; font-weight: 900; color: #1a233a;">Tren PSW per Bulan</div>
+                    </div>
+                </div>
+            `;
+            wadah.innerHTML = htmlHeader;
+
             daftarAnggota.forEach((anggota, index) => {
                 let stringJabatan = anggota.jabatan.join(' / ');
-                let warnaJabatan = 'background:#e6f6ee; color:#28a745;'; 
                 
-                if (stringJabatan.toLowerCase().includes('kepala') || stringJabatan.toLowerCase().includes('admin')) {
+                // KUSTOMISASI: Jika jabatannya Anggota, tambahkan nama Tim di belakangnya
+                if (stringJabatan === 'Anggota') {
+                    stringJabatan = `Anggota Tim ${anggota.tim.join(', ')}`;
+                }
+
+                let warnaJabatan = 'background:#e6f6ee; color:#28a745;'; 
+                if (stringJabatan.toLowerCase().includes('kepala') || stringJabatan.toLowerCase().includes('admin')) { 
                     warnaJabatan = 'background:#f0e6fa; color:#6f42c1;'; 
-                } else if (stringJabatan.toLowerCase().includes('ketua')) {
+                } else if (stringJabatan.toLowerCase().includes('ketua')) { 
                     warnaJabatan = 'background:#e6f0fa; color:#007bff;'; 
-                } else if (stringJabatan === 'Pegawai') {
+                } else if (stringJabatan.toLowerCase().includes('anggota')) { 
+                    warnaJabatan = 'background:#e6f6ee; color:#28a745;'; // Tetap hijau estetik untuk anggota tim
+                } else if (stringJabatan === 'Pegawai') { 
                     warnaJabatan = 'background:#f4f7fe; color:#666; border: 1px solid #ddd;'; 
                 }
 
-                let stringTim = anggota.tim.join(', ');
-
+                // Tampilan kartu disesuaikan agar grafik pas berada di dalam background rectangle putih
                 const htmlKartu = `
-                    <div class="kartu-anggota-tim">
-                        <div class="info-anggota-tim">
-                            <h4 style="margin: 0 0 4px 0; color: #1a233a; font-size: 13px; line-height: 1.3;" title="${anggota.nama}">${anggota.nama}</h4>
+                    <div class="kartu-anggota-tim" style="margin-bottom: 10px; background: white; border-radius: 12px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #edf2f9; display: flex; align-items: center; gap: 15px;">
+                        <div class="info-anggota-tim" style="width: 180px; flex-shrink: 0; border-right: 1px solid #edf2f9; padding-right: 10px;">
+                            <h4 style="margin: 0 0 4px 0; color: #1a233a; font-size: 13px; line-height: 1.3;">${anggota.nama}</h4>
                             <p style="margin: 0; font-size: 10px; color: #888;">NIP: ${anggota.nip}</p>
-                            ${isKepalaAtauAdmin ? `<p style="margin: 3px 0 0 0; font-size: 10px; color: #555;"><b>Tim:</b> ${stringTim}</p>` : ''}
-                            <span style="display: inline-block; margin-top: 8px; padding: 3px 8px; font-size: 10px; border-radius: 4px; font-weight: bold; ${warnaJabatan}">${stringJabatan}</span>
+                            <p style="margin: 3px 0 0 0; font-size: 10px; color: #555;"><b>Tim:</b> ${anggota.tim.join(', ')}</p>
+                            <span style="display: inline-block; margin-top: 8px; padding: 4px 8px; font-size: 10px; border-radius: 4px; font-weight: bold; line-height: 1.2; ${warnaJabatan}">${stringJabatan}</span>
                         </div>
-                        <div class="canvas-wadah-tim">
-                            <div style="display: flex; flex-direction: column; align-items: center;">
-                                <span style="font-size: 11px; font-weight: bold; color: #1a233a; margin-bottom: 5px;">Tren HT per Bulan</span>
-                                <div style="width: 100%; flex: 1; position: relative;"><canvas id="chart-tim-ht-${index}"></canvas></div>
-                            </div>
-                            <div style="display: flex; flex-direction: column; align-items: center;">
-                                <span style="font-size: 11px; font-weight: bold; color: #1a233a; margin-bottom: 5px;">Tren PSW per Bulan</span>
-                                <div style="width: 100%; flex: 1; position: relative;"><canvas id="chart-tim-psw-${index}"></canvas></div>
-                            </div>
+                        <div class="canvas-wadah-tim" style="flex: 1; display: flex; gap: 10px; height: 75px;">
+                            <div style="flex: 1; position: relative; height: 100%;"><canvas id="chart-tim-ht-${index}"></canvas></div>
+                            <div style="flex: 1; position: relative; height: 100%;"><canvas id="chart-tim-psw-${index}"></canvas></div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
                 wadah.innerHTML += htmlKartu;
             });
 
             daftarAnggota.forEach((anggota, index) => {
                 const dataHT = semuaBulan.map(b => anggota.dataBulanan[b] ? Number(anggota.dataBulanan[b].ht) : 0);
                 const dataPSW = semuaBulan.map(b => anggota.dataBulanan[b] ? Number(anggota.dataBulanan[b].psw) : 0);
-                
                 const opsiBase = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: { size: 9 }, precision: 0 } }, x: { ticks: { font: { size: 8 } } } } };
-                
-                const ctxHt = document.getElementById(`chart-tim-ht-${index}`).getContext('2d');
-                chartTimInstances[`chart-tim-ht-${index}`] = new Chart(ctxHt, { type: 'line', data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'], datasets: [{ data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 }] }, options: opsiBase });
-
-                const ctxPsw = document.getElementById(`chart-tim-psw-${index}`).getContext('2d');
-                chartTimInstances[`chart-tim-psw-${index}`] = new Chart(ctxPsw, { type: 'line', data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'], datasets: [{ data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 }] }, options: opsiBase });
+                chartTimInstances[`chart-tim-ht-${index}`] = new Chart(document.getElementById(`chart-tim-ht-${index}`).getContext('2d'), { type: 'line', data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'], datasets: [{ data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 }] }, options: opsiBase });
+                chartTimInstances[`chart-tim-psw-${index}`] = new Chart(document.getElementById(`chart-tim-psw-${index}`).getContext('2d'), { type: 'line', data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'], datasets: [{ data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 }] }, options: opsiBase });
             });
         }
 
