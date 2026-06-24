@@ -283,8 +283,6 @@ function perbaruiGrafik(labelBulan, dataPSW, dataHT) {
     if (grafikGarisPSW) grafikGarisPSW.destroy();
     if (grafikGarisHT) grafikGarisHT.destroy();
 
-    const bulanDipilih = document.getElementById('filter-bulan').value;
-
     const opsiGrafik = { 
         responsive: true, 
         maintainAspectRatio: false, 
@@ -293,12 +291,7 @@ function perbaruiGrafik(labelBulan, dataPSW, dataHT) {
             y: { beginAtZero: true },
             x: { 
                 ticks: { 
-                    autoSkip: false,
-                    callback: function(value, index) {
-                        const namaBulan = labelBulan[index];
-                        if (bulanDipilih !== 'Semua' && namaBulan !== bulanDipilih) return ''; 
-                        return namaBulan; 
-                    }
+                    autoSkip: false
                 } 
             } 
         } 
