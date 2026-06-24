@@ -36,7 +36,7 @@
         .canvas-wadah-tim { flex: 1; display: flex; gap: 10px; }
         .canvas-wadah-tim > div { flex: 1; position: relative; height: 90px; }
 
-        .klaim-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #fff; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px; }
+        .klaim-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #fff; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px; transition: 0.3s;}
         .status-badge { padding: 4px 8px; font-size: 10px; border-radius: 4px; font-weight: bold; }
         .status-pending { background: #fff3cd; color: #856404; }
         .status-approved { background: #d4edda; color: #155724; }
@@ -134,7 +134,7 @@
                         <h2 style="margin-top:0; color:#1a233a;">📝 Klaim Tim & Jabatan</h2>
                         <p style="color:#666; font-size:13px;">Ajukan tim yang Anda ikuti saat ini (Maksimal 3 Tim). Jika ingin mengganti, hapus salah satu klaim yang ada.</p>
                         
-                        <div id="list-klaim-saya" style="margin-bottom: 25px;">
+                        <div id="list-klaim-saya" style="margin-bottom: 25px; min-height: 50px;">
                             <p style="color:#999; font-size:12px;">Memuat data klaim...</p>
                         </div>
 
@@ -144,7 +144,7 @@
                                 
                                 <div id="wrapper-dropdown-tim" style="flex:1; min-width:200px; position:relative;">
                                     <div id="display-tim" onclick="toggleDropdownTim()" style="padding:10px 32px 10px 10px; border-radius:8px; border:1px solid #ddd; background:white; cursor:pointer; font-size:14px; color:#1a233a; user-select:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; position:relative;">
-                                        Tim
+                                        Pilih Tim...
                                         <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none; color:#888; font-size:10px;">▼</span>
                                     </div>
                                     <div id="list-dropdown-tim" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:white; border:1px solid #ddd; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:9999; max-height:220px; overflow-y:auto;"></div>
@@ -153,7 +153,7 @@
 
                                 <div id="wrapper-dropdown-jabatan" style="width:150px; position:relative; flex-shrink:0;">
                                     <div id="display-jabatan" onclick="toggleDropdownJabatan()" style="padding:10px 32px 10px 10px; border-radius:8px; border:1px solid #ddd; background:white; cursor:pointer; font-size:14px; color:#1a233a; user-select:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; position:relative;">
-                                        Jabatan
+                                        Jabatan...
                                         <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none; color:#888; font-size:10px;">▼</span>
                                     </div>
                                     <div id="list-dropdown-jabatan" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:white; border:1px solid #ddd; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:9999; overflow:hidden;"></div>
@@ -256,6 +256,7 @@
                 btnTim.className = 'btn-toggle aktif';
                 wTim.style.display = 'flex';
                 filterBulan.style.display = 'none';
+                if (!wTim.innerHTML.trim()) tarikDataTimLengkap();
             } else if (mode === 'klaim') {
                 btnKlaim.className = 'btn-toggle aktif';
                 wKlaim.style.display = 'flex';
@@ -264,7 +265,8 @@
             }
         }
 
-        async function inisialisasiAwal() {
+        /* EVALUASI HAK AKSES SECARA BACKGROUND TANPA REFRESH HALAMAN */
+        async function evaluasiHakAkses() {
             const { data: dataKlaim } = await db.from('pengajuan_tim').select('*').eq('nip', nipPegawai).eq('status', 'approved');
             
             isKepalaAtauAdmin = false;
@@ -276,9 +278,7 @@
                     const jab = k.jabatan.toLowerCase();
                     const t = k.tim.toLowerCase();
                     
-                    // Pengecekan Case-Insensitive dan Partial Match untuk Admin SDM
                     if (jab === 'kepala' || t.includes('sumber daya manusia')) isKepalaAtauAdmin = true;
-                    
                     if (jab === 'ketua') {
                         isKetua = true;
                         daftarTimKepemimpinan.push(k.tim);
@@ -286,11 +286,17 @@
                 });
             }
 
+            const btnTim = document.getElementById('btn-mode-tim');
             if (isKetua || isKepalaAtauAdmin) {
-                document.getElementById('btn-mode-tim').style.display = 'block';
+                btnTim.style.display = 'block';
             } else {
-                document.getElementById('btn-mode-tim').style.display = 'none';
+                btnTim.style.display = 'none';
+                if (sessionStorage.getItem('pegawai_mode_aktif') === 'tim') gantiMode('pribadi');
             }
+        }
+
+        async function inisialisasiAwal() {
+            await evaluasiHakAkses();
 
             const { data: dataThn } = await db.from('absensi_pegawai').select('tahun').eq('nip', nipPegawai);
             if (!dataThn) return;
@@ -303,14 +309,9 @@
             await isiDropdownBulanPeg(tahunTerpilih);
 
             const modeTersimpan = sessionStorage.getItem('pegawai_mode_aktif') || 'pribadi';
-            const btnTim = document.getElementById('btn-mode-tim');
-            if (modeTersimpan === 'tim' && btnTim.style.display === 'none') {
-                gantiMode('pribadi');
-            } else {
-                gantiMode(modeTersimpan);
-            }
+            gantiMode(modeTersimpan);
 
-            tarikDataSemua();
+            tarikDataPribadi();
         }
         
         inisialisasiAwal();
@@ -336,38 +337,63 @@
             }
         }
 
+        /* LOGIKA TAMPILAN TIM (Admin Lihat Semua Orang Yg Ada Di Absen) */
         async function tarikDataTimLengkap() {
             const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
+            const wadah = document.getElementById('wadah-mode-tim');
             
             const { data: allApproved } = await db.from('pengajuan_tim').select('*').eq('status', 'approved');
             const { data: dataTahunIni } = await db.from('absensi_pegawai').select('*').eq('tahun', tahun);
             
-            if (!allApproved || !dataTahunIni) return;
-
-            let orangTerlihat = allApproved.filter(a => {
-                if (a.nip === nipPegawai) return false; 
-                if (isKepalaAtauAdmin) return true; 
-                if (daftarTimKepemimpinan.includes(a.tim)) return true; 
-                return false;
-            });
+            if (!dataTahunIni || dataTahunIni.length === 0) {
+                wadah.innerHTML = '<p style="text-align:center; color:#888; font-size:13px; margin-top:20px;">Belum ada data absensi pegawai di tahun ini.</p>';
+                return;
+            }
 
             let petaAnggota = {};
-            orangTerlihat.forEach(o => {
-                if (!petaAnggota[o.nip]) {
-                    petaAnggota[o.nip] = { nip: o.nip, nama: o.nama, jabatan: [], tim: [], dataBulanan: {} };
-                }
-                if (!petaAnggota[o.nip].jabatan.includes(o.jabatan)) petaAnggota[o.nip].jabatan.push(o.jabatan);
-                if (!petaAnggota[o.nip].tim.includes(o.tim)) petaAnggota[o.nip].tim.push(o.tim);
-            });
 
-            dataTahunIni.forEach(d => {
-                if (petaAnggota[d.nip]) {
+            if (isKepalaAtauAdmin) {
+                // Admin SDM melihat SEMUA NIP yang ada di absensi tahun ini (kecuali dia sendiri)
+                dataTahunIni.forEach(d => {
+                    if (d.nip === nipPegawai) return;
+
+                    if (!petaAnggota[d.nip]) {
+                        // Cari data klaimnya, kalau tidak ada biarkan default
+                        let klaim = allApproved ? allApproved.filter(a => a.nip === d.nip) : [];
+                        let jabatans = klaim.map(k => k.jabatan);
+                        let tims = klaim.map(k => k.tim);
+
+                        petaAnggota[d.nip] = {
+                            nip: d.nip,
+                            nama: d.nama, // Ambil nama dari absensi
+                            jabatan: jabatans.length > 0 ? [...new Set(jabatans)] : ['Pegawai'],
+                            tim: tims.length > 0 ? [...new Set(tims)] : ['Belum pilih tim'],
+                            dataBulanan: {}
+                        };
+                    }
                     petaAnggota[d.nip].dataBulanan[d.bulan] = { ht: d.ht || 0, psw: d.psw || 0 };
-                }
-            });
+                });
+
+            } else if (isKetua) {
+                // Ketua hanya melihat NIP yang punya klaim Approved di timnya
+                let orangTerlihat = allApproved ? allApproved.filter(a => a.nip !== nipPegawai && daftarTimKepemimpinan.includes(a.tim)) : [];
+
+                orangTerlihat.forEach(o => {
+                    if (!petaAnggota[o.nip]) {
+                        petaAnggota[o.nip] = { nip: o.nip, nama: o.nama, jabatan: [], tim: [], dataBulanan: {} };
+                    }
+                    if (!petaAnggota[o.nip].jabatan.includes(o.jabatan)) petaAnggota[o.nip].jabatan.push(o.jabatan);
+                    if (!petaAnggota[o.nip].tim.includes(o.tim)) petaAnggota[o.nip].tim.push(o.tim);
+                });
+
+                dataTahunIni.forEach(d => {
+                    if (petaAnggota[d.nip]) {
+                        petaAnggota[d.nip].dataBulanan[d.bulan] = { ht: d.ht || 0, psw: d.psw || 0 };
+                    }
+                });
+            }
 
             const daftarAnggota = Object.values(petaAnggota).sort((a, b) => a.nama.localeCompare(b.nama));
-
             renderModeTim(daftarAnggota);
         }
 
@@ -391,6 +417,8 @@
                     warnaJabatan = 'background:#f0e6fa; color:#6f42c1;'; 
                 } else if (stringJabatan.toLowerCase().includes('ketua')) {
                     warnaJabatan = 'background:#e6f0fa; color:#007bff;'; 
+                } else if (stringJabatan === 'Pegawai') {
+                    warnaJabatan = 'background:#f4f7fe; color:#666; border: 1px solid #ddd;'; 
                 }
 
                 let stringTim = anggota.tim.join(', ');
@@ -426,38 +454,47 @@
             });
         }
 
+        /* KODE DIPERKUAT: Mengamankan form klaim dari nge-blank */
         async function muatFormKlaim() {
             const listKlaim = document.getElementById('list-klaim-saya');
             const formBox = document.getElementById('form-klaim-box');
             
-            const { data: dKlaim } = await db.from('pengajuan_tim').select('*').eq('nip', nipPegawai).order('id', { ascending: true });
-            
-            if (dKlaim && dKlaim.length > 0) {
-                listKlaim.innerHTML = dKlaim.map((k, i) => `
-                    <div class="klaim-item">
-                        <div>
-                            <span style="font-size:12px; font-weight:bold; color:#1a233a;">${i+1}. ${k.tim}</span>
-                            <span style="font-size:11px; color:#666; margin-left:5px;">sebagai ${k.jabatan}</span>
-                        </div>
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            <div class="status-badge status-${k.status}">${k.status.toUpperCase()}</div>
-                            <button class="btn-hapus-klaim" onclick="hapusKlaim(${k.id})" title="Hapus Klaim">🗑️</button>
-                        </div>
-                    </div>
-                `).join('');
-            } else {
-                listKlaim.innerHTML = '<p style="color:#999; font-size:12px;">Anda belum mengklaim tim manapun.</p>';
-            }
+            listKlaim.innerHTML = '<p style="color:#999; font-size:12px;">Memuat data...</p>';
 
-            if (!dKlaim || dKlaim.length < 3) {
-                formBox.style.display = 'block';
-                const { data: dTim } = await db.from('daftar_tim').select('nama_tim').order('nama_tim', { ascending: true });
-                if(dTim) {
-                    nilaiTimTerpilih = ''; 
-                    renderDropdownTim(dTim.map(t => t.nama_tim));
+            try {
+                const { data: dKlaim, error: errKlaim } = await db.from('pengajuan_tim').select('*').eq('nip', nipPegawai).order('id', { ascending: true });
+                if (errKlaim) throw errKlaim;
+                
+                if (dKlaim && dKlaim.length > 0) {
+                    listKlaim.innerHTML = dKlaim.map((k, i) => `
+                        <div class="klaim-item">
+                            <div>
+                                <span style="font-size:12px; font-weight:bold; color:#1a233a;">${i+1}. ${k.tim}</span>
+                                <span style="font-size:11px; color:#666; margin-left:5px;">sebagai ${k.jabatan}</span>
+                            </div>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <div class="status-badge status-${k.status}">${k.status.toUpperCase()}</div>
+                                <button class="btn-hapus-klaim" onclick="hapusKlaim(${k.id})" title="Hapus Klaim">🗑️</button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    listKlaim.innerHTML = '<p style="color:#999; font-size:12px;">Anda belum mengklaim tim manapun.</p>';
                 }
-            } else {
-                formBox.style.display = 'none';
+
+                if (!dKlaim || dKlaim.length < 3) {
+                    formBox.style.display = 'block';
+                    const { data: dTim } = await db.from('daftar_tim').select('nama_tim').order('nama_tim', { ascending: true });
+                    if (dTim && dTim.length > 0) {
+                        renderDropdownTim(dTim.map(t => t.nama_tim));
+                    } else {
+                        document.getElementById('display-tim').childNodes[0].textContent = 'Pilih Tim... (Data kosong)';
+                    }
+                } else {
+                    formBox.style.display = 'none';
+                }
+            } catch (e) {
+                listKlaim.innerHTML = `<p style="color:#dc3545; font-size:12px;">Gagal memuat: ${e.message}</p>`;
             }
         }
 
@@ -488,7 +525,9 @@
                 pesan.style.color='#dc3545'; pesan.innerText="Gagal: " + error.message;
             } else {
                 pesan.style.color='#28a745'; pesan.innerText="Berhasil diajukan!";
-                setTimeout(() => { muatFormKlaim(); pesan.innerText=""; }, 1000);
+                // Refresh list instan tanpa delay timer aneh-aneh
+                await muatFormKlaim(); 
+                pesan.innerText=""; 
             }
         }
 
@@ -499,8 +538,12 @@
             if (error) {
                 alert("Gagal menghapus: " + error.message);
             } else {
+                // Secara ajaib memuat ulang data tanpa me-refresh paksa browser
                 await muatFormKlaim();
-                await inisialisasiAwal();
+                await evaluasiHakAkses();
+                if (isKetua || isKepalaAtauAdmin) {
+                    tarikDataTimLengkap();
+                }
             }
         }
 
@@ -716,13 +759,13 @@
             });
             nilaiTimTerpilih = '';
             document.getElementById('pilihan-tim').value = '';
-            document.getElementById('display-tim').childNodes[0].textContent = 'Tim';
+            document.getElementById('display-tim').childNodes[0].textContent = 'Pilih Tim...';
             resetPlaceholderJabatan();
         }
 
         function resetPlaceholderJabatan() {
             document.getElementById('pilihan-jabatan').value = '';
-            document.getElementById('display-jabatan').childNodes[0].textContent = 'Jabatan';
+            document.getElementById('display-jabatan').childNodes[0].textContent = 'Jabatan...';
             const list = document.getElementById('list-dropdown-jabatan');
             if (list) list.innerHTML = '';
         }
@@ -735,7 +778,7 @@
             if (isBpsProvinsi) pilihItemJabatan('Kepala', 'Kepala');
             else {
                 document.getElementById('pilihan-jabatan').value = '';
-                document.getElementById('display-jabatan').childNodes[0].textContent = 'Jabatan';
+                document.getElementById('display-jabatan').childNodes[0].textContent = 'Jabatan...';
             }
         }
 
