@@ -200,19 +200,29 @@
                     <h3 style="margin:0 0 8px 0; color:#1a233a; font-size:13px; font-weight:900;">📖 Kamus Kode</h3>
                     <button onclick="toggleKamusPegawai()" class="btn-kamus" style="width:100%; text-align:center; padding:8px;">📖 Lihat Kamus</button>
                     <!-- Popup Kamus -->
-                    <div id="popup-kamus-pegawai" style="
-                        display:none;
-                        position:absolute;
-                        top: -150px; /* Mengatur posisi vertikal agar imbang (tidak terlalu ke atas/bawah) */
-                        right: calc(100% + 15px); /* Menggeser popup ke sebelah kiri kotak dengan jarak 15px */
-                        width:560px;
-                        background:white;
-                        border-radius:16px;
-                        box-shadow:0 8px 24px rgba(0,0,0,0.13);
-                        border:1px solid #e2e8f0;
-                        padding:16px 18px 14px 18px;
-                        z-index:10000;
-                        animation: slideUpKamus 0.2s ease;
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                            <div>
+                                <div style="font-size:11px; font-weight:800; color:#2b6cb0; margin-bottom:6px; padding-bottom:4px; border-bottom:2px solid #e6f0fa;">📅 Kehadiran Dasar</div>
+                                <div class="pk-item"><span class="pk-kode" style="background: #1a233a;">HK</span><span class="pk-desc">Hari Kerja dalam 1 bulan</span></div>
+                                <div class="pk-item"><span class="pk-kode" style="background: #28a745;">HD</span><span class="pk-desc">Hadir dalam 1 bulan</span></div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px; font-weight:800; color:#2b6cb0; margin-bottom:6px; padding-bottom:4px; border-bottom:2px solid #e6f0fa;">⏰ Hadir Terlambat (HT)</div>
+                                <div class="pk-item"><span class="pk-kode" style="background: #f5a623;">HT</span><span class="pk-desc">Jumlah TL1+TL2+TL3+TL4</span></div>
+                                <div class="pk-item"><span class="pk-kode" style="background: #f5a623;">TL 1</span><span class="pk-desc">≤ 30 menit</span></div>
+                                <div class="pk-item"><span class="pk-kode" style="background: #f5a623;">TL 2</span><span class="pk-desc">30 – 60 menit</span></div>
+                                <div class="pk-item"><span class="pk-kode" style="background: #f5a623;">TL 3</span><span class="pk-desc">60 – 90 menit</span></div>
+                                <div class="pk-item"><span class="pk-kode" style="background: #f5a623;">TL 4</span><span class="pk-desc">&gt; 90 menit / tidak absen</span></div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px; font-weight:800; color:#2b6cb0; margin-bottom:6px; padding-bottom:4px; border-bottom:2px solid #e6f0fa;">🚪 Pulang Sebelum Waktu</div>
+                                <div class="pk-item"><span class="pk-kode" style="background: #6f42c1;">PSW</span><span class="pk-desc">Pulang Sebelum Waktunya</span></div>
+                                <div class="pk-item"><span class="pk-kode" style="background: #6f42c1;">PSW 1</span><span class="pk-desc">≤ 30 menit</span></div>
+                                <div class="pk-item"><span class="pk-kode" style="background: #6f42c1;">PSW 2</span><span class="pk-desc">30 – 60 menit</span></div>
+                                <div class="pk-item"><span class="pk-kode" style="background: #6f42c1;">PSW 3</span><span class="pk-desc">60 – 90 menit</span></div>
+                                <div class="pk-item"><span class="pk-kode" style="background: #6f42c1;">PSW 4</span><span class="pk-desc">&gt; 90 menit / tidak absen</span></div>
+                            </div>
+                        </div>
                     ">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                             <span style="font-size:15px; font-weight:800; color:#1a233a;">📖 Kamus Kode PENDEKAR</span>
@@ -515,8 +525,14 @@
                             <span style="display: inline-block; margin-top: 8px; padding: 3px 8px; font-size: 10px; border-radius: 4px; font-weight: bold; ${warnaJabatan}">${stringJabatan}</span>
                         </div>
                         <div class="canvas-wadah-tim">
-                            <div><canvas id="chart-tim-ht-${index}"></canvas></div>
-                            <div><canvas id="chart-tim-psw-${index}"></canvas></div>
+                            <div style="display: flex; flex-direction: column; align-items: center;">
+                                <span style="font-size: 11px; font-weight: bold; color: #1a233a; margin-bottom: 5px;">Tren HT per Bulan</span>
+                                <div style="width: 100%; flex: 1; position: relative;"><canvas id="chart-tim-ht-${index}"></canvas></div>
+                            </div>
+                            <div style="display: flex; flex-direction: column; align-items: center;">
+                                <span style="font-size: 11px; font-weight: bold; color: #1a233a; margin-bottom: 5px;">Tren PSW per Bulan</span>
+                                <div style="width: 100%; flex: 1; position: relative;"><canvas id="chart-tim-psw-${index}"></canvas></div>
+                            </div>
                         </div>
                     </div>
                 `;
