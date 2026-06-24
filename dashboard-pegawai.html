@@ -76,7 +76,7 @@
             <div style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
                 
                 <!-- WADAH 1: MODE PRIBADI -->
-                <div id="wadah-mode-pribadi" style="display: flex; flex-direction: column; gap: 10px; height: 100%; min-height: 0;">
+                <div id="wadah-mode-pribadi" style="display: none; flex-direction: column; gap: 10px; height: 100%; min-height: 0;">
                     <div class="kartu-pegawai">
                         <div class="kartu-hk"><div class="angka" id="angka-hk">-</div><div class="label">Hari Kerja</div></div>
                         <div class="kartu-hk"><div class="angka" id="angka-hd" style="color:#28a745;">-</div><div class="label">Hari Hadir</div></div>
@@ -129,8 +129,20 @@
 
                         <div id="form-klaim-box" style="background:#f4f7fe; padding:20px; border-radius:12px; border:1px solid #edf2f9; display:none;">
                             <h4 style="margin:0 0 15px 0; color:#1a233a;">Ajukan Tim Baru</h4>
-                            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                                <select id="pilihan-tim" style="flex:1; min-width:200px; padding:10px; border-radius:8px; border:1px solid #ddd;"></select>
+                            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-start;">
+                                
+                                <!-- CUSTOM DROPDOWN TIM (selalu muncul ke bawah) -->
+                                <div id="wrapper-dropdown-tim" style="flex:1; min-width:200px; position:relative;">
+                                    <div id="display-tim" onclick="toggleDropdownTim()" style="padding:10px 32px 10px 10px; border-radius:8px; border:1px solid #ddd; background:white; cursor:pointer; font-size:14px; color:#1a233a; user-select:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; position:relative;">
+                                        Pilih Tim...
+                                        <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none; color:#888; font-size:10px;">▼</span>
+                                    </div>
+                                    <div id="list-dropdown-tim" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:white; border:1px solid #ddd; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:9999; max-height:220px; overflow-y:auto;">
+                                    </div>
+                                    <!-- Input hidden untuk menyimpan nilai terpilih -->
+                                    <input type="hidden" id="pilihan-tim" value="">
+                                </div>
+
                                 <select id="pilihan-jabatan" style="width:150px; padding:10px; border-radius:8px; border:1px solid #ddd;">
                                     <option value="Anggota">Anggota</option>
                                     <option value="Ketua">Ketua</option>
@@ -302,18 +314,17 @@
 
             const tahunTerpilih = parseInt(dropdown.value);
             await isiDropdownBulan(tahunTerpilih);
-            tarikDataSemua();
 
-            // Restore mode terakhir yang aktif (klaim, tim, pribadi)
-            const modeTersimpan = sessionStorage.getItem('pegawai_mode_aktif');
-            if (modeTersimpan && modeTersimpan !== 'pribadi') {
-                const btnTim = document.getElementById('btn-mode-tim');
-                if (modeTersimpan === 'tim' && btnTim.style.display === 'none') {
-                    gantiMode('pribadi');
-                } else {
-                    gantiMode(modeTersimpan);
-                }
+            // Restore mode SEBELUM tarikData agar tidak ada kedip ke mode pribadi dulu
+            const modeTersimpan = sessionStorage.getItem('pegawai_mode_aktif') || 'pribadi';
+            const btnTim = document.getElementById('btn-mode-tim');
+            if (modeTersimpan === 'tim' && btnTim.style.display === 'none') {
+                gantiMode('pribadi');
+            } else {
+                gantiMode(modeTersimpan);
             }
+
+            tarikDataSemua();
         }
         
         inisialisasiAwal();
@@ -465,12 +476,9 @@
             if (!dKlaim || dKlaim.length < 3) {
                 formBox.style.display = 'block';
                 const { data: dTim } = await db.from('daftar_tim').select('nama_tim').order('nama_tim', { ascending: true });
-                const selTim = document.getElementById('pilihan-tim');
-                selTim.innerHTML = '';
                 if(dTim) {
-                    dTim.forEach(t => {
-                        selTim.innerHTML += `<option value="${t.nama_tim}">${t.nama_tim}</option>`;
-                    });
+                    nilaiTimTerpilih = ''; // reset pilihan sebelumnya
+                    renderDropdownTim(dTim.map(t => t.nama_tim));
                 }
             } else {
                 formBox.style.display = 'none';
@@ -610,6 +618,51 @@
         }
 
         function prosesKeluar() { sessionStorage.removeItem('pegawai_nip'); sessionStorage.removeItem('pegawai_nama'); window.location.href = 'admin.html'; }
+
+        /* === CUSTOM DROPDOWN TIM === */
+        let nilaiTimTerpilih = '';
+
+        function toggleDropdownTim() {
+            const list = document.getElementById('list-dropdown-tim');
+            list.style.display = list.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function tutupDropdownTim() {
+            const list = document.getElementById('list-dropdown-tim');
+            if (list) list.style.display = 'none';
+        }
+
+        function pilihItemTim(nilai, teks) {
+            nilaiTimTerpilih = nilai;
+            document.getElementById('pilihan-tim').value = nilai;
+            document.getElementById('display-tim').childNodes[0].textContent = teks;
+            tutupDropdownTim();
+        }
+
+        function renderDropdownTim(daftarTim) {
+            const list = document.getElementById('list-dropdown-tim');
+            if (!list) return;
+            list.innerHTML = '';
+            daftarTim.forEach(t => {
+                const item = document.createElement('div');
+                item.textContent = t;
+                item.style.cssText = 'padding:10px 14px; cursor:pointer; font-size:13px; color:#1a233a; border-bottom:1px solid #f0f0f0;';
+                item.onmouseover = () => item.style.background = '#e6f0fa';
+                item.onmouseout = () => item.style.background = '';
+                item.onclick = () => pilihItemTim(t, t);
+                list.appendChild(item);
+            });
+            // Pilih item pertama sebagai default
+            if (daftarTim.length > 0 && !nilaiTimTerpilih) {
+                pilihItemTim(daftarTim[0], daftarTim[0]);
+            }
+        }
+
+        // Tutup dropdown saat klik di luar
+        document.addEventListener('click', function(e) {
+            const wrapper = document.getElementById('wrapper-dropdown-tim');
+            if (wrapper && !wrapper.contains(e.target)) tutupDropdownTim();
+        });
     </script>
 </body>
 </html>
