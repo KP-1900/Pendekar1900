@@ -204,9 +204,6 @@
         const _KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueXR1eWFwaWlpY2tyaWVvYm9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NDAzMzksImV4cCI6MjA5NzMxNjMzOX0.-oa4YA-U8TDzWfrSHd9EkbnLNB8IyObFw0SziIkIpQo';
         const db = window.supabase.createClient(_URL, _KEY);
 
-        // Tambahkan variabel array di sini untuk manajemen data realtime klaim
-        let daftarKlaimSaya = []; 
-
         const semuaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
         let grafikPSW, grafikHT, grafikBatang;
         let chartTimInstances = {}; 
@@ -259,7 +256,7 @@
                 btnTim.className = 'btn-toggle aktif';
                 wTim.style.display = 'flex';
                 filterBulan.style.display = 'none';
-                tarikDataTimLengkap();
+                if (!wTim.innerHTML.trim()) tarikDataTimLengkap();
             } else if (mode === 'klaim') {
                 btnKlaim.className = 'btn-toggle aktif';
                 wKlaim.style.display = 'flex';
@@ -271,13 +268,16 @@
         /* EVALUASI HAK AKSES SECARA BACKGROUND TANPA REFRESH HALAMAN */
         async function evaluasiHakAkses() {
             const { data: dataKlaim } = await db.from('pengajuan_tim').select('*').eq('nip', nipPegawai).eq('status', 'approved');
+            
             isKepalaAtauAdmin = false;
             isKetua = false;
             daftarTimKepemimpinan = [];
+
             if (dataKlaim && dataKlaim.length > 0) {
                 dataKlaim.forEach(k => {
                     const jab = k.jabatan.toLowerCase();
                     const t = k.tim.toLowerCase();
+                    
                     if (jab === 'kepala' || t.includes('sumber daya manusia')) isKepalaAtauAdmin = true;
                     if (jab === 'ketua') {
                         isKetua = true;
@@ -285,56 +285,210 @@
                     }
                 });
             }
+
             const btnTim = document.getElementById('btn-mode-tim');
             if (isKetua || isKepalaAtauAdmin) {
                 btnTim.style.display = 'block';
             } else {
                 btnTim.style.display = 'none';
+                if (sessionStorage.getItem('pegawai_mode_aktif') === 'tim') gantiMode('pribadi');
             }
         }
 
-        /* 1. FUNGSI MUAT FORM KLAIM */
+        async function inisialisasiAwal() {
+            await evaluasiHakAkses();
+
+            const { data: dataThn } = await db.from('absensi_pegawai').select('tahun').eq('nip', nipPegawai);
+            if (!dataThn) return;
+            const tahunUnik = [...new Set(dataThn.map(d => d.tahun))].sort();
+            
+            const savedTahun = sessionStorage.getItem('pegawai_filter_tahun');
+            isiDropdownTahunPeg(tahunUnik, savedTahun);
+            
+            const tahunTerpilih = parseInt(document.getElementById('filter-tahun-pegawai').value);
+            await isiDropdownBulanPeg(tahunTerpilih);
+
+            const modeTersimpan = sessionStorage.getItem('pegawai_mode_aktif') || 'pribadi';
+            gantiMode(modeTersimpan);
+
+            tarikDataPribadi();
+        }
+        
+        inisialisasiAwal();
+
+        document.getElementById('filter-tahun-pegawai').addEventListener('change', async () => {
+            const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
+            sessionStorage.setItem('pegawai_filter_tahun', tahun);
+            sessionStorage.setItem('pegawai_filter_bulan', 'Semua');
+            await isiDropdownBulanPeg(tahun);
+            document.getElementById('filter-bulan-pegawai').value = 'Semua';
+            tarikDataSemua();
+        });
+
+        document.getElementById('filter-bulan-pegawai').addEventListener('change', () => {
+            sessionStorage.setItem('pegawai_filter_bulan', document.getElementById('filter-bulan-pegawai').value);
+            tarikDataSemua();
+        });
+
+        function tarikDataSemua() {
+            tarikDataPribadi();
+            if (isKetua || isKepalaAtauAdmin) {
+                tarikDataTimLengkap();
+            }
+        }
+
+        /* LOGIKA TAMPILAN TIM (Admin Lihat Semua Orang Yg Ada Di Absen) */
+        async function tarikDataTimLengkap() {
+            const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
+            const wadah = document.getElementById('wadah-mode-tim');
+            
+            const { data: allApproved } = await db.from('pengajuan_tim').select('*').eq('status', 'approved');
+            const { data: dataTahunIni } = await db.from('absensi_pegawai').select('*').eq('tahun', tahun);
+            
+            if (!dataTahunIni || dataTahunIni.length === 0) {
+                wadah.innerHTML = '<p style="text-align:center; color:#888; font-size:13px; margin-top:20px;">Belum ada data absensi pegawai di tahun ini.</p>';
+                return;
+            }
+
+            let petaAnggota = {};
+
+            if (isKepalaAtauAdmin) {
+                // Admin SDM melihat SEMUA NIP yang ada di absensi tahun ini (kecuali dia sendiri)
+                dataTahunIni.forEach(d => {
+                    if (d.nip === nipPegawai) return;
+
+                    if (!petaAnggota[d.nip]) {
+                        // Cari data klaimnya, kalau tidak ada biarkan default
+                        let klaim = allApproved ? allApproved.filter(a => a.nip === d.nip) : [];
+                        let jabatans = klaim.map(k => k.jabatan);
+                        let tims = klaim.map(k => k.tim);
+
+                        petaAnggota[d.nip] = {
+                            nip: d.nip,
+                            nama: d.nama, // Ambil nama dari absensi
+                            jabatan: jabatans.length > 0 ? [...new Set(jabatans)] : ['Pegawai'],
+                            tim: tims.length > 0 ? [...new Set(tims)] : ['Belum pilih tim'],
+                            dataBulanan: {}
+                        };
+                    }
+                    petaAnggota[d.nip].dataBulanan[d.bulan] = { ht: d.ht || 0, psw: d.psw || 0 };
+                });
+
+            } else if (isKetua) {
+                // Ketua hanya melihat NIP yang punya klaim Approved di timnya
+                let orangTerlihat = allApproved ? allApproved.filter(a => a.nip !== nipPegawai && daftarTimKepemimpinan.includes(a.tim)) : [];
+
+                orangTerlihat.forEach(o => {
+                    if (!petaAnggota[o.nip]) {
+                        petaAnggota[o.nip] = { nip: o.nip, nama: o.nama, jabatan: [], tim: [], dataBulanan: {} };
+                    }
+                    if (!petaAnggota[o.nip].jabatan.includes(o.jabatan)) petaAnggota[o.nip].jabatan.push(o.jabatan);
+                    if (!petaAnggota[o.nip].tim.includes(o.tim)) petaAnggota[o.nip].tim.push(o.tim);
+                });
+
+                dataTahunIni.forEach(d => {
+                    if (petaAnggota[d.nip]) {
+                        petaAnggota[d.nip].dataBulanan[d.bulan] = { ht: d.ht || 0, psw: d.psw || 0 };
+                    }
+                });
+            }
+
+            const daftarAnggota = Object.values(petaAnggota).sort((a, b) => a.nama.localeCompare(b.nama));
+            renderModeTim(daftarAnggota);
+        }
+
+        function renderModeTim(daftarAnggota) {
+            const wadah = document.getElementById('wadah-mode-tim');
+            wadah.innerHTML = '';
+            
+            Object.values(chartTimInstances).forEach(chart => chart.destroy());
+            chartTimInstances = {};
+
+            if (daftarAnggota.length === 0) {
+                wadah.innerHTML = '<p style="text-align:center; color:#888; font-size:13px; margin-top:20px;">Tidak ada data anggota tim yang bisa ditampilkan.</p>';
+                return;
+            }
+
+            daftarAnggota.forEach((anggota, index) => {
+                let stringJabatan = anggota.jabatan.join(' / ');
+                let warnaJabatan = 'background:#e6f6ee; color:#28a745;'; 
+                
+                if (stringJabatan.toLowerCase().includes('kepala') || stringJabatan.toLowerCase().includes('admin')) {
+                    warnaJabatan = 'background:#f0e6fa; color:#6f42c1;'; 
+                } else if (stringJabatan.toLowerCase().includes('ketua')) {
+                    warnaJabatan = 'background:#e6f0fa; color:#007bff;'; 
+                } else if (stringJabatan === 'Pegawai') {
+                    warnaJabatan = 'background:#f4f7fe; color:#666; border: 1px solid #ddd;'; 
+                }
+
+                let stringTim = anggota.tim.join(', ');
+
+                const htmlKartu = `
+                    <div class="kartu-anggota-tim">
+                        <div class="info-anggota-tim">
+                            <h4 style="margin: 0 0 4px 0; color: #1a233a; font-size: 13px; line-height: 1.3;" title="${anggota.nama}">${anggota.nama}</h4>
+                            <p style="margin: 0; font-size: 10px; color: #888;">NIP: ${anggota.nip}</p>
+                            ${isKepalaAtauAdmin ? `<p style="margin: 3px 0 0 0; font-size: 10px; color: #555;"><b>Tim:</b> ${stringTim}</p>` : ''}
+                            <span style="display: inline-block; margin-top: 8px; padding: 3px 8px; font-size: 10px; border-radius: 4px; font-weight: bold; ${warnaJabatan}">${stringJabatan}</span>
+                        </div>
+                        <div class="canvas-wadah-tim">
+                            <div><canvas id="chart-tim-ht-${index}"></canvas></div>
+                            <div><canvas id="chart-tim-psw-${index}"></canvas></div>
+                        </div>
+                    </div>
+                `;
+                wadah.innerHTML += htmlKartu;
+            });
+
+            daftarAnggota.forEach((anggota, index) => {
+                const dataHT = semuaBulan.map(b => anggota.dataBulanan[b] ? Number(anggota.dataBulanan[b].ht) : 0);
+                const dataPSW = semuaBulan.map(b => anggota.dataBulanan[b] ? Number(anggota.dataBulanan[b].psw) : 0);
+                
+                const opsiBase = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: { size: 9 }, precision: 0 } }, x: { ticks: { font: { size: 8 } } } } };
+                
+                const ctxHt = document.getElementById(`chart-tim-ht-${index}`).getContext('2d');
+                chartTimInstances[`chart-tim-ht-${index}`] = new Chart(ctxHt, { type: 'line', data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'], datasets: [{ data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 }] }, options: opsiBase });
+
+                const ctxPsw = document.getElementById(`chart-tim-psw-${index}`).getContext('2d');
+                chartTimInstances[`chart-tim-psw-${index}`] = new Chart(ctxPsw, { type: 'line', data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'], datasets: [{ data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 }] }, options: opsiBase });
+            });
+        }
+
+        /* KODE DIPERKUAT: Mengamankan form klaim dari nge-blank */
         async function muatFormKlaim() {
             const listKlaim = document.getElementById('list-klaim-saya');
             const formBox = document.getElementById('form-klaim-box');
             
-            listKlaim.innerHTML = '<p style="color:#999; font-size:12px;">Memuat data klaim terbaru...</p>';
+            listKlaim.innerHTML = '<p style="color:#999; font-size:12px;">Memuat data...</p>';
 
             try {
-                const { data: dKlaim, error: errKlaim } = await db.from('pengajuan_tim').select('*').eq('nip', nipPegawai).order('id', { ascending: false });
+                const { data: dKlaim, error: errKlaim } = await db.from('pengajuan_tim').select('*').eq('nip', nipPegawai).order('id', { ascending: true });
                 if (errKlaim) throw errKlaim;
                 
-                // Simpan data ke variabel global array
-                daftarKlaimSaya = dKlaim || [];
-                
-                if (daftarKlaimSaya.length > 0) {
-                    listKlaim.innerHTML = daftarKlaimSaya.map((k) => {
-                        let badgeColor = k.status === 'pending' ? 'status-pending' : (k.status === 'approved' ? 'status-approved' : 'status-rejected');
-                        let badgeText = k.status === 'pending' ? 'Menunggu' : (k.status === 'approved' ? 'Disetujui' : 'Ditolak');
-                        return `
-                        <div class="klaim-item" id="klaim-${k.id}">
+                if (dKlaim && dKlaim.length > 0) {
+                    listKlaim.innerHTML = dKlaim.map((k, i) => `
+                        <div class="klaim-item">
                             <div>
-                                <strong style="font-size:14px; color:#1a233a;">${k.tim}</strong><br>
-                                <span style="font-size:12px; color:#888;">Sebagai: <b style="color:#2b6cb0;">${k.jabatan}</b></span>
+                                <span style="font-size:12px; font-weight:bold; color:#1a233a;">${i+1}. ${k.tim}</span>
+                                <span style="font-size:11px; color:#666; margin-left:5px;">sebagai ${k.jabatan}</span>
                             </div>
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <span class="status-badge ${badgeColor}">${badgeText}</span>
-                                <button class="btn-hapus-klaim" onclick="hapusKlaim(${k.id})" title="Batalkan/Hapus">✖</button>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <div class="status-badge status-${k.status}">${k.status.toUpperCase()}</div>
+                                <button class="btn-hapus-klaim" onclick="hapusKlaim(${k.id})" title="Hapus Klaim">🗑️</button>
                             </div>
                         </div>
-                        `;
-                    }).join('');
+                    `).join('');
                 } else {
-                    listKlaim.innerHTML = '<p style="color:#666; font-size:12px; font-style:italic;">Anda belum mengklaim tim manapun.</p>';
+                    listKlaim.innerHTML = '<p style="color:#999; font-size:12px;">Anda belum mengklaim tim manapun.</p>';
                 }
 
-                // Form hanya muncul jika jumlah klaim aktif/menunggu/disetujui kurang dari 3
-                const jumlahKlaimAktif = daftarKlaimSaya.filter(k => k.status === 'pending' || k.status === 'approved').length;
-                if (jumlahKlaimAktif < 3) {
+                if (!dKlaim || dKlaim.length < 3) {
                     formBox.style.display = 'block';
                     const { data: dTim } = await db.from('daftar_tim').select('nama_tim').order('nama_tim', { ascending: true });
                     if (dTim && dTim.length > 0) {
                         renderDropdownTim(dTim.map(t => t.nama_tim));
+                    } else {
+                        document.getElementById('display-tim').childNodes[0].textContent = 'Pilih Tim... (Data kosong)';
                     }
                 } else {
                     formBox.style.display = 'none';
@@ -344,7 +498,6 @@
             }
         }
 
-        /* 2. FUNGSI AJUKAN KLAIM (RESPONSIF & MENDUKUNG KLAIM ULANG JIKA REJECTED) */
         async function ajukanKlaim() {
             const pesan = document.getElementById('pesan-klaim');
             const pTim = document.getElementById('pilihan-tim').value;
@@ -353,111 +506,140 @@
             if(!pTim) { pesan.style.color='#dc3545'; pesan.innerText="⚠️ Pilih tim terlebih dahulu!"; return; }
             if(!pJabatan) { pesan.style.color='#dc3545'; pesan.innerText="⚠️ Pilih jabatan terlebih dahulu!"; return; }
 
-            // VALIDASI BARU: Cek apakah ada klaim yang sedang PENDING atau APPROVED pada tim ini
-            const adaKlaimAktif = daftarKlaimSaya.some(k => k.tim === pTim && (k.status === 'pending' || k.status === 'approved'));
-            
-            if (adaKlaimAktif) {
-                pesan.style.color='#dc3545'; 
-                pesan.innerText="⚠️ Anda sudah memiliki pengajuan aktif/disetujui untuk tim ini!"; 
-                return;
+            const { data: cekKlaim } = await db.from('pengajuan_tim').select('id').eq('nip', nipPegawai).eq('tim', pTim);
+            if (cekKlaim && cekKlaim.length > 0) {
+                pesan.style.color='#dc3545'; pesan.innerText="Anda sudah mengklaim tim ini!"; return;
             }
 
             pesan.style.color='#2b6cb0'; pesan.innerText="Mengirim...";
 
-            const { data: dataBaru, error } = await db.from('pengajuan_tim').insert([{
+            const { error } = await db.from('pengajuan_tim').insert([{
                 nip: nipPegawai,
                 nama: namaSession,
                 tim: pTim,
                 jabatan: pJabatan,
                 status: 'pending'
-            }]).select();
+            }]);
 
             if (error) {
                 pesan.style.color='#dc3545'; pesan.innerText="Gagal: " + error.message;
             } else {
                 pesan.style.color='#28a745'; pesan.innerText="Berhasil diajukan!";
-                
-                // Reset form dropdown
-                document.getElementById('pilihan-tim').value = '';
-                document.getElementById('display-tim').childNodes[0].textContent = 'Pilih Tim...';
-                document.getElementById('pilihan-jabatan').value = '';
-                document.getElementById('display-jabatan').childNodes[0].textContent = 'Jabatan...';
-
-                if (dataBaru && dataBaru.length > 0) {
-                    const k = dataBaru[0];
-                    
-                    // Masukkan data baru ke dalam Array State di urutan paling depan
-                    daftarKlaimSaya.unshift(k);
-
-                    const listKlaim = document.getElementById('list-klaim-saya');
-                    if (listKlaim.innerHTML.includes('belum mengklaim')) {
-                        listKlaim.innerHTML = '';
-                    }
-
-                    const itemHtml = `
-                    <div class="klaim-item" id="klaim-${k.id}">
-                        <div>
-                            <strong style="font-size:14px; color:#1a233a;">${k.tim}</strong><br>
-                            <span style="font-size:12px; color:#888;">Sebagai: <b style="color:#2b6cb0;">${k.jabatan}</b></span>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <span class="status-badge status-pending">Menunggu</span>
-                            <button class="btn-hapus-klaim" onclick="hapusKlaim(${k.id})" title="Batalkan/Hapus">✖</button>
-                        </div>
-                    </div>
-                    `;
-                    
-                    // LANGSUNG MUNCUL DI ATAS SECARA INSTAN & RESPONSIF!
-                    listKlaim.insertAdjacentHTML('afterbegin', itemHtml);
-                    
-                    // Sembunyikan form jika klaim aktif sudah mencapai limit maksimal 3
-                    const jumlahKlaimAktif = daftarKlaimSaya.filter(x => x.status === 'pending' || x.status === 'approved').length;
-                    if (jumlahKlaimAktif >= 3) {
-                        document.getElementById('form-klaim-box').style.display = 'none';
-                    }
-                }
-
-                evaluasiHakAkses();
-                setTimeout(() => { pesan.innerText=""; }, 3000);
+                // Refresh list instan tanpa delay timer aneh-aneh
+                await muatFormKlaim(); 
+                pesan.innerText=""; 
             }
         }
 
-        /* 3. FUNGSI HAPUS KLAIM */
         async function hapusKlaim(id_klaim) {
-            if (!confirm('Apakah Anda yakin ingin membatalkan/menghapus klaim tim ini?')) return;
+            if (!confirm('Yakin ingin menghapus klaim ini?')) return;
             
             const { error } = await db.from('pengajuan_tim').delete().eq('id', id_klaim);
-            
             if (error) {
                 alert("Gagal menghapus: " + error.message);
             } else {
-                // Hapus dari Array State
-                daftarKlaimSaya = daftarKlaimSaya.filter(k => k.id !== id_klaim);
-
-                // Hapus elemen dari layat detik itu juga
-                const elemenKlaim = document.getElementById(`klaim-${id_klaim}`);
-                if (elemenKlaim) elemenKlaim.remove();
-
-                const listKlaim = document.getElementById('list-klaim-saya');
-                const jumlahKlaimAktif = daftarKlaimSaya.filter(k => k.status === 'pending' || k.status === 'approved').length;
-                
-                if (jumlahKlaimAktif < 3) {
-                    document.getElementById('form-klaim-box').style.display = 'block';
-                }
-                
-                if (daftarKlaimSaya.length === 0) {
-                    listKlaim.innerHTML = '<p style="color:#666; font-size:12px; font-style:italic;">Anda belum mengklaim tim manapun.</p>';
-                }
-
-                evaluasiHakAkses();
+                // Secara ajaib memuat ulang data tanpa me-refresh paksa browser
+                await muatFormKlaim();
+                await evaluasiHakAkses();
                 if (isKetua || isKepalaAtauAdmin) {
                     tarikDataTimLengkap();
                 }
             }
         }
 
-        /* LOGIK DROP DOWN HEADER DAN DRAW DATA */
-        let _ddTerbuka = {};
+        async function tarikDataPribadi() {
+            const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
+            const bulan = document.getElementById('filter-bulan-pegawai').value;
+
+            const { data, error } = await db.from('absensi_pegawai').select('*').eq('nip', nipPegawai).eq('tahun', tahun);
+            if (error || !data) return;
+
+            const dataFilter = bulan === 'Semua' ? data : data.filter(d => d.bulan === bulan);
+
+            perbaruiKartu(dataFilter, bulan);
+            perbaruiTabel(dataFilter, bulan);
+            perbaruiGrafikBatang(dataFilter);
+
+            let labelBulan = [], dataPSW = [], dataHT = [];
+            if (bulan === 'Semua') {
+                semuaBulan.forEach(b => {
+                    const baris = data.find(d => d.bulan === b);
+                    labelBulan.push(b);
+                    dataPSW.push(baris ? Number(baris.psw) : 0);
+                    dataHT.push(baris ? Number(baris.ht) : 0);
+                });
+            } else {
+                const idx = semuaBulan.indexOf(bulan);
+                const sebelum = idx > 0 ? semuaBulan[idx-1] : 'Desember';
+                const sesudah = idx < 11 ? semuaBulan[idx+1] : 'Januari';
+                labelBulan = [sebelum, bulan, sesudah];
+                dataPSW = [ (Number((data.find(d=>d.bulan===sebelum)||{}).psw)||0), (Number((data.find(d=>d.bulan===bulan)||{}).psw)||0), (Number((data.find(d=>d.bulan===sesudah)||{}).psw)||0) ];
+                dataHT = [ (Number((data.find(d=>d.bulan===sebelum)||{}).ht)||0), (Number((data.find(d=>d.bulan===bulan)||{}).ht)||0), (Number((data.find(d=>d.bulan===sesudah)||{}).ht)||0) ];
+            }
+            perbaruiGrafikPribadi(labelBulan, dataPSW, dataHT, bulan);
+        }
+
+        function perbaruiKartu(data, bulan) {
+            let tHk=0, tHd=0, tPsw=0, tHt=0;
+            data.forEach(d => { tHk += Number(d.hk)||0; tHd += Number(d.hd)||0; tPsw += Number(d.psw)||0; tHt += Number(d.ht)||0; });
+            document.getElementById('angka-hk').innerText = tHk;
+            document.getElementById('angka-hd').innerText = tHd;
+            document.getElementById('angka-psw').innerText = tHd > 0 ? ((tPsw/tHd)*100).toFixed(2) + '%' : '0.00%';
+            document.getElementById('angka-ht').innerText = tHd > 0 ? ((tHt/tHd)*100).toFixed(2) + '%' : '0.00%';
+        }
+
+        function perbaruiGrafikPribadi(labelBulan, dataPSW, dataHT, bulan) {
+            if (grafikPSW) grafikPSW.destroy();
+            if (grafikHT) grafikHT.destroy();
+            const opsi = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: { size: 10 }, precision: 0 } }, x: { ticks: { font: { size: 9 } } } } };
+            grafikHT = new Chart(document.getElementById('grafikHT-pegawai').getContext('2d'), { type: 'line', data: { labels: labelBulan, datasets: [{ data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 3 }] }, options: opsi });
+            grafikPSW = new Chart(document.getElementById('grafikPSW-pegawai').getContext('2d'), { type: 'line', data: { labels: labelBulan, datasets: [{ data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 3 }] }, options: opsi });
+        }
+
+        function perbaruiGrafikBatang(data) {
+            if (grafikBatang) grafikBatang.destroy();
+            let tPsw1=0,tPsw2=0,tPsw3=0,tPsw4=0,tTl1=0,tTl2=0,tTl3=0,tTl4=0; 
+            data.forEach(d => { tPsw1+=Number(d.psw1)||0; tPsw2+=Number(d.psw2)||0; tPsw3+=Number(d.psw3)||0; tPsw4+=Number(d.psw4)||0; tTl1+=Number(d.tl1)||0; tTl2+=Number(d.tl2)||0; tTl3+=Number(d.tl3)||0; tTl4+=Number(d.tl4)||0; });
+            grafikBatang = new Chart(document.getElementById('grafikBatang-pegawai').getContext('2d'), { type: 'bar', data: { labels: ['TL 1','TL 2','TL 3','TL 4','PSW 1','PSW 2','PSW 3','PSW 4'], datasets: [{ data: [ tTl1, tTl2, tTl3, tTl4, tPsw1, tPsw2, tPsw3, tPsw4 ], backgroundColor: [ 'rgba(245,166,35,0.8)','rgba(245,166,35,0.8)','rgba(245,166,35,0.8)','rgba(245,166,35,0.8)', 'rgba(111,66,193,0.8)','rgba(111,66,193,0.8)','rgba(111,66,193,0.8)','rgba(111,66,193,0.8)' ], borderRadius: 4 }] }, options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{font:{size:10}, precision: 0}}, x:{ticks:{font:{size:10}}}} } });
+        }
+
+        function perbaruiTabel(data, bulan) {
+            const tbody = document.getElementById('badan-tabel-pegawai'); tbody.innerHTML = '';
+            if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:8px;color:#666;">Tidak ada data</td></tr>'; return; }
+            const dataTabel = bulan === 'Semua' ? semuaBulan.map(b => data.find(d => d.bulan === b)).filter(Boolean) : data;
+            const t = (v) => parseFloat(v) === 0 ? 'color: #28a745; font-weight: bold;' : 'color: #dc3545; font-weight: bold;';
+            dataTabel.forEach(item => {
+                const v = (val) => Number(val) || 0;
+                tbody.innerHTML += `
+                    <tr style="border-bottom: 1px solid #edf2f9;">
+                        <td style="padding: 6px 2px; text-align: left; font-weight: bold;">${item.bulan}</td>
+                        <td style="padding: 6px 2px;">${v(item.hk)}</td><td style="padding: 6px 2px;">${v(item.hd)}</td>
+                        <td style="padding: 6px 2px; color: #f5a623; font-weight: bold;">${v(item.ht)}</td>
+                        <td style="padding: 6px 2px; ${t(v(item.tl1))}">${v(item.tl1)}</td><td style="padding: 6px 2px; ${t(v(item.tl2))}">${v(item.tl2)}</td><td style="padding: 6px 2px; ${t(v(item.tl3))}">${v(item.tl3)}</td><td style="padding: 6px 2px; ${t(v(item.tl4))}">${v(item.tl4)}</td>
+                        <td style="padding: 6px 2px; color: #6f42c1; font-weight: bold;">${v(item.psw)}</td>
+                        <td style="padding: 6px 2px; ${t(v(item.psw1))}">${v(item.psw1)}</td><td style="padding: 6px 2px; ${t(v(item.psw2))}">${v(item.psw2)}</td><td style="padding: 6px 2px; ${t(v(item.psw3))}">${v(item.psw3)}</td><td style="padding: 6px 2px; ${t(v(item.psw4))}">${v(item.psw4)}</td>
+                    </tr>`;
+            });
+        }
+
+        async function ubahPassword() {
+            const lama = document.getElementById('password-lama').value, baru = document.getElementById('password-baru').value, konfirmasi = document.getElementById('password-konfirmasi').value, pesan = document.getElementById('pesan-password');
+            if (!lama || !baru || !konfirmasi) { pesan.style.color='#dc3545'; pesan.innerText="Semua field harus diisi."; return; }
+            if (baru !== konfirmasi) { pesan.style.color='#dc3545'; pesan.innerText="Password baru tidak cocok."; return; }
+            if (baru.length < 6) { pesan.style.color='#dc3545'; pesan.innerText="Password minimal 6 karakter."; return; }
+            const { data, error } = await db.from('pegawai').select('*').eq('nip', nipPegawai).eq('password', lama).single();
+            if (error || !data) { pesan.style.color='#dc3545'; pesan.innerText="Password lama salah."; return; }
+            const { error: errUpdate } = await db.from('pegawai').update({ password: baru }).eq('nip', nipPegawai);
+            if (errUpdate) { pesan.style.color='#dc3545'; pesan.innerText="Gagal: " + errUpdate.message; } 
+            else { pesan.style.color='#28a745'; pesan.innerText="Password berhasil diubah!"; document.getElementById('password-lama').value=''; document.getElementById('password-baru').value=''; document.getElementById('password-konfirmasi').value=''; }
+        }
+
+        function prosesKeluar() { sessionStorage.removeItem('pegawai_nip'); sessionStorage.removeItem('pegawai_nama'); sessionStorage.removeItem('admin_via_nip'); window.location.href = 'admin.html'; }
+
+        /* === SISTEM CUSTOM DROPDOWN GENERIK === */
+        let nilaiTimTerpilih = '';
+        const _ddTerbuka = {}; 
+
         function toggleDd(id) {
             Object.keys(_ddTerbuka).forEach(k => {
                 if (k !== id) {
@@ -481,321 +663,82 @@
         document.addEventListener('click', function(e) {
             const dlList = document.querySelectorAll('[id^="wr-"], #wrapper-dropdown-tim, #wrapper-dropdown-jabatan');
             let dalamWrapper = false;
-            dlList.forEach(w => {
-                if (w.contains(e.target)) dalamWrapper = true;
-            });
-            if (!dalamWrapper) {
-                tutupSemuaDd();
-                const lTim = document.getElementById('list-dropdown-tim');
-                if (lTim) lTim.style.display = 'none';
-                const lJab = document.getElementById('list-dropdown-jabatan');
-                if (lJab) lJab.style.display = 'none';
-            }
+            dlList.forEach(w => { if (w && w.contains(e.target)) dalamWrapper = true; });
+            if (!dalamWrapper) tutupSemuaDd();
         });
 
-        async function inisialisasiDropdownHeader() {
-            const { data: dTahun } = await db.from('absensi_pegawai').select('tahun').eq('nip', nipPegawai);
-            let tahunUnik = [];
-            if (dTahun && dTahun.length > 0) {
-                tahunUnik = [...new Set(dTahun.map(d => d.tahun))].sort((a,b) => b - a);
-            }
-            if (tahunUnik.length === 0) {
-                tahunUnik.push(new Date().getFullYear());
-            }
+        function toggleDropdownTim() { toggleDd('dropdown-tim'); }
+        function tutupDropdownTim() { const list = document.getElementById('list-dropdown-tim'); if (list) list.style.display = 'none'; }
+        function toggleDropdownJabatan() { toggleDd('dropdown-jabatan'); }
+        function tutupDropdownJabatan() { const list = document.getElementById('list-dropdown-jabatan'); if (list) list.style.display = 'none'; }
 
-            const listTahun = document.getElementById('list-tahun-peg');
-            listTahun.innerHTML = '';
-            tahunUnik.forEach(t => {
-                const item = document.createElement('div');
-                item.textContent = t;
-                item.style.cssText = 'padding:8px 10px; cursor:pointer; font-size:13px; color:#1a233a; border-bottom:1px solid #f0f0f0;';
-                item.onclick = () => pilihTahunPeg(t);
-                listTahun.appendChild(item);
+        function pilihItemJabatan(nilai, teks) {
+            document.getElementById('pilihan-jabatan').value = nilai;
+            document.getElementById('display-jabatan').childNodes[0].textContent = teks;
+            tutupDropdownJabatan();
+        }
+
+        function pilihItemTim(nilai, teks) {
+            nilaiTimTerpilih = nilai;
+            document.getElementById('pilihan-tim').value = nilai;
+            document.getElementById('display-tim').childNodes[0].textContent = teks;
+            tutupDropdownTim();
+            updateDropdownJabatan(nilai);
+        }
+
+        function buatItemDd(teks, onClick) {
+            const item = document.createElement('div');
+            item.textContent = teks;
+            item.style.cssText = 'padding:9px 14px; cursor:pointer; font-size:13px; color:#1a233a; border-bottom:1px solid #f0f0f0;';
+            item.onmouseover = () => item.style.background = '#e6f0fa';
+            item.onmouseout = () => item.style.background = '';
+            item.onclick = onClick;
+            return item;
+        }
+
+        function isiDropdownTahunPeg(tahunList, savedTahun) {
+            const list = document.getElementById('list-tahun-peg');
+            const disp = document.getElementById('disp-tahun-peg');
+            const inp = document.getElementById('filter-tahun-pegawai');
+            list.innerHTML = '';
+            tahunList.forEach(t => {
+                list.appendChild(buatItemDd(String(t), () => {
+                    inp.value = t;
+                    disp.childNodes[0].textContent = t;
+                    tutupSemuaDd();
+                    sessionStorage.setItem('pegawai_filter_tahun', t);
+                    sessionStorage.setItem('pegawai_filter_bulan', 'Semua');
+                    isiDropdownBulanPeg(t);
+                    tarikDataSemua();
+                }));
             });
+            const val = savedTahun && tahunList.includes(parseInt(savedTahun)) ? parseInt(savedTahun) : tahunList[tahunList.length - 1];
+            inp.value = val;
+            disp.childNodes[0].textContent = val;
+            sessionStorage.setItem('pegawai_filter_tahun', val);
+        }
 
-            pilihTahunPeg(tahunUnik[0], false);
-
-            const listBulan = document.getElementById('list-bulan-peg');
-            listBulan.innerHTML = '';
-            
-            const itemSemua = document.createElement('div');
-            itemSemua.textContent = 'Semua Bulan';
-            itemSemua.style.cssText = 'padding:8px 10px; cursor:pointer; font-size:13px; color:#1a233a; border-bottom:1px solid #f0f0f0; font-weight:bold;';
-            itemSemua.onclick = () => pilihBulanPeg('Semua');
-            listBulan.appendChild(itemSemua);
-
-            semuaBulan.forEach(b => {
-                const item = document.createElement('div');
-                item.textContent = b;
-                item.style.cssText = 'padding:8px 10px; cursor:pointer; font-size:13px; color:#1a233a; border-bottom:1px solid #f0f0f0;';
-                item.onclick = () => pilihBulanPeg(b);
-                listBulan.appendChild(item);
+        async function isiDropdownBulanPeg(tahun) {
+            const { data } = await db.from('absensi_pegawai').select('bulan').eq('nip', nipPegawai).eq('tahun', tahun);
+            const list = document.getElementById('list-bulan-peg');
+            const disp = document.getElementById('disp-bulan-peg');
+            const inp = document.getElementById('filter-bulan-pegawai');
+            list.innerHTML = '';
+            const bulanTersedia = semuaBulan.filter(b => data && data.some(d => d.bulan === b));
+            const opsi = ['Semua', ...bulanTersedia];
+            opsi.forEach(b => {
+                list.appendChild(buatItemDd(b, () => {
+                    inp.value = b;
+                    disp.childNodes[0].textContent = b;
+                    tutupSemuaDd();
+                    sessionStorage.setItem('pegawai_filter_bulan', b);
+                    tarikDataSemua();
+                }));
             });
-            pilihBulanPeg('Semua', false);
-        }
-
-        function pilihTahunPeg(t, muatData = true) {
-            document.getElementById('filter-tahun-pegawai').value = t;
-            document.getElementById('disp-tahun-peg').childNodes[0].textContent = t + ' ';
-            tutupSemuaDd();
-            if (muatData) {
-                tarikDataPribadi();
-                if (isKetua || isKepalaAtauAdmin) tarikDataTimLengkap();
-            }
-        }
-
-        function pilihBulanPeg(b, muatData = true) {
-            document.getElementById('filter-bulan-pegawai').value = b;
-            document.getElementById('disp-bulan-peg').childNodes[0].textContent = b === 'Semua' ? 'Semua Bulan ' : b + ' ';
-            tutupSemuaDd();
-            if (muatData) tarikDataPribadi();
-        }
-
-        async function tarikDataPribadi() {
-            const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
-            const bulan = document.getElementById('filter-bulan-pegawai').value;
-            if (!tahun) return;
-
-            const { data, error } = await db.from('absensi_pegawai').select('*').eq('nip', nipPegawai).eq('tahun', tahun);
-            if (error || !data) return;
-
-            const dataFilter = bulan === 'Semua' ? data : data.filter(d => d.bulan === bulan);
-            perbaruiKartu(dataFilter, bulan);
-            perbaruiTabel(dataFilter, bulan);
-            perbaruiGrafikBatang(dataFilter);
-
-            let labelBulan = [], dataPSW = [], dataHT = [];
-            if (bulan === 'Semua') {
-                semuaBulan.forEach(b => {
-                    const baris = data.find(d => d.bulan === b);
-                    labelBulan.push(b.substring(0,3));
-                    dataPSW.push(baris ? baris.psw : 0);
-                    dataHT.push(baris ? baris.ht : 0);
-                });
-            } else {
-                labelBulan.push(bulan.substring(0,3));
-                const baris = data.find(d => d.bulan === bulan);
-                dataPSW.push(baris ? baris.psw : 0);
-                dataHT.push(baris ? baris.ht : 0);
-            }
-            perbaruiGrafikGaris(labelBulan, dataHT, dataPSW);
-        }
-
-        function perbaruiKartu(data, bulan) {
-            let hk = 0, hd = 0, totalHt = 0, totalPsw = 0;
-            data.forEach(d => {
-                hk += Number(d.hari_kerja) || 0;
-                hd += Number(d.hari_hadir) || 0;
-                totalHt += Number(d.ht) || 0;
-                totalPsw += Number(d.psw) || 0;
-            });
-            let rataHt = data.length ? (totalHt / data.length).toFixed(2) : 0;
-            let rataPsw = data.length ? (totalPsw / data.length).toFixed(2) : 0;
-
-            document.getElementById('angka-hk').innerText = hk;
-            document.getElementById('angka-hd').innerText = hd;
-            document.getElementById('angka-ht').innerText = rataHt + '%';
-            document.getElementById('angka-psw').innerText = rataPsw + '%';
-        }
-
-        function perbaruiTabel(data, bulan) {
-            const tbody = document.getElementById('badan-tabel-pegawai');
-            tbody.innerHTML = '';
-            
-            const urutanBulan = bulan === 'Semua' ? semuaBulan : [bulan];
-            urutanBulan.forEach(b => {
-                const d = data.find(item => item.bulan === b);
-                if (d || bulan !== 'Semua') {
-                    const tr = document.createElement('tr');
-                    tr.style.borderBottom = '1px solid #f0f0f0';
-                    tr.innerHTML = `
-                        <td style="padding:6px 2px; text-align:left; font-weight:bold;">${b}</td>
-                        <td style="padding:6px 2px;">${d ? (d.hari_kerja || 0) : 0}</td>
-                        <td style="padding:6px 2px;">${d ? (d.hari_hadir || 0) : 0}</td>
-                        <td style="padding:6px 2px; font-weight:bold; color:#f5a623;">${d ? (d.ht || 0) : 0}%</td>
-                        <td style="padding:6px 2px;">${d ? (d.tl1 || 0) : 0}</td>
-                        <td style="padding:6px 2px;">${d ? (d.tl2 || 0) : 0}</td>
-                        <td style="padding:6px 2px;">${d ? (d.tl3 || 0) : 0}</td>
-                        <td style="padding:6px 2px;">${d ? (d.tl4 || 0) : 0}</td>
-                        <td style="padding:6px 2px; font-weight:bold; color:#6f42c1;">${d ? (d.psw || 0) : 0}%</td>
-                        <td style="padding:6px 2px;">${d ? (d.psw1 || 0) : 0}</td>
-                        <td style="padding:6px 2px;">${d ? (d.psw2 || 0) : 0}</td>
-                        <td style="padding:6px 2px;">${d ? (d.psw3 || 0) : 0}</td>
-                        <td style="padding:6px 2px;">${d ? (d.psw4 || 0) : 0}</td>
-                    `;
-                    tbody.appendChild(tr);
-                }
-            });
-        }
-
-        function perbaruiGrafikBatang(data) {
-            if (grafikBatang) grafikBatang.destroy();
-            let tPsw1=0,tPsw2=0,tPsw3=0,tPsw4=0,tTl1=0,tTl2=0,tTl3=0,tTl4=0;
-            data.forEach(d => {
-                tPsw1 += Number(d.psw1) || 0;
-                tPsw2 += Number(d.psw2) || 0;
-                tPsw3 += Number(d.psw3) || 0;
-                tPsw4 += Number(d.psw4) || 0;
-                tTl1 += Number(d.tl1) || 0;
-                tTl2 += Number(d.tl2) || 0;
-                tTl3 += Number(d.tl3) || 0;
-                tTl4 += Number(d.tl4) || 0;
-            });
-            grafikBatang = new Chart(document.getElementById('grafikBatang-pegawai').getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: ['TL 1','TL 2','TL 3','TL 4','PSW 1','PSW 2','PSW 3','PSW 4'],
-                    datasets: [{
-                        label: 'Total Kasus',
-                        data: [tTl1, tTl2, tTl3, tTl4, tPsw1, tPsw2, tPsw3, tPsw4],
-                        backgroundColor: [
-                            'rgba(245,166,35,0.8)','rgba(245,166,35,0.6)','rgba(245,166,35,0.4)','rgba(245,166,35,0.2)',
-                            'rgba(111,66,193,0.8)','rgba(111,66,193,0.6)','rgba(111,66,193,0.4)','rgba(111,66,193,0.2)'
-                        ],
-                        borderWidth: 0,
-                        borderRadius: 4
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-        }
-
-        function perbaruiGrafikGaris(labels, dataHT, dataPSW) {
-            if (grafikHT) grafikHT.destroy();
-            if (grafikPSW) grafikPSW.destroy();
-
-            grafikHT = new Chart(document.getElementById('grafikHT-pegawai').getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{ label: 'HT (%)', data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', fill: true, tension: 0.3 }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-
-            grafikPSW = new Chart(document.getElementById('grafikPSW-pegawai').getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{ label: 'PSW (%)', data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', fill: true, tension: 0.3 }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-        }
-
-        /* LOGIK TARIK DATA RANGKUMAN TIM */
-        async function tarikDataTimLengkap() {
-            const wadahTim = document.getElementById('wadah-mode-tim');
-            wadahTim.innerHTML = '<p style="color:#999; font-size:12px;">Memuat data rangkuman tim...</p>';
-            
-            const tahun = parseInt(document.getElementById('filter-tahun-pegawai').value);
-            if (!tahun) return;
-
-            try {
-                const { data: allApproved } = await db.from('pengajuan_tim').select('*').eq('status', 'approved');
-                
-                let timsTerlihat = [];
-                if (isKepalaAtauAdmin) {
-                    const { data: dDaftarTim } = await db.from('daftar_tim').select('nama_tim');
-                    if (dDaftarTim) timsTerlihat = dDaftarTim.map(t => t.nama_tim);
-                } else if (isKetua) {
-                    timsTerlihat = [...daftarTimKepemimpinan];
-                }
-
-                if (timsTerlihat.length === 0) {
-                    wadahTim.innerHTML = '<p style="color:#666; font-size:13px; font-style:italic;">Anda tidak memimpin tim manapun.</p>';
-                    return;
-                }
-
-                wadahTim.innerHTML = '';
-                chartTimInstances = {};
-
-                for (const namaTim of timsTerlihat) {
-                    let nipsDiTim = allApproved ? allApproved.filter(a => a.tim === namaTim).map(a => a.nip) : [];
-                    
-                    if (nipsDiTim.length === 0) {
-                        const boxKosong = document.createElement('div');
-                        boxKosong.className = 'grafik-box';
-                        boxKosong.style.marginBottom = '10px';
-                        boxKosong.innerHTML = `<h3>👥 Tim: ${namaTim}</h3><p style="color:#999; font-size:12px; font-style:italic; margin:0;">Belum ada anggota yang disetujui dalam tim ini.</p>`;
-                        wadahTim.appendChild(boxKosong);
-                        continue;
-                    }
-
-                    const { data: dAbsensiAnggota } = await db.from('absensi_pegawai').select('*').in('nip', nipsDiTim).eq('tahun', tahun);
-                    
-                    const boxTim = document.createElement('div');
-                    boxTim.className = 'grafik-box';
-                    boxTim.style.marginBottom = '15px';
-                    boxTim.innerHTML = `
-                        <h3 style="margin-bottom:12px;">👥 Tim: ${namaTim} <span style="font-size:11px; color:#666; font-weight:normal;">(${nipsDiTim.length} Anggota)</span></h3>
-                        <div style="display:flex; gap:15px; height:140px; align-items:center;">
-                            <div style="flex:1; height:100%; position:relative;">
-                                <canvas id="chart-tim-ht-${namaTim.replace(/\s+/g, '-')}" style="height:100% !important;"></canvas>
-                            </div>
-                            <div style="flex:1; height:100%; position:relative;">
-                                <canvas id="chart-tim-psw-${namaTim.replace(/\s+/g, '-')}" style="height:100% !important;"></canvas>
-                            </div>
-                        </div>
-                    `;
-                    wadahTim.appendChild(boxTim);
-
-                    let rataHtPerBulan = [];
-                    let rataPswPerBulan = [];
-                    
-                    semuaBulan.forEach(b => {
-                        let dataBulanIni = dAbsensiAnggota ? dAbsensiAnggota.filter(d => d.bulan === b) : [];
-                        if (dataBulanIni.length > 0) {
-                            let sumHt = dataBulanIni.reduce((acc, curr) => acc + (Number(curr.ht) || 0), 0);
-                            let sumPsw = dataBulanIni.reduce((acc, curr) => acc + (Number(curr.psw) || 0), 0);
-                            rataHtPerBulan.push((sumHt / dataBulanIni.length).toFixed(1));
-                            rataPswPerBulan.push((sumPsw / dataBulanIni.length).toFixed(1));
-                        } else {
-                            rataHtPerBulan.push(0);
-                            rataPswPerBulan.push(0);
-                        }
-                    });
-
-                    const ctxHt = document.getElementById(`chart-tim-ht-${namaTim.replace(/\s+/g, '-')}`).getContext('2d');
-                    new Chart(ctxHt, {
-                        type: 'bar',
-                        data: {
-                            labels: semuaBulan.map(b => b.substring(0,3)),
-                            datasets: [{ label: 'Rerata HT (%)', data: rataHtPerBulan, backgroundColor: '#f5a623', borderRadius: 4 }]
-                        },
-                        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Rata-rata Ketepatan Waktu Masuk (HT %)', font: { size: 10 } }, legend: { display: false } } }
-                    });
-
-                    const ctxPsw = document.getElementById(`chart-tim-psw-${namaTim.replace(/\s+/g, '-')}`).getContext('2d');
-                    new Chart(ctxPsw, {
-                        type: 'bar',
-                        data: {
-                            labels: semuaBulan.map(b => b.substring(0,3)),
-                            datasets: [{ label: 'Rerata PSW (%)', data: rataPswPerBulan, backgroundColor: '#6f42c1', borderRadius: 4 }]
-                        },
-                        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Rata-rata Pulang Sebelum Waktu (PSW %)', font: { size: 10 } }, legend: { display: false } } }
-                    });
-                }
-            } catch (err) {
-                wadahTim.innerHTML = `<p style="color:#dc3545; font-size:12px;">Gagal memuat rangkuman tim: ${err.message}</p>`;
-            }
-        }
-
-        /* LOGIK CUSTOM DROPDOWN KLAIM */
-        function toggleDropdownTim() {
-            const list = document.getElementById('list-dropdown-tim');
-            if (!list) return;
-            const buka = list.style.display === 'none';
-            tutupSemuaDd();
-            list.style.display = buka ? 'block' : 'none';
-        }
-
-        function toggleDropdownJabatan() {
-            const list = document.getElementById('list-dropdown-jabatan');
-            if (!list) return;
-            const buka = list.style.display === 'none';
-            tutupSemuaDd();
-            list.style.display = buka ? 'block' : 'none';
+            const saved = sessionStorage.getItem('pegawai_filter_bulan');
+            const val = saved && opsi.includes(saved) ? saved : 'Semua';
+            inp.value = val;
+            disp.childNodes[0].textContent = val;
         }
 
         function renderDropdownTim(daftarTim) {
@@ -803,9 +746,8 @@
             if (!list) return;
             list.innerHTML = '';
             
-            let semuaTim = ['BPS Provinsi', ...daftarTim.filter(t => t !== 'BPS Provinsi')];
-            semuaTim = [...new Set(semuaTim)];
-
+            const semuaTim = ['BPS Provinsi', ...daftarTim.filter(t => t !== 'BPS Provinsi')];
+            
             semuaTim.forEach(t => {
                 const item = document.createElement('div');
                 item.textContent = t;
@@ -815,13 +757,17 @@
                 item.onclick = () => pilihItemTim(t, t);
                 list.appendChild(item);
             });
+            nilaiTimTerpilih = '';
+            document.getElementById('pilihan-tim').value = '';
+            document.getElementById('display-tim').childNodes[0].textContent = 'Pilih Tim...';
+            resetPlaceholderJabatan();
         }
 
-        function pilihItemTim(label, value) {
-            document.getElementById('pilihan-tim').value = value;
-            document.getElementById('display-tim').childNodes[0].textContent = label + ' ';
-            document.getElementById('list-dropdown-tim').style.display = 'none';
-            updateDropdownJabatan(value);
+        function resetPlaceholderJabatan() {
+            document.getElementById('pilihan-jabatan').value = '';
+            document.getElementById('display-jabatan').childNodes[0].textContent = 'Jabatan...';
+            const list = document.getElementById('list-dropdown-jabatan');
+            if (list) list.innerHTML = '';
         }
 
         function updateDropdownJabatan(namaTim) {
@@ -829,11 +775,10 @@
             const opsiJabatan = isBpsProvinsi ? ['Kepala'] : ['Anggota', 'Ketua'];
             renderDropdownJabatan(opsiJabatan);
             
-            if (isBpsProvinsi) {
-                pilihItemJabatan('Kepala', 'Kepala');
-            } else {
+            if (isBpsProvinsi) pilihItemJabatan('Kepala', 'Kepala');
+            else {
                 document.getElementById('pilihan-jabatan').value = '';
-                document.getElementById('display-jabatan').childNodes[0].textContent = 'Jabatan... ';
+                document.getElementById('display-jabatan').childNodes[0].textContent = 'Jabatan...';
             }
         }
 
@@ -851,72 +796,6 @@
                 list.appendChild(item);
             });
         }
-
-        function pilihItemJabatan(label, value) {
-            document.getElementById('pilihan-jabatan').value = value;
-            document.getElementById('display-jabatan').childNodes[0].textContent = label + ' ';
-            document.getElementById('list-dropdown-jabatan').style.display = 'none';
-        }
-
-        /* FUNGSI UBAH PASSWORD */
-        async function ubahPassword() {
-            const pLama = document.getElementById('password-lama').value;
-            const pBaru = document.getElementById('password-baru').value;
-            const pKonf = document.getElementById('password-konfirmasi').value;
-            const pesan = document.getElementById('pesan-password');
-
-            if (!pLama || !pBaru || !pKonf) {
-                pesan.style.color = '#dc3545';
-                pesan.innerText = 'Semua field harus diisi!';
-                return;
-            }
-            if (pBaru !== pKonf) {
-                pesan.style.color = '#dc3545';
-                pesan.innerText = 'Konfirmasi password tidak cocok!';
-                return;
-            }
-
-            pesan.style.color = '#2b6cb0';
-            pesan.innerText = 'Memproses...';
-
-            try {
-                const { data: user, error: errCek } = await db.from('pegawai').select('*').eq('nip', nipPegawai).eq('password', pLama).single();
-                if (errCek || !user) {
-                    pesan.style.color = '#dc3545';
-                    pesan.innerText = 'Password lama salah!';
-                    return;
-                }
-
-                const { error: errUpdate } = await db.from('pegawai').update({ password: pBaru }).eq('nip', nipPegawai);
-                if (errUpdate) throw errUpdate;
-
-                pesan.style.color = '#28a745';
-                pesan.innerText = 'Password berhasil diubah!';
-                document.getElementById('password-lama').value = '';
-                document.getElementById('password-baru').value = '';
-                document.getElementById('password-konfirmasi').value = '';
-            } catch (e) {
-                pesan.style.color = '#dc3545';
-                pesan.innerText = 'Gagal: ' + e.message;
-            }
-            setTimeout(() => { pesan.innerText = ''; }, 3000);
-        }
-
-        function prosesKeluar() {
-            sessionStorage.removeItem('pegawai_nip');
-            sessionStorage.removeItem('pegawai_nama');
-            sessionStorage.removeItem('pegawai_mode_aktif');
-            window.location.href = 'admin.html';
-        }
-
-        // Jalankan saat halaman dimuat pertama kali
-        window.addEventListener('DOMContentLoaded', async () => {
-            await evaluasiHakAkses();
-            await inisialisasiDropdownHeader();
-            
-            const modeAktif = sessionStorage.getItem('pegawai_mode_aktif') || 'pribadi';
-            gantiMode(modeAktif);
-        });
     </script>
 </body>
 </html>
