@@ -26,13 +26,16 @@
             font-size: 13px;
             font-weight: bold;
             color: #856404;
-            animation: marquee 35s linear infinite;
+            /* Trik agar teks mulai tepat dari ujung layar kanan tanpa jeda loading */
+            padding-left: 100%; 
+            /* Durasi diperlambat menjadi 80 detik agar nyaman dibaca */
+            animation: marquee 80s linear infinite; 
         }
         .teks-berjalan:hover {
             animation-play-state: paused;
         }
         @keyframes marquee {
-            0% { transform: translateX(100%); }
+            0% { transform: translateX(0); }
             100% { transform: translateX(-100%); }
         }
     </style>
@@ -63,10 +66,13 @@
         </button>
     </div>
 
+    <!-- Area Kanan distrukturkan menggunakan Flexbox agar teks berjalan konsisten di bawah -->
     <div class="area-kanan" style="display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding: 0 !important; gap: 12px;">
         
+        <!-- Wadah konten utama Beranda -->
         <div id="wadah-konten" style="flex: 1; min-height: 0; overflow-y: auto;"></div>
 
+        <!-- Wadah Teks Berjalan Kontekstual -->
         <div class="wadah-running-text">
             <span style="font-size: 16px;">📢</span>
             <div style="flex: 1; overflow: hidden; position: relative;">
