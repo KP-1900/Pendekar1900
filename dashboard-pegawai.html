@@ -590,40 +590,28 @@
         }
 
         async function hapusKlaim(id_klaim) {
-            if (!confirm('Yakin ingin menghapus klaim ini?')) return;
-
             const elItem = document.getElementById('klaim-item-' + id_klaim);
-            const listKlaim = document.getElementById('list-klaim-saya');
 
-            // Optimistic UI: langsung mainkan animasi & hilangkan dari tampilan tanpa nunggu server
+            // Tampilkan animasi hapus instan sambil proses ke server di belakang
             if (elItem) {
                 elItem.classList.add('klaim-item-hapus');
-                setTimeout(() => {
-                    elItem.remove();
-                    // Kalau setelah dihapus ternyata kosong, tampilkan pesan default
-                    if (listKlaim && listKlaim.querySelectorAll('.klaim-item').length === 0) {
-                        listKlaim.innerHTML = '<p style="color:#999; font-size:12px;">Anda belum mengklaim tim manapun.</p>';
-                    }
-                }, 250);
             }
 
             const { error } = await db.from('pengajuan_tim').delete().eq('id', id_klaim);
 
             if (error) {
                 alert("Gagal menghapus: " + error.message);
-                // Gagal di server, sinkronkan ulang tampilan supaya item yang sebenarnya masih ada muncul lagi
-                await muatFormKlaim();
+                if (elItem) elItem.classList.remove('klaim-item-hapus');
                 return;
             }
 
-            // Sinkronkan hak akses & data tim di belakang (tidak mempengaruhi tampilan yang sudah instan)
-            await evaluasiHakAkses();
-            if (isKetua || isKepalaAtauAdmin) {
-                tarikDataTimLengkap();
-            }
-            // Pastikan form ajukan tim muncul lagi kalau sebelumnya tersembunyi (karena sudah 3 klaim)
-            const formBox = document.getElementById('form-klaim-box');
-            if (formBox) formBox.style.display = 'block';
+            // Simpan mode aktif agar setelah reload langsung balik ke tab Klaim Tim
+            sessionStorage.setItem('pegawai_mode_aktif', 'klaim');
+
+            // Fade out halus lalu reload — sama seperti flow Ajukan Tim, biar semua state (termasuk dropdown) fresh
+            const overlay = document.getElementById('fade-overlay');
+            overlay.classList.add('aktif');
+            setTimeout(() => { location.reload(); }, 180);
         }
 
         async function tarikDataPribadi() {
