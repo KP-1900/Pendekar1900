@@ -26,9 +26,7 @@
             font-size: 13px;
             font-weight: bold;
             color: #856404;
-            /* Trik agar teks mulai tepat dari ujung layar kanan tanpa jeda loading */
             padding-left: 100%; 
-            /* Durasi diperlambat menjadi 80 detik agar nyaman dibaca */
             animation: marquee 80s linear infinite; 
         }
         @keyframes marquee {
@@ -63,13 +61,10 @@
         </button>
     </div>
 
-    <!-- Area Kanan distrukturkan menggunakan Flexbox agar teks berjalan konsisten di bawah -->
     <div class="area-kanan" style="display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding: 0 !important; gap: 0;">
         
-        <!-- Wadah konten utama Beranda -->
         <div id="wadah-konten" style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; padding: 0 25px;"></div>
 
-        <!-- Wadah Teks Berjalan Kontekstual + Kamus -->
         <div class="wadah-running-text" style="margin: 0 25px 12px 25px !important; position: relative;">
             <span style="font-size: 16px;">📢</span>
             <div style="flex: 1; overflow: hidden; position: relative;">
@@ -80,7 +75,6 @@
             <button onclick="bukaKamus()" class="btn-kamus">📖 Kamus</button>
         </div>
 
-        <!-- Popup Kamus Compact -->
         <div id="popup-kamus" style="
             display: none;
             position: fixed;
@@ -99,15 +93,12 @@
                 <span style="font-size:15px; font-weight:800; color:#1a233a;">📖 Kamus Kode PENDEKAR</span>
                 <button onclick="tutupKamus()" style="background:transparent; border:none; font-size:18px; color:#888; cursor:pointer; line-height:1; padding:0;">✕</button>
             </div>
-            <!-- 3 Kolom: Dasar | HT | PSW -->
             <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
-                <!-- Kolom 1: Dasar -->
                 <div>
                     <div style="font-size:11px; font-weight:800; color:#2b6cb0; margin-bottom:6px; padding-bottom:4px; border-bottom:2px solid #e6f0fa;">📅 Kehadiran Dasar</div>
                     <div class="pk-item"><span class="pk-kode" style="background: #1a233a;">HK</span><span class="pk-desc">Hari Kerja dalam 1 bulan</span></div>
                     <div class="pk-item"><span class="pk-kode" style="background: #28a745;">HD</span><span class="pk-desc">Hadir dalam 1 bulan</span></div>
                 </div>
-                <!-- Kolom 2: HT -->
                 <div>
                     <div style="font-size:11px; font-weight:800; color:#2b6cb0; margin-bottom:6px; padding-bottom:4px; border-bottom:2px solid #e6f0fa;">⏰ Hadir Terlambat (HT)</div>
                     <div class="pk-item"><span class="pk-kode" style="background: #f5a623;">HT</span><span class="pk-desc">Jumlah TL1+TL2+TL3+TL4</span></div>
@@ -116,7 +107,6 @@
                     <div class="pk-item"><span class="pk-kode" style="background: #f5a623;">TL 3</span><span class="pk-desc">60 – 90 menit</span></div>
                     <div class="pk-item"><span class="pk-kode" style="background: #f5a623;">TL 4</span><span class="pk-desc">&gt; 90 menit / tidak absen</span></div>
                 </div>
-                <!-- Kolom 3: PSW -->
                 <div>
                     <div style="font-size:11px; font-weight:800; color:#2b6cb0; margin-bottom:6px; padding-bottom:4px; border-bottom:2px solid #e6f0fa;">🚪 Pulang Sebelum Waktu</div>
                     <div class="pk-item"><span class="pk-kode" style="background: #6f42c1;">PSW</span><span class="pk-desc">Pulang Sebelum Waktunya</span></div>
@@ -136,6 +126,13 @@
         const db = window.supabase.createClient(_URL, _KEY);
 
         async function kePanelOrang() {
+            // === PERBAIKAN: cek dulu apakah sedang login sebagai ADMIN via NIP Tim SDM ===
+            // Sebelumnya, login admin via NIP tetap menyimpan 'pegawai_nip', sehingga
+            // tombol beranda salah arah ke dashboard pegawai. Sekarang admin_via_nip dicek lebih dulu.
+            if (sessionStorage.getItem('admin_via_nip') === 'ya') {
+                window.location.href = 'admin-panel.html';
+                return;
+            }
             if (sessionStorage.getItem('pegawai_nip')) {
                 window.location.href = 'dashboard-pegawai.html';
                 return;
@@ -151,7 +148,6 @@
             sessionStorage.setItem('sudahDisambut', 'ya');
         }
 
-        // === FUNGSI KAMUS (POPUP TOGGLE) ===
         function bukaKamus() {
             const popup = document.getElementById('popup-kamus');
             const sedangBuka = popup.style.display !== 'none';
@@ -162,7 +158,6 @@
             document.getElementById('popup-kamus').style.display = 'none';
         }
 
-        // Tutup popup saat klik di luar
         document.addEventListener('click', function(e) {
             const popup = document.getElementById('popup-kamus');
             const tombol = document.querySelector('.btn-kamus');
@@ -192,14 +187,12 @@
                 .catch(error => console.error('Gagal memuat konten:', error));
         }
 
-        // === SISTEM POSISI RUNNING TEXT YANG PERSISTEN (TAHAN RELOAD & GANTI HALAMAN) ===
-        const DURASI_MARQUEE = 80; // harus sama dengan durasi di CSS (80s)
+        const DURASI_MARQUEE = 80;
 
         function aturPosisiRunningText() {
             const teks = document.querySelector('.teks-berjalan');
             if (!teks) return;
 
-            // Simpan waktu "mulai" pertama kali (hanya sekali, tidak akan ditimpa lagi)
             let waktuMulai = sessionStorage.getItem('runningtext_mulai');
             if (!waktuMulai) {
                 waktuMulai = Date.now();
@@ -208,10 +201,8 @@
                 waktuMulai = parseInt(waktuMulai);
             }
 
-            // Hitung sudah berapa detik berjalan sejak waktu mulai tersebut
             const elapsedDetik = ((Date.now() - waktuMulai) / 1000) % DURASI_MARQUEE;
 
-            // Terapkan sebagai delay negatif supaya posisi langsung "nyambung"
             teks.style.animationDelay = `-${elapsedDetik}s`;
         }
 
