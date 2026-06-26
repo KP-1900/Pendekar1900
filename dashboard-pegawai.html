@@ -455,7 +455,7 @@
             } else if (mode === 'tim') {
                 btnTim.className = 'btn-toggle aktif';
                 wTim.style.display = 'flex';
-                filterBulan.style.display = 'none';
+                filterBulan.style.display = 'inline-block';
                 if (!wTim.innerHTML.trim()) tarikDataTimLengkap();
             } else if (mode === 'klaim') {
                 btnKlaim.className = 'btn-toggle aktif';
@@ -595,10 +595,22 @@
             }
 
             const daftarAnggota = Object.values(petaAnggota).sort((a, b) => a.nama.localeCompare(b.nama));
-            renderModeTim(daftarAnggota);
+
+            const bulan = document.getElementById('filter-bulan-pegawai').value;
+            let labelBulan;
+            if (bulan === 'Semua') {
+                labelBulan = semuaBulan;
+            } else {
+                const idx = semuaBulan.indexOf(bulan);
+                const sebelum = idx > 0 ? semuaBulan[idx - 1] : 'Desember';
+                const sesudah = idx < 11 ? semuaBulan[idx + 1] : 'Januari';
+                labelBulan = [sebelum, bulan, sesudah];
+            }
+
+            renderModeTim(daftarAnggota, labelBulan);
         }
 
-        function renderModeTim(daftarAnggota) {
+        function renderModeTim(daftarAnggota, labelBulan) {
             const wadah = document.getElementById('wadah-mode-tim');
             wadah.innerHTML = '';
             Object.values(chartTimInstances).forEach(chart => chart.destroy());
@@ -608,6 +620,12 @@
                 wadah.innerHTML = '<p style="text-align:center; color:#888; font-size:13px; margin-top:20px;">Tidak ada data anggota tim yang bisa ditampilkan.</p>';
                 return;
             }
+
+            const singkatBulan = {
+                Januari: 'Jan', Februari: 'Feb', Maret: 'Mar', April: 'Apr', Mei: 'Mei', Juni: 'Jun',
+                Juli: 'Jul', Agustus: 'Agu', September: 'Sep', Oktober: 'Okt', November: 'Nov', Desember: 'Des'
+            };
+            const labelSingkat = labelBulan.map(b => singkatBulan[b] || b);
 
             // TAMPILKAN JUDUL GRAFIK SEKALI SAJA SEBAGAI HEADER DI ATAS
             let htmlHeader = `
@@ -651,11 +669,11 @@
             });
 
             daftarAnggota.forEach((anggota, index) => {
-                const dataHT = semuaBulan.map(b => anggota.dataBulanan[b] ? Number(anggota.dataBulanan[b].ht) : 0);
-                const dataPSW = semuaBulan.map(b => anggota.dataBulanan[b] ? Number(anggota.dataBulanan[b].psw) : 0);
+                const dataHT = labelBulan.map(b => anggota.dataBulanan[b] ? Number(anggota.dataBulanan[b].ht) : 0);
+                const dataPSW = labelBulan.map(b => anggota.dataBulanan[b] ? Number(anggota.dataBulanan[b].psw) : 0);
                 const opsiBase = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: { size: 9 }, precision: 0 } }, x: { ticks: { font: { size: 8 } } } } };
-                chartTimInstances[`chart-tim-ht-${index}`] = new Chart(document.getElementById(`chart-tim-ht-${index}`).getContext('2d'), { type: 'line', data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'], datasets: [{ data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 }] }, options: opsiBase });
-                chartTimInstances[`chart-tim-psw-${index}`] = new Chart(document.getElementById(`chart-tim-psw-${index}`).getContext('2d'), { type: 'line', data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'], datasets: [{ data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 }] }, options: opsiBase });
+                chartTimInstances[`chart-tim-ht-${index}`] = new Chart(document.getElementById(`chart-tim-ht-${index}`).getContext('2d'), { type: 'line', data: { labels: labelSingkat, datasets: [{ data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 }] }, options: opsiBase });
+                chartTimInstances[`chart-tim-psw-${index}`] = new Chart(document.getElementById(`chart-tim-psw-${index}`).getContext('2d'), { type: 'line', data: { labels: labelSingkat, datasets: [{ data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 }] }, options: opsiBase });
             });
         }
 
