@@ -324,9 +324,22 @@
             statusPesan.innerText = "Memeriksa acuan bulan dan tahun terakhir...";
 
             try {
-                // 1. Tarik semua data dari absensi_pegawai
-                const { data: semuaAbsensi, error: errAbsensi } = await db.from('absensi_pegawai').select('tahun, bulan, nip, nama');
-                if (errAbsensi) throw errAbsensi;
+                // 1. Tarik SEMUA data dari absensi_pegawai (pakai pagination,
+                //    karena Supabase membatasi maksimal 1000 baris per request)
+                let semuaAbsensi = [];
+                let dariBaris = 0;
+                const UKURAN_HALAMAN = 1000;
+                while (true) {
+                    const { data: bagian, error: errAbsensi } = await db
+                        .from('absensi_pegawai')
+                        .select('tahun, bulan, nip, nama')
+                        .range(dariBaris, dariBaris + UKURAN_HALAMAN - 1);
+                    if (errAbsensi) throw errAbsensi;
+                    if (!bagian || bagian.length === 0) break;
+                    semuaAbsensi = semuaAbsensi.concat(bagian);
+                    if (bagian.length < UKURAN_HALAMAN) break; // sudah halaman terakhir
+                    dariBaris += UKURAN_HALAMAN;
+                }
 
                 if (!semuaAbsensi || semuaAbsensi.length === 0) {
                     statusPesan.style.color = '#e67e22';
