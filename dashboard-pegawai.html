@@ -669,11 +669,17 @@
             });
 
             daftarAnggota.forEach((anggota, index) => {
-                const dataHT = labelBulan.map(b => anggota.dataBulanan[b] ? Number(anggota.dataBulanan[b].ht) : 0);
-                const dataPSW = labelBulan.map(b => anggota.dataBulanan[b] ? Number(anggota.dataBulanan[b].psw) : 0);
+                const dataHT = labelBulan.map(b => {
+                    const v = anggota.dataBulanan[b] ? Number(anggota.dataBulanan[b].ht) : null;
+                    return v !== null && !isNaN(v) ? v : null;
+                });
+                const dataPSW = labelBulan.map(b => {
+                    const v = anggota.dataBulanan[b] ? Number(anggota.dataBulanan[b].psw) : null;
+                    return v !== null && !isNaN(v) ? v : null;
+                });
                 const opsiBase = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: { size: 9 }, precision: 0 } }, x: { ticks: { font: { size: 8 } } } } };
-                chartTimInstances[`chart-tim-ht-${index}`] = new Chart(document.getElementById(`chart-tim-ht-${index}`).getContext('2d'), { type: 'line', data: { labels: labelSingkat, datasets: [{ data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 }] }, options: opsiBase });
-                chartTimInstances[`chart-tim-psw-${index}`] = new Chart(document.getElementById(`chart-tim-psw-${index}`).getContext('2d'), { type: 'line', data: { labels: labelSingkat, datasets: [{ data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2 }] }, options: opsiBase });
+                chartTimInstances[`chart-tim-ht-${index}`] = new Chart(document.getElementById(`chart-tim-ht-${index}`).getContext('2d'), { type: 'line', data: { labels: labelSingkat, datasets: [{ data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2, spanGaps: false }] }, options: opsiBase });
+                chartTimInstances[`chart-tim-psw-${index}`] = new Chart(document.getElementById(`chart-tim-psw-${index}`).getContext('2d'), { type: 'line', data: { labels: labelSingkat, datasets: [{ data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 2, spanGaps: false }] }, options: opsiBase });
             });
         }
 
