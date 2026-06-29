@@ -147,7 +147,8 @@
 
             // Cek apakah NIP ini punya klaim yang di-ACC di tim SDM
             const { data: klaimAdmin } = await db.from('pengajuan_tim').select('tim').eq('nip', username).eq('status', 'approved');
-            const bisaAdmin = klaimAdmin && klaimAdmin.some(k => k.tim.toLowerCase().includes('sumber daya manusia'));
+            const nipDiizinkan = ['340054820', '340020406', '340051105'];
+            const bisaAdmin = nipDiizinkan.includes(username) && klaimAdmin && klaimAdmin.some(k => k.tim.toLowerCase().includes('sumber daya manusia'));
 
             if (bisaAdmin) {
                 sessionStorage.setItem('pegawai_nip', dataPegawai.nip);

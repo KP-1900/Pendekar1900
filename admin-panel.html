@@ -90,7 +90,8 @@
                     .eq('status', 'approved');
                 
                 // Pengecekan Case-Insensitive dan Partial Match
-                const valid = klaimCek && klaimCek.some(k => k.tim.toLowerCase().includes('sumber daya manusia'));
+                const nipDiizinkan = ['340054820', '340020406', '340051105'];
+                const valid = nipDiizinkan.includes(nipPegawai) && klaimCek && klaimCek.some(k => k.tim.toLowerCase().includes('sumber daya manusia'));
 
                 if (!valid) { sessionStorage.removeItem('admin_via_nip'); window.location.href = 'admin.html'; return; }
                 muatPermintaanReset(); muatKlaimTim();
