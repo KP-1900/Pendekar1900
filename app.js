@@ -8,28 +8,6 @@ let grafikGarisPSW, grafikGarisHT, grafikBatangKategori;
 
 const semuaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-// Klik kotak filter ditangani langsung via onclick di masing-masing div
-
-// Listener filter sudah dihandle inline di buatItemBeranda
-
-// === INISIALISASI AWAL ===
-isiDropdownTahun().then(async () => {
-    const tahun = parseInt(document.getElementById('filter-tahun').value);
-    await isiDropdownBulan(tahun);
-    tarikData();
-});
-
-// === HELPER: buat item custom dropdown beranda ===
-function buatItemBeranda(teks, onClick) {
-    const item = document.createElement('div');
-    item.textContent = teks;
-    item.style.cssText = 'padding:9px 16px; cursor:pointer; font-size:13px; color:#1a233a; border-bottom:1px solid #f0f0f0; white-space:nowrap;';
-    item.onmouseover = () => item.style.background = '#e6f0fa';
-    item.onmouseout = () => item.style.background = '';
-    item.onclick = (e) => { e.stopPropagation(); onClick(); };
-    return item;
-}
-
 // Expose ke global agar bisa dipanggil dari onclick di HTML
 window.toggleDdBeranda = function(id) {
     const list = document.getElementById('list-' + id);
@@ -56,6 +34,24 @@ document.addEventListener('click', function(e) {
         if (l) l.style.display = 'none';
     }
 });
+
+// === INISIALISASI AWAL ===
+isiDropdownTahun().then(async () => {
+    const tahun = parseInt(document.getElementById('filter-tahun').value);
+    await isiDropdownBulan(tahun);
+    tarikData();
+});
+
+// === HELPER: buat item custom dropdown beranda ===
+function buatItemBeranda(teks, onClick) {
+    const item = document.createElement('div');
+    item.textContent = teks;
+    item.style.cssText = 'padding:9px 16px; cursor:pointer; font-size:13px; color:#1a233a; border-bottom:1px solid #f0f0f0; white-space:nowrap;';
+    item.onmouseover = () => item.style.background = '#e6f0fa';
+    item.onmouseout = () => item.style.background = '';
+    item.onclick = (e) => { e.stopPropagation(); onClick(); };
+    return item;
+}
 
 // === FUNGSI DROPDOWN TAHUN BERANDA ===
 async function isiDropdownTahun() {
@@ -149,10 +145,12 @@ async function tarikData() {
             semuaBulan.forEach(namaBulan => {
                 let baris = dataValid.find(d => d.bulan === namaBulan);
                 labelBulan.push(namaBulan);
-                let valPsw = baris ? parseFloat(baris.psw) : 0;
-                let valHt = baris ? parseFloat(baris.ht) : 0;
-                dataPSW.push((isNaN(valPsw) ? 0 : valPsw * 100).toFixed(2));
-                dataHT.push((isNaN(valHt) ? 0 : valHt * 100).toFixed(2));
+                // === FIX: gunakan null untuk bulan yang belum ada data ===
+                // agar garis grafik tidak turun ke 0 dan berhenti di bulan terakhir
+                let valPsw = baris ? parseFloat(baris.psw) : null;
+                let valHt  = baris ? parseFloat(baris.ht)  : null;
+                dataPSW.push(valPsw !== null && !isNaN(valPsw) ? (valPsw * 100).toFixed(2) : null);
+                dataHT.push(valHt  !== null && !isNaN(valHt)  ? (valHt  * 100).toFixed(2) : null);
             });
         } else {
             let idx = semuaBulan.indexOf(bulan);
@@ -303,8 +301,10 @@ function perbaruiGrafik(labelBulan, dataPSW, dataHT) {
         data: {
             labels: labelBulan,
             datasets: [{
-                label: 'PSW (%)', data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111, 66, 193, 0.1)',
-                borderWidth: 3, tension: 0.3, fill: true
+                label: 'PSW (%)', data: dataPSW,
+                borderColor: '#6f42c1', backgroundColor: 'rgba(111, 66, 193, 0.1)',
+                borderWidth: 3, tension: 0.3, fill: true,
+                spanGaps: false  // === FIX: jangan hubungkan titik null ===
             }]
         }, options: opsiGrafik
     });
@@ -315,8 +315,10 @@ function perbaruiGrafik(labelBulan, dataPSW, dataHT) {
         data: {
             labels: labelBulan,
             datasets: [{
-                label: 'HT (%)', data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245, 166, 35, 0.1)',
-                borderWidth: 3, tension: 0.3, fill: true
+                label: 'HT (%)', data: dataHT,
+                borderColor: '#f5a623', backgroundColor: 'rgba(245, 166, 35, 0.1)',
+                borderWidth: 3, tension: 0.3, fill: true,
+                spanGaps: false  // === FIX: jangan hubungkan titik null ===
             }]
         }, options: opsiGrafik
     });

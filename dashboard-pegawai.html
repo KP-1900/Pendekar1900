@@ -821,8 +821,11 @@
                 semuaBulan.forEach(b => {
                     const baris = data.find(d => d.bulan === b);
                     labelBulan.push(b);
-                    dataPSW.push(baris ? Number(baris.psw) : 0);
-                    dataHT.push(baris ? Number(baris.ht) : 0);
+                    // === FIX: null untuk bulan yang belum ada data agar garis berhenti ===
+                    const valPsw = baris ? Number(baris.psw) : null;
+                    const valHt  = baris ? Number(baris.ht)  : null;
+                    dataPSW.push(valPsw !== null && !isNaN(valPsw) ? valPsw : null);
+                    dataHT.push(valHt  !== null && !isNaN(valHt)  ? valHt  : null);
                 });
             } else {
                 const idx = semuaBulan.indexOf(bulan);
@@ -848,8 +851,8 @@
             if (grafikPSW) grafikPSW.destroy();
             if (grafikHT) grafikHT.destroy();
             const opsi = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: { size: 10 }, precision: 0 } }, x: { ticks: { font: { size: 9 } } } } };
-            grafikHT = new Chart(document.getElementById('grafikHT-pegawai').getContext('2d'), { type: 'line', data: { labels: labelBulan, datasets: [{ data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 3 }] }, options: opsi });
-            grafikPSW = new Chart(document.getElementById('grafikPSW-pegawai').getContext('2d'), { type: 'line', data: { labels: labelBulan, datasets: [{ data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 3 }] }, options: opsi });
+            grafikHT = new Chart(document.getElementById('grafikHT-pegawai').getContext('2d'), { type: 'line', data: { labels: labelBulan, datasets: [{ data: dataHT, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 3, spanGaps: false }] }, options: opsi });
+            grafikPSW = new Chart(document.getElementById('grafikPSW-pegawai').getContext('2d'), { type: 'line', data: { labels: labelBulan, datasets: [{ data: dataPSW, borderColor: '#6f42c1', backgroundColor: 'rgba(111,66,193,0.1)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 3, spanGaps: false }] }, options: opsi });
         }
 
         function perbaruiGrafikBatang(data) {
