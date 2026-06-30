@@ -157,9 +157,9 @@ async function tarikData() {
             let namaSebelum = idx > 0 ? semuaBulan[idx - 1] : 'Desember';
             let namaSesudah = idx < 11 ? semuaBulan[idx + 1] : 'Januari';
             
-            let valSebelumPsw = 0, valSebelumHt = 0;
-            let valTengahPsw = 0, valTengahHt = 0;
-            let valSesudahPsw = 0, valSesudahHt = 0;
+            let valSebelumPsw = null, valSebelumHt = null;
+            let valTengahPsw  = null, valTengahHt  = null;
+            let valSesudahPsw = null, valSesudahHt = null;
             
             let barisTengah = dataValid.find(d => d.bulan === bulan);
             if(barisTengah) {
@@ -198,14 +198,14 @@ async function tarikData() {
             
             labelBulan = [namaSebelum, bulan, namaSesudah];
             dataPSW = [
-                (isNaN(valSebelumPsw) ? 0 : valSebelumPsw * 100).toFixed(2),
-                (isNaN(valTengahPsw) ? 0 : valTengahPsw * 100).toFixed(2),
-                (isNaN(valSesudahPsw) ? 0 : valSesudahPsw * 100).toFixed(2)
+                valSebelumPsw !== null ? (valSebelumPsw * 100).toFixed(2) : null,
+                valTengahPsw  !== null ? (valTengahPsw  * 100).toFixed(2) : null,
+                valSesudahPsw !== null ? (valSesudahPsw * 100).toFixed(2) : null
             ];
             dataHT = [
-                (isNaN(valSebelumHt) ? 0 : valSebelumHt * 100).toFixed(2),
-                (isNaN(valTengahHt) ? 0 : valTengahHt * 100).toFixed(2),
-                (isNaN(valSesudahHt) ? 0 : valSesudahHt * 100).toFixed(2)
+                valSebelumHt !== null ? (valSebelumHt * 100).toFixed(2) : null,
+                valTengahHt  !== null ? (valTengahHt  * 100).toFixed(2) : null,
+                valSesudahHt !== null ? (valSesudahHt * 100).toFixed(2) : null
             ];
         }
 

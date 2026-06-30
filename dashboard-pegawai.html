@@ -838,8 +838,19 @@
                 const sebelum = idx > 0 ? semuaBulan[idx-1] : 'Desember';
                 const sesudah = idx < 11 ? semuaBulan[idx+1] : 'Januari';
                 labelBulan = [sebelum, bulan, sesudah];
-                dataPSW = [ (Number((data.find(d=>d.bulan===sebelum)||{}).psw)||0), (Number((data.find(d=>d.bulan===bulan)||{}).psw)||0), (Number((data.find(d=>d.bulan===sesudah)||{}).psw)||0) ];
-                dataHT = [ (Number((data.find(d=>d.bulan===sebelum)||{}).ht)||0), (Number((data.find(d=>d.bulan===bulan)||{}).ht)||0), (Number((data.find(d=>d.bulan===sesudah)||{}).ht)||0) ];
+                const barisSebelum = data.find(d=>d.bulan===sebelum);
+                const barisTengah  = data.find(d=>d.bulan===bulan);
+                const barisSesudah = data.find(d=>d.bulan===sesudah);
+                dataPSW = [
+                    barisSebelum ? (Number(barisSebelum.psw)||0) : null,
+                    barisTengah  ? (Number(barisTengah.psw) ||0) : null,
+                    barisSesudah ? (Number(barisSesudah.psw)||0) : null
+                ];
+                dataHT = [
+                    barisSebelum ? (Number(barisSebelum.ht)||0) : null,
+                    barisTengah  ? (Number(barisTengah.ht) ||0) : null,
+                    barisSesudah ? (Number(barisSesudah.ht) ||0) : null
+                ];
             }
             perbaruiGrafikPribadi(labelBulan, dataPSW, dataHT, bulan);
         }
