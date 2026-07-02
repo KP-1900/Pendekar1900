@@ -42,6 +42,34 @@ isiDropdownTahun().then(async () => {
     tarikData();
 });
 
+// === KONDISI UPDATE: ambil baris dengan updated_at terbaru dari tabel absensi ===
+(async function tampilkanKondisiUpdate() {
+    try {
+        const { data, error } = await db
+            .from('absensi')
+            .select('updated_at')
+            .order('updated_at', { ascending: false })
+            .limit(1)
+            .single();
+
+        const el = document.getElementById('teks-kondisi-update');
+        if (!el) return;
+
+        if (error || !data || !data.updated_at) {
+            el.textContent = 'Belum ada data';
+            return;
+        }
+
+        const tgl = new Date(data.updated_at);
+        const pad = n => String(n).padStart(2, '0');
+        const format = `${pad(tgl.getDate())}/${pad(tgl.getMonth()+1)}/${tgl.getFullYear()} ${pad(tgl.getHours())}.${pad(tgl.getMinutes())} WIB`;
+        el.textContent = format;
+    } catch(e) {
+        const el = document.getElementById('teks-kondisi-update');
+        if (el) el.textContent = 'Tidak tersedia';
+    }
+})();
+
 // === HELPER: buat item custom dropdown beranda ===
 function buatItemBeranda(teks, onClick) {
     const item = document.createElement('div');
