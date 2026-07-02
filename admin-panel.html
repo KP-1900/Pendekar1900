@@ -295,6 +295,10 @@
             }
             if (kolomTanggal.length === 0) return null;
 
+            // Daftar bulan unik yang ada di header (dipakai untuk memastikan tiap pegawai
+            // tetap punya baris di setiap bulan walau tidak ada WFH sama sekali)
+            const daftarBulanUnik = [...new Set(kolomTanggal.map(k => k.bulan))];
+
             const hasil = [];
             rows.slice(hIdx + 2).forEach(r => {
                 if (!r) return;
@@ -305,10 +309,20 @@
                 const jabatan = (jabCol !== -1 ? r[jabCol] : '') || '';
                 const tim = (timCol !== -1 ? r[timCol] : '') || '';
 
+                const bulanAdaWfh = {};
                 kolomTanggal.forEach(k => {
                     const v = r[k.idx];
                     if (v && String(v).trim().toUpperCase() === 'WFH') {
                         hasil.push({ nip, nama: nama.toString().trim(), jabatan: jabatan.toString().trim(), tim: tim.toString().trim(), tahun, bulan: k.bulan, tanggal: k.tanggal });
+                        bulanAdaWfh[k.bulan] = true;
+                    }
+                });
+
+                // Pastikan pegawai tetap muncul di bulan yang tidak ada WFH-nya
+                // (tanggal: 0 dipakai sebagai penanda "tidak ada WFH", bukan tanggal sungguhan)
+                daftarBulanUnik.forEach(b => {
+                    if (!bulanAdaWfh[b]) {
+                        hasil.push({ nip, nama: nama.toString().trim(), jabatan: jabatan.toString().trim(), tim: tim.toString().trim(), tahun, bulan: b, tanggal: 0 });
                     }
                 });
             });

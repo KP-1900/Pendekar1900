@@ -569,9 +569,20 @@ async function tarikDataWFH() {
             petaPegawai[d.nip] = { nip: d.nip, nama: d.nama, jabatan: d.jabatan, tim: d.tim, tanggal: {} };
         }
         if (!petaPegawai[d.nip].tanggal[d.bulan]) petaPegawai[d.nip].tanggal[d.bulan] = [];
-        petaPegawai[d.nip].tanggal[d.bulan].push(d.tanggal);
+        // tanggal 0 adalah penanda "tidak ada WFH bulan ini", jadi jangan dimasukkan ke daftar tanggal
+        if (d.tanggal && Number(d.tanggal) > 0) petaPegawai[d.nip].tanggal[d.bulan].push(d.tanggal);
     });
-    const daftarPegawai = Object.values(petaPegawai).sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
+    // === URUTAN SESUAI EXCEL ===
+    // Bukan alfabetis, tapi mengikuti urutan baris di file Excel (Object.values menjaga urutan insert),
+    // dengan tim "Kepala" selalu didahulukan di paling atas. Sort bersifat stabil sehingga
+    // pegawai dengan tim yang sama tetap dalam urutan aslinya dari Excel (mis. Kepala Bagian Umum tetap di atas anggota Umum lainnya).
+    const daftarPegawai = Object.values(petaPegawai).sort((a, b) => {
+        const ta = a.tim || '', tb = b.tim || '';
+        if (ta === tb) return 0;
+        if (ta === 'Kepala') return -1;
+        if (tb === 'Kepala') return 1;
+        return 0;
+    });
 
     if (bulan === 'Semua') {
         judul.innerText = `🏠 Jadwal WFH — Ringkasan Tahun ${tahun}`;
@@ -585,9 +596,11 @@ async function tarikDataWFH() {
         badan.innerHTML = daftarPegawai.map(p => {
             let total = 0;
             const kolomBulan = semuaBulan.map(b => {
-                const jml = (p.tanggal[b] || []).length;
+                const tglArr = (p.tanggal[b] || []).slice().sort((a, b2) => a - b2);
+                const jml = tglArr.length;
                 total += jml;
-                return `<td style="padding:6px; ${jml > 0 ? 'color:#28a745; font-weight:bold;' : 'color:#ccc;'}">${jml > 0 ? jml : '-'}</td>`;
+                const teks = jml > 0 ? tglArr.join(', ') : '-';
+                return `<td style="padding:6px; white-space:nowrap; ${jml > 0 ? 'color:#28a745; font-weight:bold;' : 'color:#ccc;'}">${teks}</td>`;
             }).join('');
             return `<tr style="border-bottom:1px solid #edf2f9;">
                 <td style="padding:6px; text-align:left; font-weight:bold;">${p.nama}</td>
@@ -615,14 +628,13 @@ async function tarikDataWFH() {
             <th style="padding:6px; background:#e6f6ee; color:#1e7e34;">Jumlah</th>
         </tr>`;
 
-        const pegawaiBulanIni = daftarPegawai.filter(p => (p.tanggal[bulan] || []).length > 0);
-
-        if (pegawaiBulanIni.length === 0) {
-            badan.innerHTML = `<tr><td colspan="20" style="padding:10px; text-align:center; color:#999;">Tidak ada jadwal WFH di bulan ${bulan}.</td></tr>`;
+        // Tampilkan SEMUA pegawai di bulan ini (bukan cuma yang WFH), sesuai daftar master dari Excel
+        if (daftarPegawai.length === 0) {
+            badan.innerHTML = `<tr><td colspan="20" style="padding:10px; text-align:center; color:#999;">Tidak ada data pegawai di bulan ${bulan}.</td></tr>`;
             return;
         }
 
-        badan.innerHTML = pegawaiBulanIni.map(p => {
+        badan.innerHTML = daftarPegawai.map(p => {
             const tglWFH = p.tanggal[bulan] || [];
             const kolomTanggal = semuaTanggalBulanIni.map(t => {
                 const ada = tglWFH.includes(t);
