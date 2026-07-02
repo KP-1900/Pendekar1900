@@ -117,9 +117,17 @@ async function isiDropdownTahun() {
 }
 
 // === FUNGSI DROPDOWN BULAN BERANDA ===
+// Diambil dari gabungan tabel 'absensi' (data kehadiran) DAN 'wfh_jadwal' (data WFH),
+// supaya bulan yang baru ada data WFH-nya saja (belum ada data kehadiran) tetap muncul di filter.
 async function isiDropdownBulan(tahun) {
-    const { data, error } = await db.from('absensi').select('bulan').eq('tahun', tahun);
-    if (error || !data) return;
+    const [resAbsensi, resWfh] = await Promise.all([
+        db.from('absensi').select('bulan').eq('tahun', tahun),
+        db.from('wfh_jadwal').select('bulan').eq('tahun', tahun)
+    ]);
+
+    const dataAbsensi = resAbsensi.data || [];
+    const dataWfh = resWfh.data || [];
+    const data = [...dataAbsensi, ...dataWfh];
 
     const bulanTersedia = semuaBulan.filter(b => data.some(d => d.bulan === b));
     const list = document.getElementById('list-bulan-beranda');
