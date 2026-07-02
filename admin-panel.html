@@ -17,7 +17,7 @@
         </button>
     </div>
 
-    <div class="area-kanan" style="justify-content: center; align-items: center;">
+    <div class="area-kanan" style="justify-content: center; align-items: flex-start; overflow-y: auto; padding: 20px 0;">
         <div style="display:flex; flex-direction:row; align-items:flex-start; justify-content:center; width:100%; max-width:1000px; gap:20px; flex-wrap:wrap;">
         
         <div class="kotak-form" style="flex:1; min-width:320px; max-width:550px; background:white; padding:40px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); text-align:center;">
@@ -248,15 +248,47 @@
         // Baca Excel format pivot (baris=pegawai, kolom=tanggal per bulan, sel='WFH')
         function bacaJadwalWFHPivot(sheet, tahun) {
             const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null, raw: true });
-            if (!rows || rows.length < 4) return null;
+            if (!rows || rows.length < 3) return null;
 
-            const rowBulan = rows[1] || [];
-            const rowTanggal = rows[2] || [];
+            const cocok = (v, target) => v !== null && v !== undefined && String(v).trim().toLowerCase() === target;
+
+            // 1. Cari baris yang mengandung sel 'NIP' (case-insensitive) -> itu baris header (sekaligus baris nama bulan)
+            let hIdx = -1, nipCol = -1;
+            for (let r = 0; r < Math.min(rows.length, 10) && hIdx === -1; r++) {
+                const baris = rows[r] || [];
+                for (let c = 0; c < baris.length; c++) {
+                    if (cocok(baris[c], 'nip')) { hIdx = r; nipCol = c; break; }
+                }
+            }
+            if (hIdx === -1) return null; // tidak ketemu header NIP sama sekali
+
+            const rowHeader = rows[hIdx] || [];
+            const rowTanggal = rows[hIdx + 1] || [];
+
+            // 2. Cari kolom Nama: cek kolom tepat sesudah/sebelum NIP
+            let namaCol = -1;
+            if (cocok(rowHeader[nipCol + 1], 'nama')) namaCol = nipCol + 1;
+            else if (cocok(rowHeader[nipCol - 1], 'nama')) namaCol = nipCol - 1;
+            else {
+                for (let c = 0; c < rowHeader.length; c++) { if (cocok(rowHeader[c], 'nama')) { namaCol = c; break; } }
+            }
+
+            // 3. Cari kolom Jabatan & Tim (opsional, boleh tidak ada)
+            let jabCol = -1, timCol = -1;
+            for (let c = 0; c < rowHeader.length; c++) {
+                const teks = rowHeader[c] !== null && rowHeader[c] !== undefined ? String(rowHeader[c]).trim().toLowerCase() : '';
+                if (jabCol === -1 && teks === 'jabatan') jabCol = c;
+                if (timCol === -1 && teks.includes('tim')) timCol = c;
+            }
+
+            // 4. Kolom tanggal WFH dimulai setelah kolom label terakhir (NIP/Nama/Jabatan/Tim)
+            const kolomLabel = [nipCol, namaCol, jabCol, timCol].filter(x => x !== -1);
+            const mulaiKolomTanggal = Math.max(...kolomLabel) + 1;
 
             let bulanSaatIni = null;
             const kolomTanggal = [];
-            for (let c = 0; c < rowTanggal.length; c++) {
-                if (rowBulan[c]) bulanSaatIni = String(rowBulan[c]).trim();
+            for (let c = mulaiKolomTanggal; c < rowHeader.length; c++) {
+                if (rowHeader[c]) bulanSaatIni = String(rowHeader[c]).trim();
                 const t = rowTanggal[c];
                 if (bulanSaatIni && typeof t === 'number') {
                     kolomTanggal.push({ idx: c, bulan: bulanSaatIni, tanggal: t });
@@ -265,19 +297,19 @@
             if (kolomTanggal.length === 0) return null;
 
             const hasil = [];
-            rows.slice(3).forEach(r => {
+            rows.slice(hIdx + 2).forEach(r => {
                 if (!r) return;
-                const nipRaw = r[5];
+                const nipRaw = r[nipCol];
                 const nip = (nipRaw !== undefined && nipRaw !== null) ? String(nipRaw).trim() : '';
                 if (!nip || !/^\d+$/.test(nip)) return;
-                const nama = (r[6] || r[2] || '').toString().trim();
-                const jabatan = (r[3] || '').toString().trim();
-                const tim = (r[4] || '').toString().trim();
+                const nama = (namaCol !== -1 ? r[namaCol] : '') || '';
+                const jabatan = (jabCol !== -1 ? r[jabCol] : '') || '';
+                const tim = (timCol !== -1 ? r[timCol] : '') || '';
 
                 kolomTanggal.forEach(k => {
                     const v = r[k.idx];
                     if (v && String(v).trim().toUpperCase() === 'WFH') {
-                        hasil.push({ nip, nama, jabatan, tim, tahun, bulan: k.bulan, tanggal: k.tanggal });
+                        hasil.push({ nip, nama: nama.toString().trim(), jabatan: jabatan.toString().trim(), tim: tim.toString().trim(), tahun, bulan: k.bulan, tanggal: k.tanggal });
                     }
                 });
             });
