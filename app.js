@@ -70,33 +70,6 @@ isiDropdownTahun().then(async () => {
     }
 })();
 
-// === KONDISI UPDATE WFH: ambil updated_at terbaru dari tabel wfh_jadwal ===
-async function tampilkanKondisiUpdateWFH() {
-    try {
-        const { data, error } = await db
-            .from('wfh_jadwal')
-            .select('updated_at')
-            .order('updated_at', { ascending: false })
-            .limit(1)
-            .single();
-
-        const el = document.getElementById('teks-kondisi-update');
-        if (!el) return;
-
-        if (error || !data || !data.updated_at) {
-            el.textContent = 'Belum ada data WFH';
-            return;
-        }
-
-        const tgl = new Date(data.updated_at);
-        const pad = n => String(n).padStart(2, '0');
-        el.textContent = `${pad(tgl.getDate())}/${pad(tgl.getMonth()+1)}/${tgl.getFullYear()} ${pad(tgl.getHours())}.${pad(tgl.getMinutes())} WIB`;
-    } catch(e) {
-        const el = document.getElementById('teks-kondisi-update');
-        if (el) el.textContent = 'Tidak tersedia';
-    }
-}
-
 // === HELPER: buat item custom dropdown beranda ===
 function buatItemBeranda(teks, onClick) {
     const item = document.createElement('div');
@@ -550,6 +523,18 @@ const singkatBulanWFH = {
 
 let modeWFHAktif = false;
 
+async function tampilkanKondisiUpdateWFH() {
+    try {
+        const { data, error } = await db.from('wfh_jadwal').select('updated_at').order('updated_at', { ascending: false }).limit(1).single();
+        const el = document.getElementById('teks-kondisi-update');
+        if (!el) return;
+        if (error || !data || !data.updated_at) { el.textContent = 'Belum ada data WFH'; return; }
+        const tgl = new Date(data.updated_at);
+        const pad = n => String(n).padStart(2, '0');
+        el.textContent = pad(tgl.getDate())+'/'+pad(tgl.getMonth()+1)+'/'+tgl.getFullYear()+' '+pad(tgl.getHours())+'.'+pad(tgl.getMinutes())+' WIB';
+    } catch(e) { const el = document.getElementById('teks-kondisi-update'); if (el) el.textContent = 'Tidak tersedia'; }
+}
+
 window.toggleWFH = function() {
     modeWFHAktif = !modeWFHAktif;
     const normal = document.getElementById('tampilan-normal');
@@ -732,6 +717,11 @@ async function tarikDataWFH() {
         }).join('');
 
         const totalPegawai = daftarPegawai.length;
+        const jumlahWFHTotal = Object.values(hitungWFHPerTanggal).reduce((a, b) => a + b, 0);
+        const persenTotal = totalPegawai > 0 && semuaTanggalBulanIni.length > 0
+            ? ((jumlahWFHTotal / (totalPegawai * semuaTanggalBulanIni.length)) * 100).toFixed(0)
+            : 0;
+
         const kolomPersen = semuaTanggalBulanIni.map(t => {
             const jml = hitungWFHPerTanggal[t];
             const persen = totalPegawai > 0 ? ((jml / totalPegawai) * 100).toFixed(0) : 0;
@@ -742,7 +732,7 @@ async function tarikDataWFH() {
             <tr style="border-top:2px solid #c3e6cb; background:#e6f6ee;">
                 <td style="padding:8px 6px; font-weight:bold; color:#1a233a; font-size:11px;" colspan="2">% Pegawai WFH</td>
                 ${kolomPersen}
-                <td style="padding:8px 6px; background:#d4edda; font-weight:bold; color:#1e7e34; font-size:11px;">${totalPegawai} org</td>
+                <td style="padding:8px 6px; background:#d4edda; font-weight:bold; color:#28a745; font-size:11px;">${jumlahWFHTotal > 0 ? persenTotal + '%' : '-'}</td>
             </tr>`;
     }
 }
