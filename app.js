@@ -606,9 +606,17 @@ async function tarikDataWFH() {
         'Laravita Prihastina Julianti', 'Suhaili', 'Jamik Safitri', 'Bagastama Iqbalil Fathir',
         'Dwi Unzila Putri', 'Danardana Muhammad'
     ];
+    // Normalisasi: hapus semua tanda kutip/apostrof/backtick, rapikan spasi, lowercase.
+    // Supaya nama tetap match walau beda karakter kutip (' vs ` vs ’) atau beda spasi/kapital.
+    const normalisasiNama = (s) => (s || '')
+        .replace(/[`'’‘]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+    const urutanNamaWFHNormal = urutanNamaWFH.map(normalisasiNama);
     const daftarPegawai = Object.values(petaPegawai).sort((a, b) => {
-        const ia = urutanNamaWFH.indexOf(a.nama);
-        const ib = urutanNamaWFH.indexOf(b.nama);
+        const ia = urutanNamaWFHNormal.indexOf(normalisasiNama(a.nama));
+        const ib = urutanNamaWFHNormal.indexOf(normalisasiNama(b.nama));
         if (ia !== -1 || ib !== -1) {
             if (ia === -1) return 1;
             if (ib === -1) return -1;
