@@ -580,21 +580,40 @@ async function tarikDataWFH() {
         // tanggal 0 adalah penanda "tidak ada WFH bulan ini", jadi jangan dimasukkan ke daftar tanggal
         if (d.tanggal && Number(d.tanggal) > 0) petaPegawai[d.nip].tanggal[d.bulan].push(d.tanggal);
     });
-    // === URUTAN TAMPILAN ===
-    // 1. "Kepala BPS Provinsi" dan "Kepala Bagian Umum" selalu di paling atas (sesuai jabatan).
-    // 2. Sisanya dikelompokkan berdasarkan Tim (alfabetis), lalu diurutkan berdasarkan nama di dalam tim yang sama.
-    const prioritasJabatan = ['Kepala BPS Provinsi', 'Kepala Bagian Umum'];
+    // === URUTAN TAMPILAN (CUSTOM SESUAI PERMINTAAN) ===
+    // Daftar nama berikut menentukan urutan tampil. Nama yang tidak ada di daftar
+    // akan ditaruh di paling bawah, urut alfabetis.
+    const urutanNamaWFH = [
+        'Sugeng Arianto', 'Budi Siswandi', 'Supachri Ansyori', 'Tri Vika Listiyawati',
+        'Eka Riezalita Pattinama', 'Siti Meutia Aisyah', 'Setiawan Karyadi', 'Ari Ardiansyah',
+        'Eka Virja', 'Syamsu Pratama', 'Yuda Bagus Rachmatullah', 'Farid Izaddin',
+        'Ulfah Nuraini', 'Ramdani Agusta', 'Fahrunnisa Maharani', 'Nurzikri Saputra',
+        'Marissa Widya Ulfa', 'Nurulhuda', 'Sakinah Ramadhani Sudarso', 'Eddy Zurisman',
+        'Dian Fitrianty', 'Shinta Regina Nursedima Marpaung', 'Ravinsyah Kesuma', 'Suryawati',
+        'Muhammad Arif Ghossan', 'Jasmine Falo', 'Gustiawan', 'Median Jonson',
+        'Ade El Mutholib', 'Kasmah', 'Suryani', 'Nuraini', 'Deby Andayani', 'Femmy Ristia',
+        'Nur Jannah Mega Anindita', 'Vivi Yesica Sidabutar', 'Syavhana Yusricha Zuhri Putri',
+        'Ratnasari', 'Raden Mohamad Pramadhira', 'Dwi Nova Prihatmoko', 'Oktarizal',
+        'Ani Pertiwi', 'Rizka Prima Agustina', 'Kusmanto', 'Desiana Rahayu Susianti',
+        'Muhammad Miftakhul Romadlon', 'Fadhila Ajeng Damaris', 'Listia Nugraheni',
+        "Ryan Giggs Khikta'Awan Utomo", 'Yustina Ambarsari', 'Nur Faizah', 'Nimrot Sitorus',
+        "Nurul Aini Al'firdausi", 'Mardha Tilla Septiani', 'Desiana Arbani Safari', 'Gestari',
+        'Sohidin', 'Siti Ashhabul Jannah', 'Nadya Fitri Chairani', 'Ridho Akbar',
+        'Bambang Sri Yuwono', 'Fahrur Rozi', 'Sari Sisilianingsih', 'Rahma Nurhamidah',
+        'Rommel Yonatan Sianipar', 'Narezi Febriansa', 'Syahrul Toha Saputra',
+        'Akhmad Fadil Mubarok', 'Sabilla Hamda Syahputri', 'Ridho Ilahi', 'Tri Ervina Nurjanah',
+        'Marko Januarta Putra Mulyowidodo', 'Sri Hapsari Murni Handayani', 'Fitria Kurniawati',
+        'Laravita Prihastina Julianti', 'Suhaili', 'Jamik Safitri', 'Bagastama Iqbalil Fathir',
+        'Dwi Unzila Putri', 'Danardana Muhammad'
+    ];
     const daftarPegawai = Object.values(petaPegawai).sort((a, b) => {
-        const pa = prioritasJabatan.indexOf(a.jabatan);
-        const pb = prioritasJabatan.indexOf(b.jabatan);
-        if (pa !== -1 || pb !== -1) {
-            if (pa === -1) return 1;
-            if (pb === -1) return -1;
-            return pa - pb;
+        const ia = urutanNamaWFH.indexOf(a.nama);
+        const ib = urutanNamaWFH.indexOf(b.nama);
+        if (ia !== -1 || ib !== -1) {
+            if (ia === -1) return 1;
+            if (ib === -1) return -1;
+            return ia - ib;
         }
-        const ta = (a.tim || '').toLowerCase();
-        const tb = (b.tim || '').toLowerCase();
-        if (ta !== tb) return ta.localeCompare(tb);
         return (a.nama || '').localeCompare(b.nama || '');
     });
 
