@@ -70,6 +70,33 @@ isiDropdownTahun().then(async () => {
     }
 })();
 
+// === KONDISI UPDATE WFH: ambil updated_at terbaru dari tabel wfh_jadwal ===
+async function tampilkanKondisiUpdateWFH() {
+    try {
+        const { data, error } = await db
+            .from('wfh_jadwal')
+            .select('updated_at')
+            .order('updated_at', { ascending: false })
+            .limit(1)
+            .single();
+
+        const el = document.getElementById('teks-kondisi-update');
+        if (!el) return;
+
+        if (error || !data || !data.updated_at) {
+            el.textContent = 'Belum ada data WFH';
+            return;
+        }
+
+        const tgl = new Date(data.updated_at);
+        const pad = n => String(n).padStart(2, '0');
+        el.textContent = `${pad(tgl.getDate())}/${pad(tgl.getMonth()+1)}/${tgl.getFullYear()} ${pad(tgl.getHours())}.${pad(tgl.getMinutes())} WIB`;
+    } catch(e) {
+        const el = document.getElementById('teks-kondisi-update');
+        if (el) el.textContent = 'Tidak tersedia';
+    }
+}
+
 // === HELPER: buat item custom dropdown beranda ===
 function buatItemBeranda(teks, onClick) {
     const item = document.createElement('div');
@@ -534,11 +561,22 @@ window.toggleWFH = function() {
         normal.style.display = 'none';
         wfh.style.display = 'flex';
         if (tombol) { tombol.style.background = 'linear-gradient(135deg, #2b6cb0 0%, #1a4d8f 100%)'; tombol.innerHTML = '🏡 Beranda'; }
+        tampilkanKondisiUpdateWFH();
         tarikDataWFH();
     } else {
         normal.style.display = 'flex';
         wfh.style.display = 'none';
         if (tombol) { tombol.style.background = 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)'; tombol.innerHTML = '🏠 WFH'; }
+        (async () => {
+            try {
+                const { data, error } = await db.from('absensi').select('updated_at').order('updated_at', { ascending: false }).limit(1).single();
+                const el = document.getElementById('teks-kondisi-update');
+                if (!el || error || !data || !data.updated_at) return;
+                const tgl = new Date(data.updated_at);
+                const pad = n => String(n).padStart(2, '0');
+                el.textContent = pad(tgl.getDate())+'/'+pad(tgl.getMonth()+1)+'/'+tgl.getFullYear()+' '+pad(tgl.getHours())+'.'+pad(tgl.getMinutes())+' WIB';
+            } catch(e) {}
+        })();
     }
 };
 
@@ -675,10 +713,14 @@ async function tarikDataWFH() {
             return;
         }
 
-        badan.innerHTML = daftarPegawai.map(p => {
+        const hitungWFHPerTanggal = {};
+        semuaTanggalBulanIni.forEach(t => hitungWFHPerTanggal[t] = 0);
+
+        const barisPegawai = daftarPegawai.map(p => {
             const tglWFH = p.tanggal[bulan] || [];
             const kolomTanggal = semuaTanggalBulanIni.map(t => {
                 const ada = tglWFH.includes(t);
+                if (ada) hitungWFHPerTanggal[t]++;
                 return `<td style="padding:6px; ${ada ? 'color:#28a745; font-weight:bold;' : 'color:#eee;'}">${ada ? '✔' : '·'}</td>`;
             }).join('');
             return `<tr style="border-bottom:1px solid #edf2f9;">
@@ -688,6 +730,20 @@ async function tarikDataWFH() {
                 <td style="padding:6px; background:#f4fbf6; font-weight:bold; color:#1e7e34;">${tglWFH.length}</td>
             </tr>`;
         }).join('');
+
+        const totalPegawai = daftarPegawai.length;
+        const kolomPersen = semuaTanggalBulanIni.map(t => {
+            const jml = hitungWFHPerTanggal[t];
+            const persen = totalPegawai > 0 ? ((jml / totalPegawai) * 100).toFixed(0) : 0;
+            return `<td style="padding:6px; font-weight:bold; color:#28a745; background:#f4fbf6;">${jml > 0 ? persen + '%' : '-'}</td>`;
+        }).join('');
+
+        badan.innerHTML = barisPegawai + `
+            <tr style="border-top:2px solid #c3e6cb; background:#e6f6ee;">
+                <td style="padding:8px 6px; font-weight:bold; color:#1a233a; font-size:11px;" colspan="2">% Pegawai WFH</td>
+                ${kolomPersen}
+                <td style="padding:8px 6px; background:#d4edda; font-weight:bold; color:#1e7e34; font-size:11px;">${totalPegawai} org</td>
+            </tr>`;
     }
 }
 
