@@ -235,7 +235,7 @@
                         <div class="kartu-hk"><div class="angka" id="angka-hd" style="color:#28a745;">-</div><div class="label">Hari Hadir</div></div>
                         <div class="kartu-hk"><div class="angka" id="angka-ht" style="color:#f5a623;">-</div><div class="label">HT</div></div>
                         <div class="kartu-hk"><div class="angka" id="angka-psw" style="color:#6f42c1;">-</div><div class="label">PSW</div></div>
-                        <div class="kartu-hk"><div class="angka" id="angka-kjk" style="color:#dc3545;">-</div><div class="label">KJK</div></div>
+                        <div class="kartu-hk"><div class="angka" id="angka-kjk" style="color:#dc3545;">-</div><div class="label">KJK (menit)</div></div>
                         <div class="kartu-hk">
                             <div class="angka" id="angka-wfh" style="color:#20c997;">-</div>
                             <div class="label" id="label-wfh">WFH</div>
@@ -351,6 +351,7 @@
                                 <div style="font-size:11px; font-weight:800; color:#2b6cb0; margin-bottom:6px; padding-bottom:4px; border-bottom:2px solid #e6f0fa;">📅 Kehadiran Dasar</div>
                                 <div class="pk-item"><span class="pk-kode" style="background: #1a233a;">HK</span><span class="pk-desc">Hari Kerja dalam 1 bulan</span></div>
                                 <div class="pk-item"><span class="pk-kode" style="background: #28a745;">HD</span><span class="pk-desc">Hadir dalam 1 bulan</span></div>
+                                <div class="pk-item"><span class="pk-kode" style="background: #dc3545;">KJK</span><span class="pk-desc">Kekurangan Jam Kerja (KJK HT + KJK PSW), dalam menit</span></div>
                             </div>
                             <div>
                                 <div style="font-size:11px; font-weight:800; color:#2b6cb0; margin-bottom:6px; padding-bottom:4px; border-bottom:2px solid #e6f0fa;">⏰ Hadir Terlambat (HT)</div>
@@ -688,7 +689,7 @@
                         <div style="flex: 1; font-size: 12px; font-weight: 900; color: #1a233a;">Tren HT per Bulan</div>
                         <div style="flex: 1; font-size: 12px; font-weight: 900; color: #1a233a;">Tren PSW per Bulan</div>
                     </div>
-                    <div style="width: 56px; flex-shrink: 0; text-align: center; font-size: 10px; font-weight: 900; color: #1a233a; line-height: 1.2;">KJK</div>
+                    <div style="width: 56px; flex-shrink: 0; text-align: center; font-size: 10px; font-weight: 900; color: #1a233a; line-height: 1.2;">KJK<br>(menit)</div>
                 </div>
             `;
             wadah.innerHTML = htmlHeader;
@@ -720,7 +721,7 @@
                         </div>
                         <div style="width: 56px; flex-shrink: 0; text-align: center; border-left: 1px solid #edf2f9; padding-left: 10px;">
                             <div style="font-size: 18px; font-weight: 900; color: #dc3545; line-height: 1.1;">${anggota.totalKjk}</div>
-                            <div style="font-size: 8.5px; color: #888; margin-top: 2px;">KJK</div>
+                            <div style="font-size: 8.5px; color: #888; margin-top: 2px;">KJK (menit)</div>
                         </div>
                     </div>`;
                 wadah.innerHTML += htmlKartu;
