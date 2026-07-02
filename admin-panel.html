@@ -196,6 +196,42 @@
             document.getElementById('file-excel').value = '';
         }
 
+        // Validasi header kolom Excel sesuai template per mode.
+        // Mengembalikan { valid: true } atau { valid: false, kurang: [...nama kolom yang hilang] }
+        function validasiTemplateExcel(dataMentah, mode) {
+            if (!dataMentah || dataMentah.length === 0) {
+                return { valid: false, kurang: ['(file kosong / tidak ada baris data)'] };
+            }
+            const kolomAda = Object.keys(dataMentah[0]);
+            const cekAda = (opsiNama) => opsiNama.some(n => kolomAda.includes(n));
+
+            let kolomWajib = [];
+            if (mode === 'agregat') {
+                kolomWajib = [
+                    { label: 'Tahun', opsi: ['Tahun'] },
+                    { label: 'Bulan', opsi: ['Bulan'] },
+                    { label: 'PSW', opsi: ['PSW'] },
+                    { label: 'HT', opsi: ['HT'] },
+                ];
+            } else if (mode === 'pegawai') {
+                kolomWajib = [
+                    { label: 'Tahun', opsi: ['Tahun'] },
+                    { label: 'Bulan', opsi: ['Bulan'] },
+                    { label: 'NIP', opsi: ['NIP'] },
+                    { label: 'Nama', opsi: ['Nama'] },
+                    { label: 'HK', opsi: ['HK'] },
+                    { label: 'HD', opsi: ['HD'] },
+                ];
+            } else if (mode === 'struktur') {
+                kolomWajib = [
+                    { label: 'Nama Tim', opsi: ['Nama Tim', 'Tim', 'TIM'] },
+                ];
+            }
+
+            const kurang = kolomWajib.filter(k => !cekAda(k.opsi)).map(k => k.label);
+            return { valid: kurang.length === 0, kurang };
+        }
+
         async function prosesUpload() {
             const fileInput = document.getElementById('file-excel');
             const statusPesan = document.getElementById('status-pesan');
@@ -212,6 +248,15 @@
                     const workbook = XLSX.read(data, { type: 'array' });
                     const sheet = workbook.Sheets[workbook.SheetNames[0]];
                     const dataMentah = XLSX.utils.sheet_to_json(sheet);
+
+                    // === VALIDASI TEMPLATE ===
+                    const hasilValidasi = validasiTemplateExcel(dataMentah, modeSaatIni);
+                    if (!hasilValidasi.valid) {
+                        statusPesan.style.color = '#dc3545';
+                        statusPesan.innerText = "⚠️ Excel tidak sesuai template. Kolom hilang: " + hasilValidasi.kurang.join(', ');
+                        return;
+                    }
+
                     statusPesan.innerText = "Menyiapkan data...";
                     let dataSiap, error;
 
@@ -231,8 +276,8 @@
                         })).filter(b => b.tahun && b.bulan && b.nip);
 
                         if (dataSiap.length === 0) {
-                            statusPesan.style.color = '#e67e22';
-                            statusPesan.innerText = "Tidak ada baris valid (Tahun/Bulan/NIP kosong) di file ini.";
+                            statusPesan.style.color = '#dc3545';
+                            statusPesan.innerText = "⚠️ Excel tidak sesuai template. Tidak ada baris valid (Tahun/Bulan/NIP kosong) di file ini.";
                             return;
                         }
 
@@ -303,6 +348,12 @@
                         dataSiap = dataMentah.map(b => ({
                             nama_tim: b['Nama Tim'] || b['Tim'] || b['TIM'] || null
                         })).filter(b => b.nama_tim);
+
+                        if (dataSiap.length === 0) {
+                            statusPesan.style.color = '#dc3545';
+                            statusPesan.innerText = "⚠️ Excel tidak sesuai template. Tidak ada baris dengan Nama Tim yang valid.";
+                            return;
+                        }
 
                         await db.from('daftar_tim').delete().not('nama_tim', 'is', null);
                         ({ error } = await db.from('daftar_tim').insert(dataSiap));
