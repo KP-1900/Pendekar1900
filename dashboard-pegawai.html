@@ -11,7 +11,7 @@
         .area-kanan { padding: 12px 16px !important; overflow: hidden !important; height: 100vh; display: flex; flex-direction: column; gap: 12px; }
         .info-pegawai { background: white; border-radius: 12px; padding: 10px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; flex-shrink: 0; }
         .kartu-pegawai { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; flex-shrink: 0; width: 100%; }
-        .kartu-hk { min-width: 0; width: 100%; box-sizing: border-box; overflow: hidden; background: white; border-radius: 12px; padding: 10px 6px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; min-height: 78px; }
+        .kartu-hk { min-width: 0; width: 100%; box-sizing: border-box; overflow: hidden; background: white; border-radius: 12px; padding: 10px 6px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; height: 78px; }
         .kartu-hk .angka { font-size: 24px; font-weight: bold; color: #1a233a; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .kartu-hk .label { font-size: 13px; color: #4a5568; margin-top: 3px; white-space: normal; line-height: 1.25; min-height: 17px; display: flex; align-items: center; justify-content: center; overflow: hidden; text-overflow: ellipsis; }
         .kartu-hk .detail-wfh { font-size: 9.5px; color: #555; margin-top: 3px; line-height: 1.3; max-height: 30px; overflow-y: auto; overflow-x: hidden; word-break: break-word; }
@@ -33,10 +33,10 @@
         .btn-toggle.aktif { background: #2b6cb0; color: white; box-shadow: 0 2px 6px rgba(43,108,176,0.3); }
         .btn-toggle.nonaktif { background: #f4f7fe; color: #666; }
         .btn-toggle.nonaktif:hover { background: #e2e8f0; }
-        .kartu-anggota-tim { background: white; border-radius: 12px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #edf2f9; display: flex; align-items: center; gap: 15px; width: 100%; box-sizing: border-box; min-width: 0; overflow: hidden; }
-        .info-anggota-tim { width: 190px; flex: 0 0 190px; box-sizing: border-box; border-right: 1px solid #edf2f9; padding-right: 10px; overflow: hidden; }
-        .canvas-wadah-tim { flex: 1 1 auto; min-width: 0; display: flex; gap: 10px; }
-        .canvas-wadah-tim > div { flex: 1 1 0; min-width: 0; position: relative; height: 90px; overflow: hidden; }
+        .kartu-anggota-tim { background: white; border-radius: 12px; padding: 12px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #edf2f9; display: flex; align-items: center; gap: 15px; width: 100%; box-sizing: border-box; min-width: 0; min-height: 96px; overflow: visible; }
+        .info-anggota-tim { width: 190px; flex: 0 0 190px; box-sizing: border-box; border-right: 1px solid #edf2f9; padding-right: 10px; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
+        .canvas-wadah-tim { flex: 1 1 0; min-width: 0; display: flex; gap: 10px; height: 75px; }
+        .canvas-wadah-tim > div { flex: 1 1 0; min-width: 0; position: relative; height: 100%; overflow: hidden; }
         #wadah-mode-tim { width: 100%; box-sizing: border-box; overflow-x: hidden; }
 
         .klaim-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #fff; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px; transition: 0.3s;}
@@ -688,8 +688,8 @@
                 <div style="display: flex; padding: 4px 14px; margin-bottom: 2px; position: sticky; top: 0; background: #f4f7fe; z-index: 10; align-items: center; gap: 15px; flex-shrink: 0;">
                     <div style="width: 190px; flex-shrink: 0;"></div>
                     <div style="flex: 1; min-width: 0; display: flex; gap: 15px; text-align: center;">
-                        <div style="flex: 1; font-size: 12px; font-weight: 900; color: #1a233a;">Tren HT per Bulan</div>
-                        <div style="flex: 1; font-size: 12px; font-weight: 900; color: #1a233a;">Tren PSW per Bulan</div>
+                        <div style="flex: 1; min-width: 0; font-size: 12px; font-weight: 900; color: #1a233a;">Tren HT per Bulan</div>
+                        <div style="flex: 1; min-width: 0; font-size: 12px; font-weight: 900; color: #1a233a;">Tren PSW per Bulan</div>
                     </div>
                     <div style="width: 56px; flex-shrink: 0; text-align: center; font-size: 10px; font-weight: 900; color: #1a233a; line-height: 1.2;">KJK<br>(menit)</div>
                 </div>
