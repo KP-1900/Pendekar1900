@@ -525,12 +525,12 @@ window.toggleWFH = function() {
     if (modeWFHAktif) {
         normal.style.display = 'none';
         wfh.style.display = 'flex';
-        if (tombol) tombol.style.background = 'linear-gradient(135deg, #1e7e34 0%, #145523 100%)';
+        if (tombol) { tombol.style.background = 'linear-gradient(135deg, #2b6cb0 0%, #1a4d8f 100%)'; tombol.innerHTML = '🏡 Beranda'; }
         tarikDataWFH();
     } else {
         normal.style.display = 'flex';
         wfh.style.display = 'none';
-        if (tombol) tombol.style.background = 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)';
+        if (tombol) { tombol.style.background = 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)'; tombol.innerHTML = '🏠 WFH'; }
     }
 };
 

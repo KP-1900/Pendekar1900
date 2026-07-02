@@ -73,7 +73,7 @@
                 </div>
             </div>
             <button onclick="window.toggleWFH && window.toggleWFH()" id="btn-wfh-toggle" class="btn-kamus" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);">🏠 WFH</button>
-            <button onclick="bukaKamus()" class="btn-kamus">📖 Kamus</button>
+            <button onclick="bukaKamus()" id="btn-kamus-toggle" class="btn-kamus">📖 Kamus</button>
         </div>
 
         <div id="popup-kamus" style="
@@ -161,7 +161,7 @@
 
         document.addEventListener('click', function(e) {
             const popup = document.getElementById('popup-kamus');
-            const tombol = document.querySelector('.btn-kamus');
+            const tombol = document.getElementById('btn-kamus-toggle');
             if (popup && !popup.contains(e.target) && tombol && !tombol.contains(e.target)) {
                 popup.style.display = 'none';
             }
