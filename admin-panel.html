@@ -386,7 +386,8 @@
                         dataSiap = dataMentah.map(b => ({
                             tahun: b['Tahun'], bulan: b['Bulan'], nip: b['NIP'] ? b['NIP'].toString() : null, nama: b['Nama'],
                             hk: b['HK'] || 0, hd: b['HD'] || 0, psw: b['PSW'] || 0, psw1: b['PSW1'] || b['PSW 1'] || 0, psw2: b['PSW2'] || b['PSW 2'] || 0, psw3: b['PSW3'] || b['PSW 3'] || 0, psw4: b['PSW4'] || b['PSW 4'] || 0,
-                            ht: b['HT'] || 0, tl1: b['TL1'] || b['TL 1'] || 0, tl2: b['TL2'] || b['TL 2'] || 0, tl3: b['TL3'] || b['TL 3'] || 0, tl4: b['TL4'] || b['TL 4'] || 0
+                            ht: b['HT'] || 0, tl1: b['TL1'] || b['TL 1'] || 0, tl2: b['TL2'] || b['TL 2'] || 0, tl3: b['TL3'] || b['TL 3'] || 0, tl4: b['TL4'] || b['TL 4'] || 0,
+                            kjk: b['KJK'] || 0
                         })).filter(b => b.tahun && b.bulan && b.nip);
 
                         if (dataSiap.length === 0) {
