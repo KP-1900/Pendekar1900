@@ -572,16 +572,22 @@ async function tarikDataWFH() {
         // tanggal 0 adalah penanda "tidak ada WFH bulan ini", jadi jangan dimasukkan ke daftar tanggal
         if (d.tanggal && Number(d.tanggal) > 0) petaPegawai[d.nip].tanggal[d.bulan].push(d.tanggal);
     });
-    // === URUTAN SESUAI EXCEL ===
-    // Bukan alfabetis, tapi mengikuti urutan baris di file Excel (Object.values menjaga urutan insert),
-    // dengan tim "Kepala" selalu didahulukan di paling atas. Sort bersifat stabil sehingga
-    // pegawai dengan tim yang sama tetap dalam urutan aslinya dari Excel (mis. Kepala Bagian Umum tetap di atas anggota Umum lainnya).
+    // === URUTAN TAMPILAN ===
+    // 1. "Kepala BPS Provinsi" dan "Kepala Bagian Umum" selalu di paling atas (sesuai jabatan).
+    // 2. Sisanya dikelompokkan berdasarkan Tim (alfabetis), lalu diurutkan berdasarkan nama di dalam tim yang sama.
+    const prioritasJabatan = ['Kepala BPS Provinsi', 'Kepala Bagian Umum'];
     const daftarPegawai = Object.values(petaPegawai).sort((a, b) => {
-        const ta = a.tim || '', tb = b.tim || '';
-        if (ta === tb) return 0;
-        if (ta === 'Kepala') return -1;
-        if (tb === 'Kepala') return 1;
-        return 0;
+        const pa = prioritasJabatan.indexOf(a.jabatan);
+        const pb = prioritasJabatan.indexOf(b.jabatan);
+        if (pa !== -1 || pb !== -1) {
+            if (pa === -1) return 1;
+            if (pb === -1) return -1;
+            return pa - pb;
+        }
+        const ta = (a.tim || '').toLowerCase();
+        const tb = (b.tim || '').toLowerCase();
+        if (ta !== tb) return ta.localeCompare(tb);
+        return (a.nama || '').localeCompare(b.nama || '');
     });
 
     if (bulan === 'Semua') {
@@ -611,7 +617,7 @@ async function tarikDataWFH() {
         }).join('');
 
     } else {
-        const semuaTanggalBulanIni = [...new Set(data.filter(d => d.bulan === bulan).map(d => d.tanggal))].sort((a, b) => a - b);
+        const semuaTanggalBulanIni = [...new Set(data.filter(d => d.bulan === bulan && Number(d.tanggal) > 0).map(d => d.tanggal))].sort((a, b) => a - b);
 
         judul.innerText = `🏠 Jadwal WFH — ${bulan} ${tahun}`;
 
