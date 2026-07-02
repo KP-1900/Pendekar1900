@@ -34,6 +34,15 @@
                 <button onclick="gantiMode('struktur')" id="btn-struktur" style="flex:1; padding:12px 5px; border:2px solid #ddd; border-radius:12px; background:white; color:#666; font-weight:bold; cursor:pointer; font-size:12px;">
                     🏢 Daftar Tim<br><span style="font-weight:normal; font-size:10px;">List Tim (1 Kolom)</span>
                 </button>
+                <button onclick="gantiMode('wfh')" id="btn-wfh" style="flex:1; padding:12px 5px; border:2px solid #ddd; border-radius:12px; background:white; color:#666; font-weight:bold; cursor:pointer; font-size:12px;">
+                    🏠 Jadwal WFH<br><span style="font-weight:normal; font-size:10px;">Format pivot</span>
+                </button>
+            </div>
+
+            <div id="wadah-tahun-wfh" style="display:none; margin-bottom:15px; text-align:left;">
+                <label style="font-size:12px; color:#555; font-weight:bold; display:block; margin-bottom:5px;">Tahun jadwal WFH ini:</label>
+                <input type="number" id="wfh-tahun" placeholder="Contoh: 2026" style="width:90%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
+                <p style="font-size:11px; color:#999; margin:6px 0 0 0;">File Excel jadwal WFH tidak mencantumkan tahun secara eksplisit, jadi isi manual di sini. Data lama untuk tahun ini akan <b>digantikan total</b> oleh isi file yang diunggah.</p>
             </div>
 
             <p style="font-size:12px; color:#555; margin-top:0; margin-bottom:20px;">
@@ -185,12 +194,16 @@
             const bA = document.getElementById('btn-agregat');
             const bP = document.getElementById('btn-pegawai');
             const bS = document.getElementById('btn-struktur');
+            const bW = document.getElementById('btn-wfh');
             
-            [bA, bP, bS].forEach(b => { b.style.background = 'white'; b.style.color = '#666'; b.style.borderColor = '#ddd'; });
+            [bA, bP, bS, bW].forEach(b => { b.style.background = 'white'; b.style.color = '#666'; b.style.borderColor = '#ddd'; });
 
             if (mode === 'agregat') { bA.style.background = '#2b6cb0'; bA.style.color = 'white'; bA.style.borderColor = '#2b6cb0'; }
             else if (mode === 'pegawai') { bP.style.background = '#28a745'; bP.style.color = 'white'; bP.style.borderColor = '#28a745'; }
             else if (mode === 'struktur') { bS.style.background = '#e67e22'; bS.style.color = 'white'; bS.style.borderColor = '#e67e22'; }
+            else if (mode === 'wfh') { bW.style.background = '#20c997'; bW.style.color = 'white'; bW.style.borderColor = '#20c997'; }
+
+            document.getElementById('wadah-tahun-wfh').style.display = (mode === 'wfh') ? 'block' : 'none';
             
             document.getElementById('status-pesan').innerText = '';
             document.getElementById('file-excel').value = '';
@@ -232,6 +245,46 @@
             return { valid: kurang.length === 0, kurang };
         }
 
+        // Baca Excel format pivot (baris=pegawai, kolom=tanggal per bulan, sel='WFH')
+        function bacaJadwalWFHPivot(sheet, tahun) {
+            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null, raw: true });
+            if (!rows || rows.length < 4) return null;
+
+            const rowBulan = rows[1] || [];
+            const rowTanggal = rows[2] || [];
+
+            let bulanSaatIni = null;
+            const kolomTanggal = [];
+            for (let c = 0; c < rowTanggal.length; c++) {
+                if (rowBulan[c]) bulanSaatIni = String(rowBulan[c]).trim();
+                const t = rowTanggal[c];
+                if (bulanSaatIni && typeof t === 'number') {
+                    kolomTanggal.push({ idx: c, bulan: bulanSaatIni, tanggal: t });
+                }
+            }
+            if (kolomTanggal.length === 0) return null;
+
+            const hasil = [];
+            rows.slice(3).forEach(r => {
+                if (!r) return;
+                const nipRaw = r[5];
+                const nip = (nipRaw !== undefined && nipRaw !== null) ? String(nipRaw).trim() : '';
+                if (!nip || !/^\d+$/.test(nip)) return;
+                const nama = (r[6] || r[2] || '').toString().trim();
+                const jabatan = (r[3] || '').toString().trim();
+                const tim = (r[4] || '').toString().trim();
+
+                kolomTanggal.forEach(k => {
+                    const v = r[k.idx];
+                    if (v && String(v).trim().toUpperCase() === 'WFH') {
+                        hasil.push({ nip, nama, jabatan, tim, tahun, bulan: k.bulan, tanggal: k.tanggal });
+                    }
+                });
+            });
+
+            return hasil;
+        }
+
         async function prosesUpload() {
             const fileInput = document.getElementById('file-excel');
             const statusPesan = document.getElementById('status-pesan');
@@ -247,18 +300,34 @@
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
                     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const dataMentah = XLSX.utils.sheet_to_json(sheet);
 
-                    // === VALIDASI TEMPLATE ===
-                    const hasilValidasi = validasiTemplateExcel(dataMentah, modeSaatIni);
-                    if (!hasilValidasi.valid) {
-                        statusPesan.style.color = '#dc3545';
-                        statusPesan.innerText = "⚠️ Excel tidak sesuai template. Kolom hilang: " + hasilValidasi.kurang.join(', ');
-                        return;
+                    let dataMentah, dataWFH, tahunWFH;
+                    let dataSiap, error;
+
+                    if (modeSaatIni === 'wfh') {
+                        tahunWFH = parseInt(document.getElementById('wfh-tahun').value);
+                        if (!tahunWFH || tahunWFH < 2000) {
+                            statusPesan.style.color = '#dc3545';
+                            statusPesan.innerText = "⚠️ Isi Tahun jadwal WFH terlebih dahulu.";
+                            return;
+                        }
+                        dataWFH = bacaJadwalWFHPivot(sheet, tahunWFH);
+                        if (!dataWFH || dataWFH.length === 0) {
+                            statusPesan.style.color = '#dc3545';
+                            statusPesan.innerText = "⚠️ Excel tidak sesuai template jadwal WFH (format pivot: NIP di kolom F, nama bulan & tanggal di baris header, sel 'WFH' pada tanggal terkait).";
+                            return;
+                        }
+                    } else {
+                        dataMentah = XLSX.utils.sheet_to_json(sheet);
+                        const hasilValidasi = validasiTemplateExcel(dataMentah, modeSaatIni);
+                        if (!hasilValidasi.valid) {
+                            statusPesan.style.color = '#dc3545';
+                            statusPesan.innerText = "⚠️ Excel tidak sesuai template. Kolom hilang: " + hasilValidasi.kurang.join(', ');
+                            return;
+                        }
                     }
 
                     statusPesan.innerText = "Menyiapkan data...";
-                    let dataSiap, error;
 
                     if (modeSaatIni === 'agregat') {
                         dataSiap = dataMentah.map(b => ({
@@ -357,6 +426,26 @@
 
                         await db.from('daftar_tim').delete().not('nama_tim', 'is', null);
                         ({ error } = await db.from('daftar_tim').insert(dataSiap));
+
+                    } else if (modeSaatIni === 'wfh') {
+                        dataSiap = dataWFH;
+
+                        const pesanKonfirmasi =
+                            `Anda akan mengunggah jadwal WFH tahun ${tahunWFH} (${dataSiap.length} baris jadwal).\n\n` +
+                            `Seluruh data WFH tahun ${tahunWFH} yang sudah ada di database akan DIHAPUS dan DIGANTIKAN TOTAL dengan isi file ini.\n\n` +
+                            `Lanjutkan?`;
+                        if (!confirm(pesanKonfirmasi)) {
+                            statusPesan.style.color = '#e67e22';
+                            statusPesan.innerText = "Upload dibatalkan oleh admin.";
+                            return;
+                        }
+
+                        statusPesan.innerText = `Menghapus data WFH lama tahun ${tahunWFH}...`;
+                        const { error: errHapusWFH } = await db.from('wfh_jadwal').delete().eq('tahun', tahunWFH);
+                        if (errHapusWFH) throw errHapusWFH;
+
+                        statusPesan.innerText = "Menyimpan jadwal WFH baru...";
+                        ({ error } = await db.from('wfh_jadwal').insert(dataSiap));
                     }
 
                     if (error) throw error;

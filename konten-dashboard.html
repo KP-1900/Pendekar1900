@@ -7,7 +7,7 @@
         <div>
             <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;">
                 <h1 style="margin: 0; color: #1a233a; font-size: 24px; font-weight: 800;">PENDEKAR</h1>
-                <span id="info-kondisi-update" style="font-size: 13px; color: #888; white-space:nowrap;">🕐 Kondisi update: <span id="teks-kondisi-update" style="font-weight: bold; color: #2b6cb0;">Memuat...</span></span>
+                <span id="info-kondisi-update" style="font-size: 11px; color: #888; white-space:nowrap;">🕐 Kondisi update: <span id="teks-kondisi-update" style="font-weight: bold; color: #2b6cb0;">Memuat...</span></span>
             </div>
             <p style="margin: 4px 0 0 0; color: #555; font-size: 13px;">Peningkatan Disiplin dan Evaluasi Kehadiran melalui Monitoring Absensi Rutin</p>
         </div>
@@ -38,6 +38,7 @@
     </div>
 </div>
 
+<div id="tampilan-normal" style="display:flex; flex-direction:column; flex:1; min-height:0; gap:10px;">
 <div class="grid-kartu" style="margin-bottom: 0; flex-shrink: 0;">
     <div class="kartu"><div class="bungkus-ikon ikon-hijau">👥</div><div class="info-kartu"><h3>Jumlah Pegawai</h3><h2 id="angka-pegawai">0</h2><p>Total tahun terpilih</p></div></div>
     <div class="kartu"><div class="bungkus-ikon ikon-biru">💼</div><div class="info-kartu"><h3>Hari Kerja</h3><h2 id="angka-harikerja">0</h2><p>Total tahun terpilih</p></div></div>
@@ -89,5 +90,23 @@
         </div>
     </div>
 </div>
+</div>
+<!-- /tampilan-normal -->
+
+<div id="tampilan-wfh" style="display:none; flex-direction:column; flex:1; min-height:0; gap:10px;">
+    <div class="kotak-bawah" style="flex:1;">
+        <h3 class="judul-grafik" id="judul-wfh">🏠 Jadwal WFH</h3>
+        <div class="wadah-tabel">
+            <table width="100%" style="font-size: 12.5px; text-align: center; border-collapse: collapse; white-space: nowrap;">
+                <thead id="kepala-tabel-wfh" style="position: sticky; top: 0; background-color: #f4f7fe; z-index: 1;"></thead>
+                <tbody id="badan-tabel-wfh">
+                    <tr><td colspan="20" style="padding: 10px; text-align: center; color: #999;">Memuat data WFH...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!-- /tampilan-wfh -->
 
 </div>
+

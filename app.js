@@ -507,4 +507,142 @@ function perbaruiGrafikBatang(data) {
     });
 }
 
+// === FITUR JADWAL WFH ===
+const singkatBulanWFH = {
+    Januari: 'Jan', Februari: 'Feb', Maret: 'Mar', April: 'Apr', Mei: 'Mei', Juni: 'Jun',
+    Juli: 'Jul', Agustus: 'Agu', September: 'Sep', Oktober: 'Okt', November: 'Nov', Desember: 'Des'
+};
+
+let modeWFHAktif = false;
+
+window.toggleWFH = function() {
+    modeWFHAktif = !modeWFHAktif;
+    const normal = document.getElementById('tampilan-normal');
+    const wfh = document.getElementById('tampilan-wfh');
+    const tombol = document.getElementById('btn-wfh-toggle');
+    if (!normal || !wfh) return;
+
+    if (modeWFHAktif) {
+        normal.style.display = 'none';
+        wfh.style.display = 'flex';
+        if (tombol) tombol.style.background = 'linear-gradient(135deg, #1e7e34 0%, #145523 100%)';
+        tarikDataWFH();
+    } else {
+        normal.style.display = 'flex';
+        wfh.style.display = 'none';
+        if (tombol) tombol.style.background = 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)';
+    }
+};
+
+async function tarikDataWFH() {
+    const tahunEl = document.getElementById('filter-tahun');
+    const bulanEl = document.getElementById('filter-bulan');
+    if (!tahunEl) return;
+    const tahun = parseInt(tahunEl.value);
+    const bulan = bulanEl ? bulanEl.value : 'Semua';
+
+    const judul = document.getElementById('judul-wfh');
+    const kepala = document.getElementById('kepala-tabel-wfh');
+    const badan = document.getElementById('badan-tabel-wfh');
+    if (!kepala || !badan) return;
+
+    badan.innerHTML = '<tr><td colspan="20" style="padding:10px; text-align:center; color:#999;">Memuat data WFH...</td></tr>';
+
+    const { data, error } = await db.from('wfh_jadwal').select('*').eq('tahun', tahun);
+
+    if (error) {
+        badan.innerHTML = `<tr><td colspan="20" style="padding:10px; text-align:center; color:#dc3545;">Gagal memuat: ${error.message}</td></tr>`;
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        judul.innerText = `🏠 Jadwal WFH ${tahun}`;
+        kepala.innerHTML = '';
+        badan.innerHTML = '<tr><td colspan="20" style="padding:10px; text-align:center; color:#999;">Belum ada data WFH untuk tahun ini.</td></tr>';
+        return;
+    }
+
+    // Kelompokkan per pegawai
+    const petaPegawai = {};
+    data.forEach(d => {
+        if (!petaPegawai[d.nip]) {
+            petaPegawai[d.nip] = { nip: d.nip, nama: d.nama, jabatan: d.jabatan, tim: d.tim, tanggal: {} };
+        }
+        if (!petaPegawai[d.nip].tanggal[d.bulan]) petaPegawai[d.nip].tanggal[d.bulan] = [];
+        petaPegawai[d.nip].tanggal[d.bulan].push(d.tanggal);
+    });
+    const daftarPegawai = Object.values(petaPegawai).sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
+
+    if (bulan === 'Semua') {
+        judul.innerText = `🏠 Jadwal WFH — Ringkasan Tahun ${tahun}`;
+        kepala.innerHTML = `<tr>
+            <th style="padding:6px; text-align:left;">Nama</th>
+            <th style="padding:6px; text-align:left;">Tim</th>
+            ${semuaBulan.map(b => `<th style="padding:6px;">${singkatBulanWFH[b]}</th>`).join('')}
+            <th style="padding:6px; background:#e6f6ee; color:#1e7e34;">Jumlah</th>
+        </tr>`;
+
+        badan.innerHTML = daftarPegawai.map(p => {
+            let total = 0;
+            const kolomBulan = semuaBulan.map(b => {
+                const jml = (p.tanggal[b] || []).length;
+                total += jml;
+                return `<td style="padding:6px; ${jml > 0 ? 'color:#28a745; font-weight:bold;' : 'color:#ccc;'}">${jml > 0 ? jml : '-'}</td>`;
+            }).join('');
+            return `<tr style="border-bottom:1px solid #edf2f9;">
+                <td style="padding:6px; text-align:left; font-weight:bold;">${p.nama}</td>
+                <td style="padding:6px; text-align:left; color:#666;">${p.tim || '-'}</td>
+                ${kolomBulan}
+                <td style="padding:6px; background:#f4fbf6; font-weight:bold; color:#1e7e34;">${total}</td>
+            </tr>`;
+        }).join('');
+
+    } else {
+        const semuaTanggalBulanIni = [...new Set(data.filter(d => d.bulan === bulan).map(d => d.tanggal))].sort((a, b) => a - b);
+
+        judul.innerText = `🏠 Jadwal WFH — ${bulan} ${tahun}`;
+
+        if (semuaTanggalBulanIni.length === 0) {
+            kepala.innerHTML = '';
+            badan.innerHTML = `<tr><td colspan="20" style="padding:10px; text-align:center; color:#999;">Tidak ada jadwal WFH di bulan ${bulan}.</td></tr>`;
+            return;
+        }
+
+        kepala.innerHTML = `<tr>
+            <th style="padding:6px; text-align:left;">Nama</th>
+            <th style="padding:6px; text-align:left;">Tim</th>
+            ${semuaTanggalBulanIni.map(t => `<th style="padding:6px;">${t}</th>`).join('')}
+            <th style="padding:6px; background:#e6f6ee; color:#1e7e34;">Jumlah</th>
+        </tr>`;
+
+        const pegawaiBulanIni = daftarPegawai.filter(p => (p.tanggal[bulan] || []).length > 0);
+
+        if (pegawaiBulanIni.length === 0) {
+            badan.innerHTML = `<tr><td colspan="20" style="padding:10px; text-align:center; color:#999;">Tidak ada jadwal WFH di bulan ${bulan}.</td></tr>`;
+            return;
+        }
+
+        badan.innerHTML = pegawaiBulanIni.map(p => {
+            const tglWFH = p.tanggal[bulan] || [];
+            const kolomTanggal = semuaTanggalBulanIni.map(t => {
+                const ada = tglWFH.includes(t);
+                return `<td style="padding:6px; ${ada ? 'color:#28a745; font-weight:bold;' : 'color:#eee;'}">${ada ? '✔' : '·'}</td>`;
+            }).join('');
+            return `<tr style="border-bottom:1px solid #edf2f9;">
+                <td style="padding:6px; text-align:left; font-weight:bold;">${p.nama}</td>
+                <td style="padding:6px; text-align:left; color:#666;">${p.tim || '-'}</td>
+                ${kolomTanggal}
+                <td style="padding:6px; background:#f4fbf6; font-weight:bold; color:#1e7e34;">${tglWFH.length}</td>
+            </tr>`;
+        }).join('');
+    }
+}
+
+// Refresh tampilan WFH otomatis kalau filter tahun/bulan beranda berubah
+const _tarikDataAsli = tarikData;
+tarikData = async function(...args) {
+    await _tarikDataAsli(...args);
+    if (modeWFHAktif) tarikDataWFH();
+};
+
 })();
