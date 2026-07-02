@@ -666,7 +666,7 @@ async function tarikDataWFH() {
                 const teks = jml > 0 ? tglArr.join(', ') : '-';
                 return `<td style="padding:6px; white-space:nowrap; ${jml > 0 ? 'color:#28a745; font-weight:bold;' : 'color:#ccc;'}">${teks}</td>`;
             }).join('');
-            return `<tr style="border-bottom:1px solid #edf2f9;">
+            return `<tr style="border-bottom:1px solid #b0b8c4;">
                 <td style="padding:6px; text-align:left; font-weight:bold;">${p.nama}</td>
                 <td style="padding:6px; text-align:left; color:#666;">${p.tim || '-'}</td>
                 ${kolomBulan}
@@ -708,7 +708,7 @@ async function tarikDataWFH() {
                 if (ada) hitungWFHPerTanggal[t]++;
                 return `<td style="padding:6px; ${ada ? 'color:#28a745; font-weight:bold;' : 'color:#eee;'}">${ada ? '✔' : '·'}</td>`;
             }).join('');
-            return `<tr style="border-bottom:1px solid #edf2f9;">
+            return `<tr style="border-bottom:1px solid #b0b8c4;">
                 <td style="padding:6px; text-align:left; font-weight:bold;">${p.nama}</td>
                 <td style="padding:6px; text-align:left; color:#666;">${p.tim || '-'}</td>
                 ${kolomTanggal}
@@ -730,9 +730,9 @@ async function tarikDataWFH() {
 
         badan.innerHTML = barisPegawai + `
             <tr style="border-top:2px solid #c3e6cb; background:#e6f6ee;">
-                <td style="padding:8px 6px; font-weight:bold; color:#1a233a; font-size:11px;" colspan="2">% Pegawai WFH</td>
+                <td style="padding:8px 6px; font-weight:bold; color:#1a233a;" colspan="2">% Pegawai WFH</td>
                 ${kolomPersen}
-                <td style="padding:8px 6px; background:#d4edda; font-weight:bold; color:#28a745; font-size:11px;">${jumlahWFHTotal > 0 ? persenTotal + '%' : '-'}</td>
+                <td style="padding:8px 6px; background:#d4edda; font-weight:bold; color:#28a745;">${jumlahWFHTotal > 0 ? persenTotal + '%' : '-'}</td>
             </tr>`;
     }
 }
