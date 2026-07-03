@@ -42,21 +42,27 @@
             <div id="wadah-tahun-wfh" style="display:none; margin-bottom:8px; text-align:left;">
                 <label style="font-size:12px; color:#555; font-weight:bold; display:block; margin-bottom:4px;">Tahun jadwal WFH ini:</label>
                 <input type="number" id="wfh-tahun" placeholder="Contoh: 2026" style="width:90%; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
-                <button onclick="unduhExcelWFHTerakhir()" style="margin-top:6px; background:#17a2b8; color:white; padding:8px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; width:90%; font-size:12px;">⬇️ Download Excel WFH Terakhir dari Database</button>
             </div>
 
             <p style="font-size:12px; color:#555; margin-top:0; margin-bottom:8px;">
                 Template excel unggah: <a href="https://s.bps.go.id/Pendekar1900Template" target="_blank" style="color:#2b6cb0; text-decoration:none; font-weight:bold;">s.bps.go.id/Pendekar1900Template</a>
             </p>
 
-            <input type="file" id="file-excel" accept=".xlsx,.xls" style="border:1px solid #ddd; padding:8px; width:90%; border-radius:8px; margin-bottom:8px;">
-            
-            <button onclick="prosesUpload()" style="background:#28a745; color:white; padding:9px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; width:100%;">Unggah Data</button>
-            <p id="status-pesan" style="font-size:12.5px; margin-top:5px; font-weight:bold; line-height:1.4; padding:0 4px; word-wrap:break-word;"></p>
+            <input type="file" id="file-excel" accept=".xlsx,.xls" style="border:1px solid #ddd; padding:8px; width:90%; border-radius:8px; margin-bottom:10px;">
 
-            <button onclick="updateTabelPegawai()" style="background:#2b6cb0; color:white; padding:9px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; width:100%; margin-top:6px; margin-bottom:6px;">🔄 Update Tabel Pegawai (Sinkronisasi)</button>
-            
-            <button onclick="prosesKeluar()" style="background:#dc3545; color:white; padding:8px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; width:100%; margin-top:6px;">Keluar</button>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
+                <button id="btn-download-wfh" onclick="unduhExcelWFHTerakhir()" style="display:none; background:#17a2b8; color:white; padding:8px 3px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:10.5px; line-height:1.25;">⬇️<br>Download WFH</button>
+                <button onclick="prosesUpload()" style="background:#28a745; color:white; padding:8px 3px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:10.5px; line-height:1.25;">📤<br>Unggah Data</button>
+                <button onclick="updateTabelPegawai()" style="background:#2b6cb0; color:white; padding:8px 3px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:10.5px; line-height:1.25;">🔄<br>Sinkron Pegawai</button>
+            </div>
+
+            <p id="status-pesan" style="font-size:12.5px; margin-top:6px; font-weight:bold; line-height:1.4; padding:0 4px; word-wrap:break-word;"></p>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:2px;">
+                <button style="visibility:hidden; padding:8px 3px; font-size:10.5px;"></button>
+                <button onclick="prosesKeluar()" style="background:#dc3545; color:white; padding:8px 3px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:10.5px; line-height:1.25;">🚪<br>Keluar</button>
+                <button style="visibility:hidden; padding:8px 3px; font-size:10.5px;"></button>
+            </div>
         </div>
 
         <div class="kotak-form" style="flex:1; min-width:320px; max-width:500px; background:white; padding:30px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); text-align:left; display:flex; flex-direction:column; gap:20px;">
@@ -204,6 +210,7 @@
             else if (mode === 'wfh') { bW.style.background = '#20c997'; bW.style.color = 'white'; bW.style.borderColor = '#20c997'; }
 
             document.getElementById('wadah-tahun-wfh').style.display = (mode === 'wfh') ? 'block' : 'none';
+            document.getElementById('btn-download-wfh').style.display = (mode === 'wfh') ? 'block' : 'none';
             
             document.getElementById('status-pesan').innerText = '';
             document.getElementById('file-excel').value = '';
