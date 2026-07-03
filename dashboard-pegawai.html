@@ -1099,13 +1099,11 @@
         }
 
         async function isiDropdownBulanPeg(tahun) {
-            const { data } = await db.from('absensi_pegawai').select('bulan').eq('nip', nipPegawai).eq('tahun', tahun);
             const list = document.getElementById('list-bulan-peg');
             const disp = document.getElementById('disp-bulan-peg');
             const inp = document.getElementById('filter-bulan-pegawai');
             list.innerHTML = '';
-            const bulanTersedia = semuaBulan.filter(b => data && data.some(d => d.bulan === b));
-            const opsi = ['Semua', ...bulanTersedia];
+            const opsi = ['Semua', ...semuaBulan];
             opsi.forEach(b => {
                 list.appendChild(buatItemDd(b, () => {
                     inp.value = b;
