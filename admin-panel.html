@@ -42,7 +42,10 @@
             <div id="wadah-tahun-wfh" style="display:none; margin-bottom:10px; text-align:left;">
                 <label style="font-size:12px; color:#555; font-weight:bold; display:block; margin-bottom:4px;">Tahun jadwal WFH ini:</label>
                 <input type="number" id="wfh-tahun" placeholder="Contoh: 2026" style="width:90%; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
+                <button onclick="unduhExcelWFHTerakhir()" style="margin-top:8px; background:#17a2b8; color:white; padding:9px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; width:90%; font-size:12px;">⬇️ Download Excel WFH Terakhir dari Database</button>
+                <p style="font-size:11px; color:#888; margin:6px 0 0 0; width:90%;">Isi Tahun lalu klik tombol ini untuk melihat & menyimpan data WFH yang sedang tersimpan di database (format sama seperti template unggah), supaya tidak bingung file mana yang terakhir.</p>
             </div>
+
 
             <p style="font-size:12px; color:#555; margin-top:0; margin-bottom:10px;">
                 Template excel unggah: <a href="https://s.bps.go.id/Pendekar1900Template" target="_blank" style="color:#2b6cb0; text-decoration:none; font-weight:bold;">s.bps.go.id/Pendekar1900Template</a>
@@ -618,6 +621,109 @@
             } catch (err) {
                 statusPesan.style.color = '#dc3545';
                 statusPesan.innerText = "Gagal: " + err.message;
+            }
+        }
+
+        // === DOWNLOAD EXCEL WFH TERAKHIR DARI DATABASE (format sama seperti template unggah) ===
+        const semuaBulanWFHAdmin = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+        async function unduhExcelWFHTerakhir() {
+            const statusPesan = document.getElementById('status-pesan');
+            let tahun = parseInt(document.getElementById('wfh-tahun').value);
+
+            statusPesan.style.color = '#2b6cb0';
+            statusPesan.innerText = "Mengambil data WFH dari database...";
+
+            try {
+                // Kalau tahun belum diisi, ambil otomatis tahun terbesar yang ada di database
+                if (!tahun || tahun < 2000) {
+                    const { data: dataTahun, error: errTahun } = await db
+                        .from('wfh_jadwal')
+                        .select('tahun')
+                        .order('tahun', { ascending: false })
+                        .limit(1);
+                    if (errTahun) throw errTahun;
+                    if (!dataTahun || dataTahun.length === 0) {
+                        statusPesan.style.color = '#dc3545';
+                        statusPesan.innerText = "⚠️ Belum ada data WFH tersimpan di database.";
+                        return;
+                    }
+                    tahun = dataTahun[0].tahun;
+                    document.getElementById('wfh-tahun').value = tahun;
+                }
+
+                const { data, error } = await db.from('wfh_jadwal').select('*').eq('tahun', tahun);
+                if (error) throw error;
+                if (!data || data.length === 0) {
+                    statusPesan.style.color = '#dc3545';
+                    statusPesan.innerText = `⚠️ Tidak ada data WFH untuk tahun ${tahun} di database.`;
+                    return;
+                }
+
+                // Kelompokkan per pegawai (NIP)
+                const petaPegawai = {};
+                data.forEach(d => {
+                    const nip = d.nip;
+                    if (!petaPegawai[nip]) {
+                        petaPegawai[nip] = { nip, nama: d.nama || '', jabatan: d.jabatan || '', tim: d.tim || '', tanggalByBulan: {} };
+                    }
+                    if (!petaPegawai[nip].nama && d.nama) petaPegawai[nip].nama = d.nama;
+                    if (!petaPegawai[nip].jabatan && d.jabatan) petaPegawai[nip].jabatan = d.jabatan;
+                    if (!petaPegawai[nip].tim && d.tim) petaPegawai[nip].tim = d.tim;
+                    if (!petaPegawai[nip].tanggalByBulan[d.bulan]) petaPegawai[nip].tanggalByBulan[d.bulan] = new Set();
+                    if (d.tanggal && Number(d.tanggal) > 0) petaPegawai[nip].tanggalByBulan[d.bulan].add(Number(d.tanggal));
+                });
+
+                // Urutkan bulan sesuai kalender, hanya bulan yang benar-benar ada datanya
+                const bulanTerpakai = semuaBulanWFHAdmin.filter(b => data.some(d => d.bulan === b));
+
+                // Untuk tiap bulan, kumpulkan gabungan semua tanggal (dari semua pegawai) sebagai kolom tanggal
+                const tanggalPerBulan = {};
+                bulanTerpakai.forEach(b => {
+                    const setTgl = new Set();
+                    data.forEach(d => { if (d.bulan === b && Number(d.tanggal) > 0) setTgl.add(Number(d.tanggal)); });
+                    tanggalPerBulan[b] = [...setTgl].sort((a, b2) => a - b2);
+                    // Kalau bulan ini tidak ada WFH sama sekali, tetap sediakan 1 kolom kosong agar nama bulan tetap tampil
+                    if (tanggalPerBulan[b].length === 0) tanggalPerBulan[b] = [null];
+                });
+
+                // Baris 1 (nama bulan) & baris 2 (tanggal), sesuai format template pivot
+                const rowBulan = ['NIP', 'Nama', 'Jabatan', 'Tim Kerja Inti'];
+                const rowTanggal = ['', '', '', ''];
+                bulanTerpakai.forEach(b => {
+                    tanggalPerBulan[b].forEach((t, i) => {
+                        rowBulan.push(i === 0 ? b : '');
+                        rowTanggal.push(t === null ? '' : t);
+                    });
+                });
+
+                const aoa = [rowBulan, rowTanggal];
+
+                // Urutkan pegawai berdasarkan nama
+                const daftarPegawai = Object.values(petaPegawai).sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
+
+                daftarPegawai.forEach(p => {
+                    const baris = [p.nip, p.nama, p.jabatan, p.tim];
+                    bulanTerpakai.forEach(b => {
+                        const setTgl = p.tanggalByBulan[b] || new Set();
+                        tanggalPerBulan[b].forEach(t => {
+                            baris.push(t !== null && setTgl.has(t) ? 'WFH' : '');
+                        });
+                    });
+                    aoa.push(baris);
+                });
+
+                const ws = XLSX.utils.aoa_to_sheet(aoa);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'wfh');
+                XLSX.writeFile(wb, `Pendekar1900_WFH_${tahun}.xlsx`);
+
+                statusPesan.style.color = '#28a745';
+                statusPesan.innerText = `Berhasil! File Excel WFH tahun ${tahun} (${daftarPegawai.length} pegawai) sudah diunduh — file ini bisa langsung diedit & diunggah ulang.`;
+
+            } catch (err) {
+                statusPesan.style.color = '#dc3545';
+                statusPesan.innerText = "Gagal mengunduh: " + err.message;
             }
         }
 
