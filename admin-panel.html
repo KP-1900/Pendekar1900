@@ -664,8 +664,10 @@
                 data.forEach(d => {
                     const nip = d.nip;
                     if (!petaPegawai[nip]) {
-                        petaPegawai[nip] = { nip, nama: d.nama || '', jabatan: d.jabatan || '', tim: d.tim || '', tanggalByBulan: {} };
+                        petaPegawai[nip] = { nip, nama: d.nama || '', jabatan: d.jabatan || '', tim: d.tim || '', tanggalByBulan: {}, urutanId: d.id };
                     }
+                    // urutanId dipakai agar urutan hasil download mengikuti urutan baris terakhir kali diupload di Excel
+                    if (d.id < petaPegawai[nip].urutanId) petaPegawai[nip].urutanId = d.id;
                     if (!petaPegawai[nip].nama && d.nama) petaPegawai[nip].nama = d.nama;
                     if (!petaPegawai[nip].jabatan && d.jabatan) petaPegawai[nip].jabatan = d.jabatan;
                     if (!petaPegawai[nip].tim && d.tim) petaPegawai[nip].tim = d.tim;
@@ -698,8 +700,8 @@
 
                 const aoa = [rowBulan, rowTanggal];
 
-                // Urutkan pegawai berdasarkan nama
-                const daftarPegawai = Object.values(petaPegawai).sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
+                // Urutkan pegawai mengikuti urutan baris terakhir kali diupload di Excel (berdasarkan id database)
+                const daftarPegawai = Object.values(petaPegawai).sort((a, b) => a.urutanId - b.urutanId);
 
                 daftarPegawai.forEach(p => {
                     const baris = [p.nip, p.nama, p.jabatan, p.tim];

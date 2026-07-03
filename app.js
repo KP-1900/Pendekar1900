@@ -597,56 +597,18 @@ async function tarikDataWFH() {
     const petaPegawai = {};
     data.forEach(d => {
         if (!petaPegawai[d.nip]) {
-            petaPegawai[d.nip] = { nip: d.nip, nama: d.nama, jabatan: d.jabatan, tim: d.tim, tanggal: {} };
+            petaPegawai[d.nip] = { nip: d.nip, nama: d.nama, jabatan: d.jabatan, tim: d.tim, tanggal: {}, urutanId: d.id };
         }
+        // urutanId dipakai untuk menjaga urutan sesuai baris terakhir kali diupload di Excel
+        if (d.id < petaPegawai[d.nip].urutanId) petaPegawai[d.nip].urutanId = d.id;
         if (!petaPegawai[d.nip].tanggal[d.bulan]) petaPegawai[d.nip].tanggal[d.bulan] = [];
         // tanggal 0 adalah penanda "tidak ada WFH bulan ini", jadi jangan dimasukkan ke daftar tanggal
         if (d.tanggal && Number(d.tanggal) > 0) petaPegawai[d.nip].tanggal[d.bulan].push(d.tanggal);
     });
-    // === URUTAN TAMPILAN (CUSTOM SESUAI PERMINTAAN) ===
-    // Daftar nama berikut menentukan urutan tampil. Nama yang tidak ada di daftar
-    // akan ditaruh di paling bawah, urut alfabetis.
-    const urutanNamaWFH = [
-        'Sugeng Arianto', 'Budi Siswandi', 'Supachri Ansyori', 'Tri Vika Listiyawati',
-        'Eka Riezalita Pattinama', 'Siti Meutia Aisyah', 'Setiawan Karyadi', 'Ari Ardiansyah',
-        'Eka Virja', 'Syamsu Pratama', 'Yuda Bagus Rachmatullah', 'Farid Izaddin',
-        'Ulfah Nuraini', 'Ramdani Agusta', 'Fahrunnisa Maharani', 'Nurzikri Saputra',
-        'Marissa Widya Ulfa', 'Nurulhuda', 'Sakinah Ramadhani Sudarso', 'Eddy Zurisman',
-        'Dian Fitrianty', 'Shinta Regina Nursedima Marpaung', 'Ravinsyah Kesuma', 'Suryawati',
-        'Muhammad Arif Ghossan', 'Jasmine Falo', 'Gustiawan', 'Median Jonson',
-        'Ade El Mutholib', 'Kasmah', 'Suryani', 'Nuraini', 'Deby Andayani', 'Femmy Ristia',
-        'Nur Jannah Mega Anindita', 'Vivi Yesica Sidabutar', 'Syavhana Yusricha Zuhri Putri',
-        'Ratnasari', 'Raden Mohamad Pramadhira', 'Dwi Nova Prihatmoko', 'Oktarizal',
-        'Ani Pertiwi', 'Rizka Prima Agustina', 'Kusmanto', 'Desiana Rahayu Susianti',
-        'Muhammad Miftakhul Romadlon', 'Fadhila Ajeng Damaris', 'Listia Nugraheni',
-        "Ryan Giggs Khikta'Awan Utomo", 'Yustina Ambarsari', 'Nur Faizah', 'Nimrot Sitorus',
-        "Nurul Aini Al'firdausi", 'Mardha Tilla Septiani', 'Desiana Arbani Safari', 'Gestari',
-        'Sohidin', 'Siti Ashhabul Jannah', 'Nadya Fitri Chairani', 'Ridho Akbar',
-        'Bambang Sri Yuwono', 'Fahrur Rozi', 'Sari Sisilianingsih', 'Rahma Nurhamidah',
-        'Rommel Yonatan Sianipar', 'Narezi Febriansa', 'Syahrul Toha Saputra',
-        'Akhmad Fadil Mubarok', 'Sabilla Hamda Syahputri', 'Ridho Ilahi', 'Tri Ervina Nurjanah',
-        'Marko Januarta Putra Mulyowidodo', 'Sri Hapsari Murni Handayani', 'Fitria Kurniawati',
-        'Laravita Prihastina Julianti', 'Suhaili', 'Jamik Safitri', 'Bagastama Iqbalil Fathir',
-        'Dwi Unzila Putri', 'Danardana Muhammad'
-    ];
-    // Normalisasi: hapus semua tanda kutip/apostrof/backtick, rapikan spasi, lowercase.
-    // Supaya nama tetap match walau beda karakter kutip (' vs ` vs ’) atau beda spasi/kapital.
-    const normalisasiNama = (s) => (s || '')
-        .replace(/[`'’‘]/g, '')
-        .replace(/\s+/g, ' ')
-        .trim()
-        .toLowerCase();
-    const urutanNamaWFHNormal = urutanNamaWFH.map(normalisasiNama);
-    const daftarPegawai = Object.values(petaPegawai).sort((a, b) => {
-        const ia = urutanNamaWFHNormal.indexOf(normalisasiNama(a.nama));
-        const ib = urutanNamaWFHNormal.indexOf(normalisasiNama(b.nama));
-        if (ia !== -1 || ib !== -1) {
-            if (ia === -1) return 1;
-            if (ib === -1) return -1;
-            return ia - ib;
-        }
-        return (a.nama || '').localeCompare(b.nama || '');
-    });
+    // === URUTAN TAMPILAN ===
+    // Urutan pegawai mengikuti urutan baris terakhir kali diupload di Excel (berdasarkan id database),
+    // supaya admin cukup atur urutan di Excel dan urutan itu otomatis terbawa ke tampilan & download.
+    const daftarPegawai = Object.values(petaPegawai).sort((a, b) => a.urutanId - b.urutanId);
 
     if (bulan === 'Semua') {
         judul.innerText = `🏠 Jadwal WFH — Ringkasan Tahun ${tahun}`;
