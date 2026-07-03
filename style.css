@@ -105,6 +105,16 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
 .grid-bawah { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1; min-height: 0; }
 .kotak-bawah { background: white; padding: 10px 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #edf2f9; display: flex; flex-direction: column; min-height: 0; }
 .wadah-tabel { flex: 1; overflow-y: auto; overflow-x: auto; }
+
+/* === GARIS PEMISAH KOLOM TABEL JADWAL WFH === */
+#kepala-tabel-wfh th,
+#badan-tabel-wfh td {
+    border-right: 1px solid #e2e8f0;
+}
+#kepala-tabel-wfh tr th:last-child,
+#badan-tabel-wfh tr td:last-child {
+    border-right: none;
+}
 .wadah-grafik-bawah { flex: 1; min-height: 0; position: relative; }
 
 /* === TOMBOL AKSI ADMIN (Unggah, Sinkron, Download, Keluar) === */
@@ -124,7 +134,10 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
     line-height: 1.25;
     cursor: pointer;
     text-align: center;
+    white-space: normal;
+    word-break: break-word;
 }
+.btn-aksi-admin span { text-align: center; width: 100%; }
 .btn-aksi-admin.btn-tersembunyi { display: none; }
 
 /* === CSS KHUSUS HALAMAN ADMIN === */
