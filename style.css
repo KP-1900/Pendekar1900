@@ -107,6 +107,26 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
 .wadah-tabel { flex: 1; overflow-y: auto; overflow-x: auto; }
 .wadah-grafik-bawah { flex: 1; min-height: 0; position: relative; }
 
+/* === TOMBOL AKSI ADMIN (Unggah, Sinkron, Download, Keluar) === */
+.btn-aksi-admin {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 10px 3px;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    font-size: 10.5px;
+    line-height: 1.25;
+    cursor: pointer;
+    text-align: center;
+}
+.btn-aksi-admin.btn-tersembunyi { display: none; }
+
 /* === CSS KHUSUS HALAMAN ADMIN === */
 .kotak-form { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 400px; }
 .form-grup { margin-bottom: 15px; }
