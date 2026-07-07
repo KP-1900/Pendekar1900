@@ -678,24 +678,7 @@ async function tarikDataWFH() {
             </tr>`;
         }).join('');
 
-        const totalPegawai = daftarPegawai.length;
-        const jumlahWFHTotal = Object.values(hitungWFHPerTanggal).reduce((a, b) => a + b, 0);
-        const persenTotal = totalPegawai > 0 && semuaTanggalBulanIni.length > 0
-            ? ((jumlahWFHTotal / (totalPegawai * semuaTanggalBulanIni.length)) * 100).toFixed(0)
-            : 0;
-
-        const kolomPersen = semuaTanggalBulanIni.map(t => {
-            const jml = hitungWFHPerTanggal[t];
-            const persen = totalPegawai > 0 ? ((jml / totalPegawai) * 100).toFixed(0) : 0;
-            return `<td style="padding:6px; font-weight:bold; color:#28a745; background:#f4fbf6;">${jml > 0 ? persen + '%' : '-'}</td>`;
-        }).join('');
-
-        badan.innerHTML = barisPegawai + `
-            <tr style="border-top:2px solid #c3e6cb; background:#e6f6ee;">
-                <td style="padding:8px 6px; font-weight:bold; color:#1a233a;" colspan="2">% Pegawai WFH</td>
-                ${kolomPersen}
-                <td style="padding:8px 6px; background:#d4edda; font-weight:bold; color:#28a745;">${jumlahWFHTotal > 0 ? persenTotal + '%' : '-'}</td>
-            </tr>`;
+        badan.innerHTML = barisPegawai;
     }
 }
 
