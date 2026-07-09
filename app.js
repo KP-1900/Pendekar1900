@@ -565,6 +565,21 @@ window.toggleWFH = function() {
     }
 };
 
+// === STATE UNTUK FITUR PENCARIAN NAMA DI TABEL WFH ===
+let _wfhDaftarPegawaiLengkap = [];
+let _wfhBulanAktif = 'Semua';
+let _wfhTahunAktif = null;
+let _wfhKataKunci = '';
+
+// Dipanggil dari kotak input pencarian (oninput) di konten-dashboard.html
+window.filterTabelWFH = function(kataKunci) {
+    _wfhKataKunci = (kataKunci || '').trim().toLowerCase();
+    const disaring = _wfhKataKunci
+        ? _wfhDaftarPegawaiLengkap.filter(p => (p.nama || '').toLowerCase().includes(_wfhKataKunci))
+        : _wfhDaftarPegawaiLengkap;
+    renderTabelWFH(disaring, _wfhBulanAktif, _wfhTahunAktif);
+};
+
 async function tarikDataWFH() {
     const tahunEl = document.getElementById('filter-tahun');
     const bulanEl = document.getElementById('filter-bulan');
@@ -590,6 +605,7 @@ async function tarikDataWFH() {
         judul.innerText = `🏠 Jadwal WFH ${tahun}`;
         kepala.innerHTML = '';
         badan.innerHTML = '<tr><td colspan="20" style="padding:10px; text-align:center; color:#999;">Belum ada data WFH untuk tahun ini.</td></tr>';
+        _wfhDaftarPegawaiLengkap = [];
         return;
     }
 
@@ -610,6 +626,27 @@ async function tarikDataWFH() {
     // supaya admin cukup atur urutan di Excel dan urutan itu otomatis terbawa ke tampilan & download.
     const daftarPegawai = Object.values(petaPegawai).sort((a, b) => a.urutanId - b.urutanId);
 
+    // Simpan state global untuk keperluan filter pencarian nama
+    _wfhDaftarPegawaiLengkap = daftarPegawai;
+    _wfhBulanAktif = bulan;
+    _wfhTahunAktif = tahun;
+
+    // Terapkan kata kunci pencarian yang mungkin sudah diketik sebelumnya (mis. saat ganti bulan/tahun)
+    const kotakCari = document.getElementById('cari-wfh');
+    _wfhKataKunci = kotakCari ? kotakCari.value.trim().toLowerCase() : '';
+    const daftarUntukDitampilkan = _wfhKataKunci
+        ? daftarPegawai.filter(p => (p.nama || '').toLowerCase().includes(_wfhKataKunci))
+        : daftarPegawai;
+
+    renderTabelWFH(daftarUntukDitampilkan, bulan, tahun);
+}
+
+function renderTabelWFH(daftarPegawai, bulan, tahun) {
+    const judul = document.getElementById('judul-wfh');
+    const kepala = document.getElementById('kepala-tabel-wfh');
+    const badan = document.getElementById('badan-tabel-wfh');
+    if (!kepala || !badan) return;
+
     if (bulan === 'Semua') {
         judul.innerText = `🏠 Jadwal WFH — Ringkasan Tahun ${tahun}`;
         kepala.innerHTML = `<tr>
@@ -618,6 +655,11 @@ async function tarikDataWFH() {
             ${semuaBulan.map(b => `<th style="padding:6px;">${singkatBulanWFH[b]}</th>`).join('')}
             <th style="padding:6px; background:#e6f6ee; color:#1e7e34;">Jumlah</th>
         </tr>`;
+
+        if (daftarPegawai.length === 0) {
+            badan.innerHTML = `<tr><td colspan="20" style="padding:10px; text-align:center; color:#999;">Tidak ada pegawai dengan nama tersebut.</td></tr>`;
+            return;
+        }
 
         badan.innerHTML = daftarPegawai.map(p => {
             let total = 0;
@@ -637,7 +679,11 @@ async function tarikDataWFH() {
         }).join('');
 
     } else {
-        const semuaTanggalBulanIni = [...new Set(data.filter(d => d.bulan === bulan && Number(d.tanggal) > 0).map(d => d.tanggal))].sort((a, b) => a - b);
+        // Kolom tanggal dihitung dari daftar LENGKAP (bukan hasil filter pencarian),
+        // supaya susunan kolom tanggal tetap konsisten walau sedang mencari nama tertentu.
+        const semuaTanggalBulanIni = [...new Set(
+            _wfhDaftarPegawaiLengkap.flatMap(p => (p.tanggal[bulan] || []))
+        )].sort((a, b) => a - b);
 
         judul.innerText = `🏠 Jadwal WFH — ${bulan} ${tahun}`;
 
@@ -654,9 +700,9 @@ async function tarikDataWFH() {
             <th style="padding:6px; background:#e6f6ee; color:#1e7e34;">Jumlah</th>
         </tr>`;
 
-        // Tampilkan SEMUA pegawai di bulan ini (bukan cuma yang WFH), sesuai daftar master dari Excel
+        // Tampilkan pegawai bulan ini (setelah filter pencarian nama, kalau ada)
         if (daftarPegawai.length === 0) {
-            badan.innerHTML = `<tr><td colspan="20" style="padding:10px; text-align:center; color:#999;">Tidak ada data pegawai di bulan ${bulan}.</td></tr>`;
+            badan.innerHTML = `<tr><td colspan="20" style="padding:10px; text-align:center; color:#999;">Tidak ada pegawai dengan nama tersebut.</td></tr>`;
             return;
         }
 
