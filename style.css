@@ -464,345 +464,157 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
 }
 
 /* ========================================================= */
-/* === PERBAIKAN TAMPILAN MOBILE & TABLET (RESPONSIVE) === */
+/* === MOBILE: Sidebar kiri -> Top Navbar                 === */
 /* ========================================================= */
 
+/* TOP NAVBAR - hanya muncul di mobile */
+.mobile-topbar {
+    display: none; /* hidden di desktop */
+}
+
 @media (max-width: 992px), (orientation: portrait) {
-    /* 1. Cabut paksaan 100vh agar layar bisa discroll ke bawah secara natural */
-    body { 
-        display: block; 
-        overflow: auto !important; 
-        height: auto; 
-        min-height: 100vh; 
-    }
-    
-    /* 2. Pertahankan menu kiri melayang di posisinya */
-    .menu-kiri { 
-        position: fixed; 
-        left: 0; top: 0; bottom: 0; 
-        z-index: 100; 
-        height: calc(100vh - 30px); 
-    }
-    
-    /* 3. Geser area konten dan bebaskan dari batasan flex kaku */
-    .area-kanan { 
-        margin-left: 95px !important; 
-        height: auto !important; 
-        overflow: visible !important; 
-    }
-    .area-kanan > div[style*="flex: 1"] {
-        flex-direction: column !important;
+
+    /* ---- BODY: block, bisa scroll ---- */
+    body {
+        display: block !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
         height: auto !important;
+        min-height: 100vh;
+        padding-top: 56px; /* beri ruang buat topbar */
     }
 
-    #wadah-konten, #wadah-konten > div { 
-        height: auto !important; 
-        overflow: visible !important; 
+    /* ---- Sidebar kiri: SEMBUNYIKAN di mobile ---- */
+    .menu-kiri {
+        display: none !important;
+    }
+
+    /* ---- Top navbar: tampilkan ---- */
+    .mobile-topbar {
         display: flex !important;
-        flex-direction: column;
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        height: 52px;
+        background: #1a233a;
+        z-index: 200;
+        align-items: center;
+        padding: 0 12px;
+        gap: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    .mobile-topbar .topbar-brand {
+        flex: 1;
+        color: white;
+        font-size: 16px;
+        font-weight: 900;
+        letter-spacing: 0.5px;
+    }
+    .mobile-topbar .topbar-btn {
+        width: 40px;
+        height: 40px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+        flex-shrink: 0;
+    }
+    .mobile-topbar .topbar-btn:hover,
+    .mobile-topbar .topbar-btn.aktif {
+        background: #2b6cb0;
     }
 
-    /* 4. Tumpuk elemen agar tidak gepeng di layar sempit */
-    .grid-kartu { grid-template-columns: repeat(2, 1fr); }
-    .grid-grafik { grid-template-columns: 1fr; }
-    .grid-2 { grid-template-columns: 1fr; }
-    
-    /* 5. KUNCI TINGGI GRAFIK agar tidak melar berlebihan (Penyebab utama dari screenshot) */
-    .grid-bawah { display: flex; flex-direction: column; height: auto !important; }
-    .wadah-grafik-bawah, .grafik-batang { min-height: 300px !important; flex: none !important; }
-    .wadah-tabel, .tabel-box { min-height: 350px !important; overflow-x: auto; flex: none !important; }
-    
-    /* 6. Perbaiki susunan Header & Panel agar sejajar */
-    .baris-atas { flex-direction: column; align-items: flex-start; gap: 15px; }
-    .area-filter { flex-wrap: wrap; width: 100%; justify-content: flex-start; }
-    .panel-kanan-statis { width: 100%; margin-top: 15px; }
-    
-    /* 7. Perbaikan Khusus di halaman Dashboard Pegawai */
-    .info-pegawai { flex-direction: column; align-items: flex-start; }
-    .info-pegawai > div:last-child { width: 100%; justify-content: space-between; flex-wrap: wrap; margin-top: 10px;}
-
-    /* Bebaskan area kanan pegawai dari height 100vh & overflow hidden agar bisa scroll */
+    /* ---- Area kanan: full width, no margin kiri ---- */
     .area-kanan {
+        margin: 0 !important;
         height: auto !important;
-        overflow: visible !important;
-        display: block !important;
-    }
-
-    /* Wadah utama konten pegawai: tumpuk jadi kolom, bisa scroll */
-    .area-kanan > div[style*="flex: 1"],
-    .area-kanan > div[style*="display: flex"] {
-        flex-direction: column !important;
-        height: auto !important;
-        overflow: visible !important;
-    }
-
-    /* Mode pribadi: biarkan mengalir ke bawah */
-    #wadah-mode-pribadi {
+        overflow-x: hidden !important;
+        overflow-y: visible !important;
         display: flex !important;
         flex-direction: column !important;
+        min-height: calc(100vh - 56px);
+        padding: 0 !important;
+    }
+
+    /* ---- Wadah konten dashboard ---- */
+    #wadah-konten {
         height: auto !important;
         overflow: visible !important;
         min-height: 0 !important;
+        padding: 0 12px !important;
     }
-
-    /* Baris kartu HK/HD/HT/PSW: bungkus 2 kolom */
-    .kartu-pegawai {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        flex-wrap: unset !important;
-    }
-
-    /* Tren grafik: tumpuk vertikal */
-    .grid-2 {
-        grid-template-columns: 1fr !important;
-    }
-
-    /* Kunci tinggi grafik tren agar tidak melar */
-    .grafik-tren canvas {
-        height: 160px !important;
-        max-height: 160px !important;
-    }
-
-    /* Baris bawah (grafik batang + tabel): tumpuk vertikal */
-    #wadah-mode-pribadi > div[style*="display: flex"]:last-child,
-    #wadah-mode-pribadi > div:last-child {
-        flex-direction: column !important;
-        height: auto !important;
-        min-height: 0 !important;
-    }
-
-    /* Grafik batang: beri tinggi tetap, jangan flex: 1 */
-    .grafik-batang {
-        flex: none !important;
-        height: 250px !important;
-        min-height: 250px !important;
-        max-height: 250px !important;
-    }
-
-    .grafik-batang canvas {
-        height: 200px !important;
-        max-height: 200px !important;
-    }
-
-    /* Tabel ringkasan: beri tinggi cukup, scroll horizontal */
-    .tabel-box {
-        flex: none !important;
-        height: auto !important;
-        min-height: 200px !important;
-        overflow-x: auto !important;
-    }
-
-    .tabel-box > div {
-        overflow-x: auto !important;
-        overflow-y: auto !important;
-        max-height: 300px !important;
-    }
-
-    /* Panel kanan (Menu Navigasi, Kamus, Ubah Password): full width, di bawah konten */
-    .panel-kanan-statis {
-        width: 100% !important;
-        flex-direction: row !important;
-        flex-wrap: wrap !important;
-        gap: 10px !important;
-        margin-top: 10px !important;
-    }
-
-    .panel-kanan-statis > div {
-        flex: 1 !important;
-        min-width: 140px !important;
-    }
-
-    /* Mode tim & klaim: biarkan scroll */
-    #wadah-mode-tim,
-    #wadah-mode-klaim {
+    #wadah-konten > div {
         height: auto !important;
         overflow: visible !important;
-        min-height: 0 !important;
     }
 
-    /* === FIX POPUP KAMUS PEGAWAI DI MOBILE ===
-       Di desktop popup muncul ke kiri kotak (right: calc(100% + 15px)),
-       tapi di layar sempit itu jadi kepotong/keluar viewport.
-       Di mobile, posisikan sebagai overlay fixed di tengah layar. */
-    #popup-kamus-pegawai {
-        position: fixed !important;
-        top: 50% !important;
-        left: 50% !important;
-        right: auto !important;
-        bottom: auto !important;
-        transform: translate(-50%, -50%) !important;
-        width: 92vw !important;
-        max-width: 420px !important;
-        max-height: 80vh !important;
-        overflow-y: auto !important;
-        z-index: 100000 !important;
-    }
-
-    #popup-kamus-pegawai > div[style*="grid-template-columns"] {
-        grid-template-columns: 1fr !important;
-        gap: 16px !important;
-    }
-}
-
-@media (max-width: 576px) {
-    /* Khusus Tampilan Layar HP Normal (Tanpa Desktop Site) */
-    .grid-kartu { grid-template-columns: 1fr; } /* Kartu presensi memanjang ke bawah */
-    .kartu-pegawai { 
-        grid-template-columns: 1fr 1fr !important; 
-        flex-wrap: unset !important; 
-    }
-    
-    /* Perkecil lebar sidebar kiri agar ruang konten lebih lega */
-    .menu-kiri { width: 60px; margin: 15px 0 15px 10px; }
-    .area-kanan { margin-left: 80px !important; padding: 15px 10px !important; }
-    
-    .area-filter { gap: 10px; }
-    .kotak-filter { flex: 1; }
-    
-    .wadah-running-text { margin: 0 0 12px 0 !important; }
-
-    /* Grafik batang lebih compact di HP kecil */
-    .grafik-batang {
-        height: 220px !important;
-        min-height: 220px !important;
-        max-height: 220px !important;
-    }
-
-    /* Panel kanan: tumpuk vertikal di HP kecil */
-    .panel-kanan-statis {
-        flex-direction: column !important;
-    }
-
-    .panel-kanan-statis > div {
-        min-width: unset !important;
-        width: 100% !important;
-    }
-}
-
-/* ========================================================= */
-/* === RAPIKAN HEADER DASHBOARD DI HP (Judul + Filter + Logo BPS) === */
-/* ========================================================= */
-@media (max-width: 992px), (orientation: portrait) {
-
-    /* Baris atas jadi kolom, rapat, tidak kepotong */
+    /* ---- Baris atas: tumpuk ---- */
     .baris-atas {
-        width: 100%;
-        gap: 12px !important;
-    }
-
-    /* Grup kiri: logo PENDEKAR + judul */
-    .header-judul {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
         width: 100%;
     }
-    .header-judul img {
-        height: 36px !important;
-    }
-    .header-judul h1 {
-        font-size: 19px !important;
-    }
-    .header-judul p {
-        font-size: 11.5px !important;
-    }
-    #info-kondisi-update {
-        display: block !important;
-        margin-top: 2px;
-    }
+    .header-judul { width: 100%; }
+    .header-judul img { height: 32px !important; }
+    .header-judul h1 { font-size: 17px !important; }
+    .header-judul p { font-size: 11px !important; }
 
-    /* Grup kanan: filter Tahun/Bulan + Logo BPS -> boleh wrap, jangan kepotong */
     .baris-atas > div:last-child {
         display: flex !important;
         flex-wrap: wrap !important;
         width: 100% !important;
-        gap: 10px !important;
+        gap: 8px !important;
         align-items: center !important;
-        justify-content: flex-start !important;
     }
-
     #area-filter {
         flex: 1 1 auto !important;
         flex-wrap: wrap !important;
         gap: 8px !important;
-        min-width: 0 !important;
     }
-
     .kotak-filter {
-        min-width: 100px !important;
-        flex: 1 1 100px !important;
-        padding: 6px 12px !important;
+        min-width: 90px !important;
+        flex: 1 1 90px !important;
+        padding: 6px 10px !important;
     }
-    .kotak-filter label { font-size: 10.5px !important; }
-    #disp-tahun-beranda, #disp-bulan-beranda {
-        font-size: 13px !important;
-    }
-
-    /* Logo BPS: kecilkan dan jangan sampai mendorong layout keluar viewport */
-    .baris-atas > div:last-child img {
-        height: 26px !important;
-        width: auto !important;
+    .kotak-filter label { font-size: 10px !important; }
+    #disp-tahun-beranda, #disp-bulan-beranda { font-size: 13px !important; }
+    .baris-atas > div:last-child > img {
+        height: 24px !important;
         margin-left: auto;
-        flex-shrink: 0;
     }
-}
 
-@media (max-width: 576px) {
-    /* Di HP kecil, logo BPS & filter turun ke baris sendiri biar lega */
-    .baris-atas > div:last-child {
-        justify-content: space-between !important;
-    }
-    #area-filter { order: 1; width: 100%; }
-    .baris-atas > div:last-child img { order: 2; height: 22px !important; }
-}
-
-/* ========================================================= */
-/* === RAPIKAN KARTU RINGKASAN (Jumlah Pegawai, Hari Kerja, dst) === */
-/* ========================================================= */
-@media (max-width: 992px), (orientation: portrait) {
-    .kartu {
-        padding: 12px !important;
-    }
-    .bungkus-ikon {
-        width: 36px !important;
-        height: 36px !important;
-        font-size: 17px !important;
-        margin-right: 10px !important;
-    }
-    .info-kartu h2 { font-size: 20px !important; }
-    .info-kartu h3 { font-size: 12px !important; }
-    .info-kartu p { font-size: 11px !important; }
-}
-
-@media (max-width: 576px) {
+    /* ---- Kartu: 2 kolom ---- */
+    .grid-kartu { grid-template-columns: repeat(2, 1fr) !important; }
+    .kartu { padding: 10px !important; }
+    .bungkus-ikon { width: 34px !important; height: 34px !important; font-size: 16px !important; margin-right: 8px !important; }
     .info-kartu h2 { font-size: 18px !important; }
-}
+    .info-kartu h3 { font-size: 11px !important; }
+    .info-kartu p { font-size: 10px !important; }
 
-/* ========================================================= */
-/* === RAPIKAN RUNNING TEXT & TOMBOL WFH/KAMUS DI HP === */
-/* ========================================================= */
-@media (max-width: 992px), (orientation: portrait) {
-    .wadah-running-text {
-        flex-wrap: wrap !important;
-        white-space: normal !important;
-        padding: 10px !important;
-        gap: 8px !important;
-    }
-    .wadah-running-text > div {
-        flex-basis: 100% !important;
-        order: 3;
-    }
-    .teks-berjalan {
-        font-size: 11.5px !important;
-    }
-    .btn-kamus {
-        font-size: 11.5px !important;
-        padding: 7px 12px !important;
-    }
-}
+    /* ---- Grafik tren: 1 kolom ---- */
+    .grid-grafik { grid-template-columns: 1fr !important; }
 
-/* ========================================================= */
-/* === RAPIKAN TABEL (Ringkasan per Bulan & Jadwal WFH) DI HP === */
-/* ========================================================= */
-@media (max-width: 992px), (orientation: portrait) {
-    /* Kolom Nama/Bulan pertama tetap terlihat saat scroll tabel ke samping */
+    /* ---- Grid bawah: tumpuk ---- */
+    .grid-bawah {
+        display: flex !important;
+        flex-direction: column !important;
+        height: auto !important;
+    }
+    .kotak-bawah { height: auto !important; min-height: 0 !important; }
+    .wadah-grafik-bawah { min-height: 250px !important; height: 250px !important; flex: none !important; }
+    .wadah-tabel { max-height: 300px !important; overflow-x: auto !important; overflow-y: auto !important; }
+
+    /* ---- WFH panel ---- */
+    #tampilan-wfh { height: auto !important; flex: none !important; }
+    #tampilan-wfh .kotak-bawah { height: auto !important; overflow: visible !important; }
+    #tampilan-wfh .wadah-tabel { max-height: 50vh !important; overflow: auto !important; }
+    .wfh-peringatan { display: block !important; }
+
+    /* Kolom pertama tabel sticky */
     #badan-tabel-wfh td:first-child,
     #kepala-tabel-wfh th:first-child,
     #badan-tabel td:first-child,
@@ -814,51 +626,110 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
         box-shadow: 2px 0 4px rgba(0,0,0,0.06);
     }
     .wadah-tabel thead th:first-child,
-    #kepala-tabel-wfh th:first-child {
-        background: #f4f7fe !important;
-    }
+    #kepala-tabel-wfh th:first-child { background: #f4f7fe !important; }
 
-    .wadah-tabel table,
-    #badan-tabel-wfh, #kepala-tabel-wfh {
-        font-size: 11.5px !important;
+    /* ---- Running text bar ---- */
+    .wadah-running-text {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        white-space: normal !important;
+        overflow: hidden !important;
+        padding: 8px 10px !important;
+        gap: 6px !important;
+        margin: 0 12px 10px 12px !important;
     }
+    .running-text-emoji { display: none !important; }
+    .running-text-tombol-row { order: 1; justify-content: flex-end !important; }
+    .running-text-ticker-row { order: 2; overflow: hidden; }
+    .teks-berjalan { font-size: 11px !important; }
+    .btn-kamus { font-size: 12px !important; padding: 7px 12px !important; }
 
-    /* Kotak pencarian nama WFH lebih ramping */
-    #cari-wfh {
-        font-size: 12.5px !important;
-        padding: 9px 12px 9px 34px !important;
-    }
-}
-
-/* ========================================================= */
-/* === RAPIKAN POPUP KAMUS DI HP (agar tidak melebar keluar layar) === */
-/* ========================================================= */
-@media (max-width: 992px), (orientation: portrait) {
-    #popup-kamus {
+    /* ---- Popup kamus ---- */
+    #popup-kamus,
+    #popup-kamus-pegawai {
         position: fixed !important;
-        top: 50% !important;
-        left: 50% !important;
-        right: auto !important;
-        bottom: auto !important;
+        top: 50% !important; left: 50% !important;
+        right: auto !important; bottom: auto !important;
         transform: translate(-50%, -50%) !important;
         width: 92vw !important;
-        max-width: 420px !important;
+        max-width: 400px !important;
         max-height: 80vh !important;
         overflow-y: auto !important;
         z-index: 100000 !important;
     }
-    #popup-kamus > div[style*="grid-template-columns"] {
+    #popup-kamus > div[style*="grid-template-columns"],
+    #popup-kamus-pegawai > div[style*="grid-template-columns"] {
         grid-template-columns: 1fr !important;
         gap: 14px !important;
     }
+
+    /* ---- Modal sambutan ---- */
+    .modal-box { max-width: 88vw !important; padding: 28px 20px !important; }
+
+    /* ======================================== */
+    /* DASHBOARD PEGAWAI - responsive           */
+    /* ======================================== */
+
+    /* Info pegawai */
+    .info-pegawai { flex-direction: column !important; align-items: flex-start !important; }
+    .info-pegawai > div:last-child {
+        width: 100% !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+        margin-top: 8px !important;
+    }
+
+    /* Flex row konten + panel kanan */
+    .area-kanan > div[style*="flex: 1"],
+    .area-kanan > div[style*="display: flex; flex: 1"] {
+        flex-direction: column !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    /* Panel kanan */
+    .panel-kanan-statis {
+        width: 100% !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+        margin-top: 10px !important;
+    }
+    .panel-kanan-statis > div { flex: 1 1 140px !important; min-width: 140px !important; }
+    .ubah-password-box { flex: 1 !important; }
+
+    /* Kartu HK/HD/HT/PSW/WFH */
+    .kartu-pegawai { display: grid !important; grid-template-columns: 1fr 1fr !important; }
+    .grid-2 { grid-template-columns: 1fr !important; }
+    .grafik-tren canvas { height: 140px !important; max-height: 140px !important; }
+
+    /* Mode pribadi */
+    #wadah-mode-pribadi {
+        display: flex !important;
+        flex-direction: column !important;
+        height: auto !important;
+        overflow: visible !important;
+        min-height: 0 !important;
+    }
+    #wadah-mode-pribadi > div:last-child { flex-direction: column !important; height: auto !important; }
+
+    /* Grafik batang */
+    .grafik-batang { flex: none !important; height: 240px !important; min-height: 240px !important; max-height: 240px !important; }
+    .grafik-batang canvas { height: 195px !important; max-height: 195px !important; }
+
+    /* Tabel ringkasan */
+    .tabel-box { flex: none !important; height: auto !important; overflow: visible !important; }
+    .tabel-box > div { overflow-x: auto !important; overflow-y: auto !important; max-height: 280px !important; }
+
+    /* Mode tim & klaim */
+    #wadah-mode-tim, #wadah-mode-klaim { height: auto !important; overflow: visible !important; }
 }
 
-/* ========================================================= */
-/* === MODAL SAMBUTAN LEBIH PAS DI LAYAR KECIL === */
-/* ========================================================= */
 @media (max-width: 576px) {
-    .modal-box {
-        max-width: 88vw !important;
-        padding: 28px 22px !important;
-    }
+    body { padding-top: 52px; }
+    .kartu-pegawai { grid-template-columns: 1fr 1fr !important; }
+    .kartu-hk .angka { font-size: 20px; }
+    .panel-kanan-statis { flex-direction: column !important; }
+    .panel-kanan-statis > div { width: 100% !important; min-width: unset !important; }
+    .wadah-running-text { margin: 0 8px 8px 8px !important; }
 }
