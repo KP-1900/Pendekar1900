@@ -443,9 +443,9 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
 
 /* Bulan: dilebarkan supaya nama bulan panjang (contoh: September) tidak ketimpa ikon panah */
 #wr-bulan-beranda {
-    min-width: 195px !important;
-    width: 195px !important;
-    padding-right: 34px !important;
+    min-width: 165px !important;
+    width: 165px !important;
+    padding-right: 30px !important;
 }
 
 /* Beri jarak aman antara teks dan ikon panah supaya tidak bertumpuk */
