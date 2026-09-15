@@ -432,6 +432,38 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
 }
 
 /* ========================================================= */
+/* === RAPIKAN DROPDOWN TAHUN/BULAN DI BERANDA (DESKTOP) === */
+/* ========================================================= */
+/* Tahun: cukup sempit, karena isinya cuma 4 digit angka */
+#wr-tahun-beranda {
+    min-width: 80px !important;
+    width: 80px !important;
+    padding-right: 30px !important;
+}
+
+/* Bulan: dilebarkan supaya nama bulan panjang (contoh: September) tidak ketimpa ikon panah */
+#wr-bulan-beranda {
+    min-width: 150px !important;
+    width: 150px !important;
+    padding-right: 32px !important;
+}
+
+/* Beri jarak aman antara teks dan ikon panah supaya tidak bertumpuk */
+#disp-tahun-beranda,
+#disp-bulan-beranda {
+    padding-right: 14px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Posisikan ulang ikon panah supaya konsisten meski lebar kotak berubah */
+#wr-tahun-beranda::after,
+#wr-bulan-beranda::after {
+    right: 12px !important;
+}
+
+/* ========================================================= */
 /* === PERBAIKAN TAMPILAN MOBILE & TABLET (RESPONSIVE) === */
 /* ========================================================= */
 
