@@ -117,6 +117,15 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
 }
 .wadah-grafik-bawah { flex: 1; min-height: 0; position: relative; }
 
+/* === TOMBOL WFH & KAMUS (baris di atas kotak running text) === */
+.wadah-tombol-atas {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin: 0 25px 10px 25px;
+    flex-shrink: 0;
+}
+
 /* === TOMBOL AKSI ADMIN (Unggah, Sinkron, Download, Keluar) === */
 .btn-aksi-admin {
     flex: 1;
@@ -526,6 +535,17 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
         white-space: nowrap;
         letter-spacing: 0.3px;
     }
+    .mobile-topbar .topbar-brand-sub {
+        font-size: 8px;
+        color: #b8c2d9;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+        max-width: 100%;
+        line-height: 1.2;
+        opacity: 0.85;
+    }
     .mobile-topbar .topbar-update {
         font-size: 9.5px;
         color: #b8c2d9;
@@ -648,19 +668,26 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
     #tampilan-wfh .wadah-tabel { max-height: 50vh !important; overflow: auto !important; }
     .wfh-peringatan { display: block !important; }
 
-    /* Kolom pertama tabel sticky */
+    /* Kolom pertama tabel sticky (freeze horizontal untuk body & header biasa) */
     #badan-tabel-wfh td:first-child,
-    #kepala-tabel-wfh th:first-child,
-    #badan-tabel td:first-child,
-    .wadah-tabel thead th:first-child {
+    #badan-tabel td:first-child {
         position: sticky;
         left: 0;
         z-index: 2;
         background: white;
         box-shadow: 2px 0 4px rgba(0,0,0,0.06);
     }
-    .wadah-tabel thead th:first-child,
-    #kepala-tabel-wfh th:first-child { background: #f4f7fe !important; }
+    /* Header kolom pertama ("Nama"): freeze horizontal DAN vertical (pojok kiri-atas)
+       sehingga tetap terlihat saat scroll ke bawah maupun ke samping */
+    #kepala-tabel-wfh th:first-child,
+    .wadah-tabel thead th:first-child {
+        position: sticky;
+        top: 0;
+        left: 0;
+        z-index: 3;
+        background: #f4f7fe;
+        box-shadow: 2px 0 4px rgba(0,0,0,0.06);
+    }
 
     /* ---- Lebar kolom "Nama" di tabel WFH dibatasi agar tidak melebar sampai   ---- */
     /* selebar nama terpanjang (mis. "Sugeng Arianto") — dipotong dgn ellipsis  */
@@ -673,13 +700,25 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
         text-overflow: ellipsis !important;
     }
 
-    /* ---- Running text bar: dibuat statis (tidak marquee) & rapi di mobile ---- */
+    /* ---- Tombol WFH & Kamus: ditaruh di atas kotak running text ---- */
+    .wadah-tombol-atas {
+        display: flex !important;
+        gap: 8px !important;
+        margin: 0 12px 8px 12px !important;
+    }
+    .wadah-tombol-atas .btn-kamus {
+        flex: 1 1 auto !important;
+        text-align: center !important;
+        font-size: 12px !important;
+        padding: 8px 12px !important;
+    }
+
+    /* ---- Running text bar: tetap berjalan (marquee) di mobile ---- */
     .wadah-running-text {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        flex-wrap: wrap !important;
-        white-space: normal !important;
-        overflow: visible !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
         padding: 10px 12px !important;
         gap: 8px !important;
         margin: 0 12px 10px 12px !important;
@@ -688,31 +727,17 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
     .wadah-running-text > span:first-child {
         display: none !important;
     }
-    /* Wadah teks: full width, tidak overflow hidden lagi supaya teks bisa wrap */
     .wadah-running-text > div[style*="flex: 1"] {
-        order: 1 !important;
-        flex: 1 1 100% !important;
-        overflow: visible !important;
+        overflow: hidden !important;
         width: 100% !important;
     }
     .teks-berjalan {
-        display: block !important;
-        width: 100% !important;
-        padding-left: 0 !important;
-        animation: none !important;
-        white-space: normal !important;
-        position: static !important;
-        transform: none !important;
+        display: inline-block !important;
+        white-space: nowrap !important;
         line-height: 1.45 !important;
         font-size: 11.5px !important;
+        animation: marquee 80s linear infinite !important;
     }
-    /* Baris tombol WFH & Kamus taruh di bawah teks, sejajar horizontal */
-    .wadah-running-text > button {
-        order: 2;
-        flex: 1 1 auto !important;
-        text-align: center !important;
-    }
-    .btn-kamus { font-size: 12px !important; padding: 8px 12px !important; }
 
     /* ---- Popup kamus ---- */
     #popup-kamus,
@@ -802,4 +827,5 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
     .panel-kanan-statis { flex-direction: column !important; }
     .panel-kanan-statis > div { width: 100% !important; min-width: unset !important; }
     .wadah-running-text { margin: 0 8px 8px 8px !important; }
+    .wadah-tombol-atas { margin: 0 8px 8px 8px !important; }
 }

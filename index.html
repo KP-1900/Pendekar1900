@@ -43,7 +43,8 @@
         <img src="logo.png" alt="Logo PENDEKAR" class="topbar-logo">
         <div class="topbar-textwrap">
             <span class="topbar-brand">PENDEKAR</span>
-            <span class="topbar-update">🕐 <span id="teks-kondisi-update-topbar">Memuat...</span></span>
+            <span class="topbar-brand-sub">Peningkatan Disiplin dan Evaluasi Kehadiran melalui Monitoring Absensi Rutin</span>
+            <span class="topbar-update">Kondisi Update: 🕐 <span id="teks-kondisi-update-topbar">Memuat...</span></span>
         </div>
         <button class="topbar-btn aktif" onclick="muatUlangDashboard()" title="Beranda">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 3L4 9V21H9V14H15V21H20V9L12 3Z"/></svg>
@@ -80,6 +81,11 @@
         
         <div id="wadah-konten" style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; padding: 0 25px;"></div>
 
+        <div class="wadah-tombol-atas">
+            <button onclick="window.toggleWFH && window.toggleWFH()" id="btn-wfh-toggle" class="btn-kamus" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);">🏠 WFH</button>
+            <button onclick="bukaKamus()" id="btn-kamus-toggle" class="btn-kamus">📖 Kamus</button>
+        </div>
+
         <div class="wadah-running-text" style="margin: 0 25px 12px 25px !important; position: relative;">
             <span style="font-size: 16px;">📢</span>
             <div style="flex: 1; overflow: hidden; position: relative;">
@@ -87,8 +93,6 @@
                     Aturan bagi ASN yang tidak masuk kerja <b style="color: #dc3545;">tanpa keterangan (tanpa kabar)</b> diatur secara ketat dalam PP Nomor 94 Tahun 2021 tentang Disiplin PNS. Berdasarkan peraturan tersebut, <b style="color: #dc3545;">sanksi ketidakhadiran dihitung secara kumulatif dalam 1 tahun</b>. <b style="color: #dc3545;">3 Hari Kerja</b>: Mendapatkan hukuman disiplin ringan berupa <b style="color: #dc3545;">teguran lisan</b>. <b style="color: #dc3545;">4–6 Hari Kerja</b>: Mendapatkan hukuman disiplin ringan berupa <b style="color: #dc3545;">teguran tertulis</b>. <b style="color: #dc3545;">7–10 Hari Kerja</b>: Mendapatkan hukuman disiplin ringan berupa <b style="color: #dc3545;">pernyataan tidak puas secara tertulis</b>.
                 </div>
             </div>
-            <button onclick="window.toggleWFH && window.toggleWFH()" id="btn-wfh-toggle" class="btn-kamus" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);">🏠 WFH</button>
-            <button onclick="bukaKamus()" id="btn-kamus-toggle" class="btn-kamus">📖 Kamus</button>
         </div>
 
         <div id="popup-kamus" style="
