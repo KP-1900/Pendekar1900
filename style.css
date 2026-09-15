@@ -646,3 +646,187 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
         width: 100% !important;
     }
 }
+
+/* ========================================================= */
+/* === RAPIKAN HEADER DASHBOARD DI HP (Judul + Filter + Logo BPS) === */
+/* ========================================================= */
+@media (max-width: 992px), (orientation: portrait) {
+
+    /* Baris atas jadi kolom, rapat, tidak kepotong */
+    .baris-atas {
+        width: 100%;
+        gap: 12px !important;
+    }
+
+    /* Grup kiri: logo PENDEKAR + judul */
+    .header-judul {
+        width: 100%;
+    }
+    .header-judul img {
+        height: 36px !important;
+    }
+    .header-judul h1 {
+        font-size: 19px !important;
+    }
+    .header-judul p {
+        font-size: 11.5px !important;
+    }
+    #info-kondisi-update {
+        display: block !important;
+        margin-top: 2px;
+    }
+
+    /* Grup kanan: filter Tahun/Bulan + Logo BPS -> boleh wrap, jangan kepotong */
+    .baris-atas > div:last-child {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        width: 100% !important;
+        gap: 10px !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+    }
+
+    #area-filter {
+        flex: 1 1 auto !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        min-width: 0 !important;
+    }
+
+    .kotak-filter {
+        min-width: 100px !important;
+        flex: 1 1 100px !important;
+        padding: 6px 12px !important;
+    }
+    .kotak-filter label { font-size: 10.5px !important; }
+    #disp-tahun-beranda, #disp-bulan-beranda {
+        font-size: 13px !important;
+    }
+
+    /* Logo BPS: kecilkan dan jangan sampai mendorong layout keluar viewport */
+    .baris-atas > div:last-child img {
+        height: 26px !important;
+        width: auto !important;
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Di HP kecil, logo BPS & filter turun ke baris sendiri biar lega */
+    .baris-atas > div:last-child {
+        justify-content: space-between !important;
+    }
+    #area-filter { order: 1; width: 100%; }
+    .baris-atas > div:last-child img { order: 2; height: 22px !important; }
+}
+
+/* ========================================================= */
+/* === RAPIKAN KARTU RINGKASAN (Jumlah Pegawai, Hari Kerja, dst) === */
+/* ========================================================= */
+@media (max-width: 992px), (orientation: portrait) {
+    .kartu {
+        padding: 12px !important;
+    }
+    .bungkus-ikon {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 17px !important;
+        margin-right: 10px !important;
+    }
+    .info-kartu h2 { font-size: 20px !important; }
+    .info-kartu h3 { font-size: 12px !important; }
+    .info-kartu p { font-size: 11px !important; }
+}
+
+@media (max-width: 576px) {
+    .info-kartu h2 { font-size: 18px !important; }
+}
+
+/* ========================================================= */
+/* === RAPIKAN RUNNING TEXT & TOMBOL WFH/KAMUS DI HP === */
+/* ========================================================= */
+@media (max-width: 992px), (orientation: portrait) {
+    .wadah-running-text {
+        flex-wrap: wrap !important;
+        white-space: normal !important;
+        padding: 10px !important;
+        gap: 8px !important;
+    }
+    .wadah-running-text > div {
+        flex-basis: 100% !important;
+        order: 3;
+    }
+    .teks-berjalan {
+        font-size: 11.5px !important;
+    }
+    .btn-kamus {
+        font-size: 11.5px !important;
+        padding: 7px 12px !important;
+    }
+}
+
+/* ========================================================= */
+/* === RAPIKAN TABEL (Ringkasan per Bulan & Jadwal WFH) DI HP === */
+/* ========================================================= */
+@media (max-width: 992px), (orientation: portrait) {
+    /* Kolom Nama/Bulan pertama tetap terlihat saat scroll tabel ke samping */
+    #badan-tabel-wfh td:first-child,
+    #kepala-tabel-wfh th:first-child,
+    #badan-tabel td:first-child,
+    .wadah-tabel thead th:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        background: white;
+        box-shadow: 2px 0 4px rgba(0,0,0,0.06);
+    }
+    .wadah-tabel thead th:first-child,
+    #kepala-tabel-wfh th:first-child {
+        background: #f4f7fe !important;
+    }
+
+    .wadah-tabel table,
+    #badan-tabel-wfh, #kepala-tabel-wfh {
+        font-size: 11.5px !important;
+    }
+
+    /* Kotak pencarian nama WFH lebih ramping */
+    #cari-wfh {
+        font-size: 12.5px !important;
+        padding: 9px 12px 9px 34px !important;
+    }
+}
+
+/* ========================================================= */
+/* === RAPIKAN POPUP KAMUS DI HP (agar tidak melebar keluar layar) === */
+/* ========================================================= */
+@media (max-width: 992px), (orientation: portrait) {
+    #popup-kamus {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: translate(-50%, -50%) !important;
+        width: 92vw !important;
+        max-width: 420px !important;
+        max-height: 80vh !important;
+        overflow-y: auto !important;
+        z-index: 100000 !important;
+    }
+    #popup-kamus > div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+    }
+}
+
+/* ========================================================= */
+/* === MODAL SAMBUTAN LEBIH PAS DI LAYAR KECIL === */
+/* ========================================================= */
+@media (max-width: 576px) {
+    .modal-box {
+        max-width: 88vw !important;
+        padding: 28px 22px !important;
+    }
+}
