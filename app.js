@@ -42,6 +42,14 @@ isiDropdownTahun().then(async () => {
     tarikData();
 });
 
+// === HELPER: tulis teks kondisi update ke elemen beranda DAN topbar mobile sekaligus ===
+function tulisKondisiUpdate(teks) {
+    const el = document.getElementById('teks-kondisi-update');
+    if (el) el.textContent = teks;
+    const elTop = document.getElementById('teks-kondisi-update-topbar');
+    if (elTop) elTop.textContent = teks;
+}
+
 // === KONDISI UPDATE: ambil baris dengan updated_at terbaru dari tabel absensi ===
 (async function tampilkanKondisiUpdate() {
     try {
@@ -52,21 +60,17 @@ isiDropdownTahun().then(async () => {
             .limit(1)
             .single();
 
-        const el = document.getElementById('teks-kondisi-update');
-        if (!el) return;
-
         if (error || !data || !data.updated_at) {
-            el.textContent = 'Belum ada data';
+            tulisKondisiUpdate('Belum ada data');
             return;
         }
 
         const tgl = new Date(data.updated_at);
         const pad = n => String(n).padStart(2, '0');
         const format = `${pad(tgl.getDate())}/${pad(tgl.getMonth()+1)}/${tgl.getFullYear()} ${pad(tgl.getHours())}.${pad(tgl.getMinutes())} WIB`;
-        el.textContent = format;
+        tulisKondisiUpdate(format);
     } catch(e) {
-        const el = document.getElementById('teks-kondisi-update');
-        if (el) el.textContent = 'Tidak tersedia';
+        tulisKondisiUpdate('Tidak tersedia');
     }
 })();
 
@@ -526,16 +530,17 @@ let modeWFHAktif = false;
 async function tampilkanKondisiUpdateWFH() {
     try {
         const { data, error } = await db.from('wfh_jadwal').select('updated_at').order('updated_at', { ascending: false }).limit(1).single();
-        const el = document.getElementById('teks-kondisi-update');
-        if (!el) return;
-        if (error || !data || !data.updated_at) { el.textContent = 'Belum ada data WFH'; return; }
+        if (error || !data || !data.updated_at) { tulisKondisiUpdate('Belum ada data WFH'); return; }
         const tgl = new Date(data.updated_at);
         const pad = n => String(n).padStart(2, '0');
-        el.textContent = pad(tgl.getDate())+'/'+pad(tgl.getMonth()+1)+'/'+tgl.getFullYear()+' '+pad(tgl.getHours())+'.'+pad(tgl.getMinutes())+' WIB';
-    } catch(e) { const el = document.getElementById('teks-kondisi-update'); if (el) el.textContent = 'Tidak tersedia'; }
+        tulisKondisiUpdate(pad(tgl.getDate())+'/'+pad(tgl.getMonth()+1)+'/'+tgl.getFullYear()+' '+pad(tgl.getHours())+'.'+pad(tgl.getMinutes())+' WIB');
+    } catch(e) { tulisKondisiUpdate('Tidak tersedia'); }
 }
 
 window.toggleWFH = function() {
+    // Scroll otomatis ke atas layar setiap kali toggle WFH/Beranda ditekan
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     modeWFHAktif = !modeWFHAktif;
     const normal = document.getElementById('tampilan-normal');
     const wfh = document.getElementById('tampilan-wfh');
@@ -555,11 +560,10 @@ window.toggleWFH = function() {
         (async () => {
             try {
                 const { data, error } = await db.from('absensi').select('updated_at').order('updated_at', { ascending: false }).limit(1).single();
-                const el = document.getElementById('teks-kondisi-update');
-                if (!el || error || !data || !data.updated_at) return;
+                if (error || !data || !data.updated_at) return;
                 const tgl = new Date(data.updated_at);
                 const pad = n => String(n).padStart(2, '0');
-                el.textContent = pad(tgl.getDate())+'/'+pad(tgl.getMonth()+1)+'/'+tgl.getFullYear()+' '+pad(tgl.getHours())+'.'+pad(tgl.getMinutes())+' WIB';
+                tulisKondisiUpdate(pad(tgl.getDate())+'/'+pad(tgl.getMonth()+1)+'/'+tgl.getFullYear()+' '+pad(tgl.getHours())+'.'+pad(tgl.getMinutes())+' WIB');
             } catch(e) {}
         })();
     }
