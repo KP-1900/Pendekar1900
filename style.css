@@ -436,16 +436,16 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
 /* ========================================================= */
 /* Tahun: cukup sempit, karena isinya cuma 4 digit angka */
 #wr-tahun-beranda {
-    min-width: 80px !important;
-    width: 80px !important;
-    padding-right: 30px !important;
+    min-width: 100px !important;
+    width: 100px !important;
+    padding-right: 28px !important;
 }
 
 /* Bulan: dilebarkan supaya nama bulan panjang (contoh: September) tidak ketimpa ikon panah */
 #wr-bulan-beranda {
-    min-width: 150px !important;
-    width: 150px !important;
-    padding-right: 32px !important;
+    min-width: 195px !important;
+    width: 195px !important;
+    padding-right: 34px !important;
 }
 
 /* Beri jarak aman antara teks dan ikon panah supaya tidak bertumpuk */
