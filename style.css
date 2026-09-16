@@ -1,5 +1,5 @@
 * { box-sizing: border-box; }
-body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; background-color: #f4f7fe; overflow: hidden; }
+body { margin: 0; font-family: Arial, sans-serif; display: flex; align-items: flex-start; height: 100vh; background-color: #f4f7fe; overflow: hidden; }
 
 /* === SIDEBAR KIRI (Gaya Floating Full Rounded) === */
 .menu-kiri { 
@@ -146,7 +146,7 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
     flex-direction: column;
     gap: 10px;
     position: fixed;
-    top: 185px;
+    top: 175px;
     left: 15px;
     width: 80px;
     z-index: 20;
