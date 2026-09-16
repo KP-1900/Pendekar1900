@@ -34,6 +34,27 @@
             0% { transform: translateX(0); }
             100% { transform: translateX(-100%); }
         }
+
+        /* === SAMAKAN TINGGI 3 KOTAK KIRI (Sidebar, WFH, Kamus) - HANYA DESKTOP ===
+           Total tinggi kolom kiri = 100vh - 30px (margin atas+bawah 15px, sama seperti area-kanan).
+           Dibagi jadi 3 kotak sama besar dengan 2 jarak (gap) 15px di antaranya. */
+        @media (min-width: 993px) and (orientation: landscape) {
+            .menu-kiri.menu-kiri-beranda {
+                height: calc((100vh - 60px) / 3);
+            }
+            .wadah-tombol-atas {
+                top: calc(15px + (100vh - 60px) / 3 + 15px);
+                height: calc(((100vh - 60px) / 3) * 2 + 15px);
+                gap: 15px;
+            }
+            .wadah-tombol-atas .btn-kamus {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -88,6 +109,7 @@
 
         <div class="wadah-running-text" style="margin: 0 25px 12px 25px !important; position: relative;">
             <span style="font-size: 16px;">📢</span>
+
             <div style="flex: 1; overflow: hidden; position: relative;">
                 <div class="teks-berjalan">
                     Aturan bagi ASN yang tidak masuk kerja <b style="color: #dc3545;">tanpa keterangan (tanpa kabar)</b> diatur secara ketat dalam PP Nomor 94 Tahun 2021 tentang Disiplin PNS. Berdasarkan peraturan tersebut, <b style="color: #dc3545;">sanksi ketidakhadiran dihitung secara kumulatif dalam 1 tahun</b>. <b style="color: #dc3545;">3 Hari Kerja</b>: Mendapatkan hukuman disiplin ringan berupa <b style="color: #dc3545;">teguran lisan</b>. <b style="color: #dc3545;">4–6 Hari Kerja</b>: Mendapatkan hukuman disiplin ringan berupa <b style="color: #dc3545;">teguran tertulis</b>. <b style="color: #dc3545;">7–10 Hari Kerja</b>: Mendapatkan hukuman disiplin ringan berupa <b style="color: #dc3545;">pernyataan tidak puas secara tertulis</b>.
