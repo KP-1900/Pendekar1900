@@ -6,7 +6,7 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; align-items: fl
     width: 80px; 
     height: auto; /* Diperpendek supaya ada ruang di bawahnya untuk tombol WFH/Kamus (lihat .wadah-tombol-atas) */
     margin: 15px 0 15px 15px; /* Memberikan jarak dari tepi layar */
-    background-color: #d4a017; 
+    background-color: #ffdd00; 
     display: flex; 
     flex-direction: column; 
     align-items: center; 
@@ -17,8 +17,9 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; align-items: fl
     z-index: 10; 
 }
 .ikon-menu { width: 45px; height: 45px; margin-bottom: 15px; background-color: transparent; border: none; cursor: pointer; border-radius: 12px; display: flex; justify-content: center; align-items: center; transition: all 0.3s ease; }
-.ikon-menu:hover { background-color: rgba(255,255,255,0.2); transform: scale(1.05); }
-.ikon-aktif { background-color: #2b6cb0; box-shadow: 0 0 10px rgba(43,108,176,0.5); } 
+.ikon-menu:hover { background-color: rgba(255,255,255,0.25); transform: scale(1.05); }
+.ikon-aktif { background-color: #1a233a; box-shadow: 0 0 10px rgba(26,35,58,0.5); }
+.ikon-aktif svg { fill: #ffdd00; }
 
 /* === AREA KANAN UMUM === */
 .area-kanan { 
@@ -154,9 +155,9 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; align-items: fl
 .wadah-tombol-atas .btn-kamus {
     width: 100%;
     box-sizing: border-box;
-    padding: 26px 8px;
-    font-size: 14px;
-    line-height: 1.4;
+    padding: 26px 6px;
+    font-size: 11px;
+    line-height: 1.3;
     text-align: center;
     border-radius: 24px;
     white-space: normal;
@@ -827,8 +828,8 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; align-items: fl
         flex: 1 1 auto !important;
         width: auto !important;
         text-align: center !important;
-        font-size: 12px !important;
-        padding: 8px 12px !important;
+        font-size: 10.5px !important;
+        padding: 8px 10px !important;
     }
     /* Sidebar mobile sudah disembunyikan total (.menu-kiri {display:none!important}),
        jadi aturan "perpendek sidebar" khusus desktop otomatis tidak berpengaruh. */
