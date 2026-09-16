@@ -237,6 +237,15 @@
                     script.id = 'script-app';
                     script.src = 'app.js?v=' + new Date().getTime();
                     document.body.appendChild(script);
+
+                    // Reset tombol WFH balik ke kondisi awal (hijau, "WFH"),
+                    // karena konten yang baru dimuat selalu dalam mode normal/beranda,
+                    // bukan mode WFH.
+                    const tombolWfh = document.getElementById('btn-wfh-toggle');
+                    if (tombolWfh) {
+                        tombolWfh.style.background = 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)';
+                        tombolWfh.innerHTML = '🏠 WFH';
+                    }
                 })
                 .catch(error => console.error('Gagal memuat konten:', error));
         }
