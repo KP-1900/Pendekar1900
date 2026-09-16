@@ -133,13 +133,39 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
 }
 .wadah-grafik-bawah { flex: 1; min-height: 0; position: relative; }
 
-/* === TOMBOL WFH & KAMUS (baris di atas kotak running text) === */
+/* === TOMBOL WFH & KAMUS ===
+   Di desktop, tombol ini "ditempel" (position: fixed) di bawah 2 ikon sidebar kiri
+   (Beranda & Profil), supaya area grafik "Rata-rata Persentase per Kategori" dan
+   tabel "Ringkasan per Bulan" di kanan jadi lebih lega (tidak ketutup tombol
+   mengambang di kanan-bawah seperti sebelumnya).
+   Sidebar (.menu-kiri-beranda) diperpendek (lihat rule di bawah) supaya ada
+   ruang kosong tepat di bawahnya untuk menaruh tombol-tombol ini. */
 .wadah-tombol-atas {
     display: flex;
-    justify-content: flex-end;
+    flex-direction: column;
     gap: 10px;
-    margin: 0 25px 10px 25px;
-    flex-shrink: 0;
+    position: fixed;
+    top: 175px;
+    left: 15px;
+    width: 80px;
+    z-index: 20;
+}
+.wadah-tombol-atas .btn-kamus {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 4px;
+    font-size: 11px;
+    line-height: 1.3;
+    text-align: center;
+    white-space: normal;
+}
+
+/* Perpendek kotak sidebar biru khusus di halaman Beranda (index.html) supaya
+   tidak memenuhi tinggi layar penuh — menyisakan ruang untuk tombol WFH/Kamus
+   yang ditempel tepat di bawahnya (lihat .wadah-tombol-atas di atas). */
+.menu-kiri.menu-kiri-beranda {
+    height: auto;
+    padding-bottom: 20px;
 }
 
 /* === TOMBOL AKSI ADMIN (Unggah, Sinkron, Download, Keluar) === */
@@ -775,18 +801,31 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
         text-overflow: ellipsis !important;
     }
 
-    /* ---- Tombol WFH & Kamus: ditaruh di atas kotak running text ---- */
+    /* ---- Tombol WFH & Kamus: ditaruh di atas kotak running text ----
+       PENTING: reset total properti yang dipakai untuk versi desktop (fixed,
+       column, top/left/width) karena style desktop-nya tidak berada di dalam
+       media query, jadi harus di-override eksplisit satu per satu di sini
+       supaya tidak ikut terbawa ke tampilan HP. */
     .wadah-tombol-atas {
         display: flex !important;
+        flex-direction: row !important;
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        width: auto !important;
+        z-index: auto !important;
         gap: 8px !important;
         margin: 0 12px 8px 12px !important;
     }
     .wadah-tombol-atas .btn-kamus {
         flex: 1 1 auto !important;
+        width: auto !important;
         text-align: center !important;
         font-size: 12px !important;
         padding: 8px 12px !important;
     }
+    /* Sidebar mobile sudah disembunyikan total (.menu-kiri {display:none!important}),
+       jadi aturan "perpendek sidebar" khusus desktop otomatis tidak berpengaruh. */
 
     /* ---- Running text bar: tetap berjalan (marquee) di mobile ---- */
     .wadah-running-text {
