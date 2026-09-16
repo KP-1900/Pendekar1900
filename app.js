@@ -550,7 +550,7 @@ window.toggleWFH = function() {
     if (modeWFHAktif) {
         normal.style.display = 'none';
         wfh.style.display = 'flex';
-        if (tombol) { tombol.style.background = 'linear-gradient(135deg, #2b6cb0 0%, #1a4d8f 100%)'; tombol.innerHTML = '🏡 Beranda'; }
+        if (tombol) { tombol.style.background = 'linear-gradient(135deg, #f5a623 0%, #d9820a 100%)'; tombol.innerHTML = '🏡 Beranda'; }
         tampilkanKondisiUpdateWFH();
         tarikDataWFH();
     } else {
