@@ -701,13 +701,24 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
         border-spacing: 0 !important;
     }
 
+    /* FIX BUG UTAMA: elemen <thead> punya z-index inline bawaan (z-index:1) yang
+       membuatnya jadi stacking context tersendiri. Kolom pertama body yang dibuat
+       sticky (z-index:1 juga) jadi "seri" dengan thead tsb — dan karena td body
+       posisinya lebih belakang di DOM, browser memenangkan td tersebut sehingga
+       nama pegawai malah menutupi baris header saat discroll.
+       Solusi: paksa z-index <thead> jauh lebih tinggi (override inline style-nya)
+       supaya header SELALU menang dibanding kolom sticky manapun di body. */
+    .wadah-tabel thead {
+        z-index: 10 !important;
+    }
+
     /* Semua sel tabel diberi background solid agar tidak ada celah transparan
        yang bisa "ditembus" oleh baris lain saat scroll (penyebab efek hantu/tumpang tindih) */
     .wadah-tabel tbody td {
         background-color: #ffffff;
     }
 
-    /* Freeze header (position/top/z-index/background) sudah didefinisikan secara
+    /* Freeze header (position/top/background) sudah didefinisikan secara
        universal di atas (berlaku untuk desktop & HP). Di sini hanya menambahkan
        tweak khusus HP: paksa browser mobile (terutama Chrome Android) merender
        sel sticky di layer GPU-nya sendiri supaya tidak terjadi ghosting/tumpang
