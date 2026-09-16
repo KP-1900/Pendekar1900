@@ -618,7 +618,7 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; align-items: fl
     .mobile-topbar .topbar-btn {
         width: 38px;
         height: 38px;
-        background: transparent;
+        background: rgba(255,255,255,0.14);
         border: none;
         cursor: pointer;
         border-radius: 10px;
@@ -628,9 +628,14 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; align-items: fl
         transition: background 0.2s;
         flex-shrink: 0;
     }
-    .mobile-topbar .topbar-btn:hover,
+    .mobile-topbar .topbar-btn:hover {
+        background: rgba(255,255,255,0.28);
+    }
     .mobile-topbar .topbar-btn.aktif {
-        background: #2b6cb0;
+        background: #ffdd00;
+    }
+    .mobile-topbar .topbar-btn.aktif svg {
+        fill: #1a233a;
     }
 
     /* ---- Area kanan: full width, no margin kiri ---- */
