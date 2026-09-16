@@ -4,13 +4,14 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
 /* === SIDEBAR KIRI (Gaya Floating Full Rounded) === */
 .menu-kiri { 
     width: 80px; 
-    height: calc(100vh - 30px); /* Memotong tinggi agar ada jarak atas dan bawah */
+    height: auto; /* Diperpendek supaya ada ruang di bawahnya untuk tombol WFH/Kamus (lihat .wadah-tombol-atas) */
     margin: 15px 0 15px 15px; /* Memberikan jarak dari tepi layar */
     background-color: #1a233a; 
     display: flex; 
     flex-direction: column; 
     align-items: center; 
     padding-top: 20px; 
+    padding-bottom: 20px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
     border-radius: 24px; /* Sudut melengkung penuh di semua sisi */
     z-index: 10; 
@@ -145,7 +146,7 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
     flex-direction: column;
     gap: 10px;
     position: fixed;
-    top: 175px;
+    top: 185px;
     left: 15px;
     width: 80px;
     z-index: 20;
@@ -160,13 +161,8 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
     white-space: normal;
 }
 
-/* Perpendek kotak sidebar biru khusus di halaman Beranda (index.html) supaya
-   tidak memenuhi tinggi layar penuh — menyisakan ruang untuk tombol WFH/Kamus
-   yang ditempel tepat di bawahnya (lihat .wadah-tombol-atas di atas). */
-.menu-kiri.menu-kiri-beranda {
-    height: auto;
-    padding-bottom: 20px;
-}
+/* Catatan: sidebar (.menu-kiri) sudah diperpendek langsung di rule dasarnya
+   di bagian atas file ini (height: auto), jadi tidak perlu class tambahan lagi. */
 
 /* === TOMBOL AKSI ADMIN (Unggah, Sinkron, Download, Keluar) === */
 .btn-aksi-admin {
