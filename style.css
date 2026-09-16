@@ -115,6 +115,22 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
 #badan-tabel-wfh tr td:last-child {
     border-right: none;
 }
+
+/* === FREEZE HEADER & GARIS HORIZONTAL TABEL — BERLAKU UNIVERSAL (DESKTOP & HP) ===
+   Catatan penting:
+   1) Sticky HARUS dipasang langsung ke tiap <th>, BUKAN ke tag <thead> itu sendiri.
+      Memasang sticky ke <thead> tidak konsisten/tidak jalan di banyak browser.
+   2) Garis horizontal antar baris HARUS dipasang ke tiap <td>, BUKAN ke tag <tr>.
+      Border yang dipasang langsung ke <tr> tidak konsisten dirender browser. */
+.wadah-tabel thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: #f4f7fe;
+}
+.wadah-tabel tbody td {
+    border-bottom: 1px solid #b0b8c4;
+}
 .wadah-grafik-bawah { flex: 1; min-height: 0; position: relative; }
 
 /* === TOMBOL WFH & KAMUS (baris di atas kotak running text) === */
@@ -691,16 +707,12 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
         background-color: #ffffff;
     }
 
-    /* Header tabel (thead) tetap menempel di atas saat scroll ke bawah.
-       Berlaku sama untuk SEMUA tabel di dalam .wadah-tabel (WFH maupun Ringkasan per Bulan). */
+    /* Freeze header (position/top/z-index/background) sudah didefinisikan secara
+       universal di atas (berlaku untuk desktop & HP). Di sini hanya menambahkan
+       tweak khusus HP: paksa browser mobile (terutama Chrome Android) merender
+       sel sticky di layer GPU-nya sendiri supaya tidak terjadi ghosting/tumpang
+       tindih dengan baris data yang baru discroll lewat. */
     .wadah-tabel thead th {
-        position: sticky;
-        top: 0;
-        z-index: 2;
-        background-color: #f4f7fe;
-        /* Paksa browser mobile (terutama Chrome Android) merender sel sticky
-           di layer GPU-nya sendiri supaya tidak terjadi ghosting/tumpang tindih
-           dengan baris data yang baru discroll lewat. */
         transform: translateZ(0);
         -webkit-transform: translateZ(0);
         will-change: transform;
