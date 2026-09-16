@@ -685,33 +685,60 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; 
         border-spacing: 0 !important;
     }
 
-    /* Header tabel (thead) tetap menempel di atas saat scroll ke bawah */
+    /* Semua sel tabel diberi background solid agar tidak ada celah transparan
+       yang bisa "ditembus" oleh baris lain saat scroll (penyebab efek hantu/tumpang tindih) */
+    .wadah-tabel tbody td {
+        background-color: #ffffff;
+    }
+
+    /* Header tabel (thead) tetap menempel di atas saat scroll ke bawah.
+       Berlaku sama untuk SEMUA tabel di dalam .wadah-tabel (WFH maupun Ringkasan per Bulan). */
     .wadah-tabel thead th {
         position: sticky;
         top: 0;
         z-index: 2;
-        background: #f4f7fe;
+        background-color: #f4f7fe;
+        /* Paksa browser mobile (terutama Chrome Android) merender sel sticky
+           di layer GPU-nya sendiri supaya tidak terjadi ghosting/tumpang tindih
+           dengan baris data yang baru discroll lewat. */
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+        will-change: transform;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
     }
 
-    /* Kolom pertama tabel sticky (freeze horizontal untuk body & header biasa) */
-    #badan-tabel-wfh td:first-child,
-    #badan-tabel td:first-child {
+    /* Kolom pertama tabel sticky (freeze horizontal untuk body & header biasa).
+       Selector generik ".wadah-tabel tbody td:first-child" dipakai supaya
+       perlakuannya otomatis sama persis untuk tabel WFH DAN tabel Ringkasan per Bulan. */
+    .wadah-tabel tbody td:first-child {
         position: sticky;
         left: 0;
-        z-index: 2;
-        background: white;
+        z-index: 1;
+        background-color: #ffffff;
         box-shadow: 2px 0 4px rgba(0,0,0,0.06);
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+        will-change: transform;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
     }
+
     /* Header kolom pertama ("Nama" / "Bulan"): freeze horizontal DAN vertical
-       (pojok kiri-atas) sehingga tetap terlihat saat scroll ke bawah maupun ke samping */
-    #kepala-tabel-wfh th:first-child,
+       (pojok kiri-atas) sehingga tetap terlihat saat scroll ke bawah maupun ke samping.
+       Selector generik dipakai supaya berlaku sama untuk kedua tabel. */
     .wadah-tabel thead th:first-child {
         position: sticky;
         top: 0;
         left: 0;
         z-index: 3;
-        background: #f4f7fe;
+        background-color: #f4f7fe;
         box-shadow: 2px 0 4px rgba(0,0,0,0.06);
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+        will-change: transform;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
     }
 
     /* ---- Lebar kolom "Nama" di tabel WFH dibatasi agar tidak melebar sampai   ---- */
