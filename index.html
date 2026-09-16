@@ -34,27 +34,6 @@
             0% { transform: translateX(0); }
             100% { transform: translateX(-100%); }
         }
-
-        /* === SAMAKAN TINGGI 3 KOTAK KIRI (Sidebar, WFH, Kamus) - HANYA DESKTOP ===
-           Total tinggi kolom kiri = 100vh - 30px (margin atas+bawah 15px, sama seperti area-kanan).
-           Dibagi jadi 3 kotak sama besar dengan 2 jarak (gap) 15px di antaranya. */
-        @media (min-width: 993px) and (orientation: landscape) {
-            .menu-kiri.menu-kiri-beranda {
-                height: calc((100vh - 60px) / 3);
-            }
-            .wadah-tombol-atas {
-                top: calc(15px + (100vh - 60px) / 3 + 15px);
-                height: calc(((100vh - 60px) / 3) * 2 + 15px);
-                gap: 15px;
-            }
-            .wadah-tombol-atas .btn-kamus {
-                flex: 1;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 0;
-            }
-        }
     </style>
 </head>
 <body>
