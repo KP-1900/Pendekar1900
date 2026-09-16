@@ -95,12 +95,26 @@
             </div>
         </div>
 
+        <div id="overlay-kamus" onclick="tutupKamus()" style="
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(26, 35, 58, 0.45);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 9999;
+        "></div>
+
         <div id="popup-kamus" style="
             display: none;
             position: fixed;
-            bottom: 70px;
-            right: 30px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             width: 560px;
+            max-width: 92vw;
+            max-height: 85vh;
+            overflow-y: auto;
             background: white;
             border-radius: 16px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.13);
@@ -171,21 +185,17 @@
 
         function bukaKamus() {
             const popup = document.getElementById('popup-kamus');
+            const overlay = document.getElementById('overlay-kamus');
             const sedangBuka = popup.style.display !== 'none';
             popup.style.display = sedangBuka ? 'none' : 'block';
+            if (overlay) overlay.style.display = sedangBuka ? 'none' : 'block';
         }
 
         function tutupKamus(event) {
             document.getElementById('popup-kamus').style.display = 'none';
+            const overlay = document.getElementById('overlay-kamus');
+            if (overlay) overlay.style.display = 'none';
         }
-
-        document.addEventListener('click', function(e) {
-            const popup = document.getElementById('popup-kamus');
-            const tombol = document.getElementById('btn-kamus-toggle');
-            if (popup && !popup.contains(e.target) && tombol && !tombol.contains(e.target)) {
-                popup.style.display = 'none';
-            }
-        });
 
         if (sessionStorage.getItem('sudahDisambut') === 'ya') {
             document.getElementById('modal-sambutan').style.display = 'none';
