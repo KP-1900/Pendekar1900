@@ -146,7 +146,7 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; align-items: fl
     flex-direction: column;
     gap: 10px;
     position: fixed;
-    top: 175px;
+    top: 200px;
     left: 15px;
     width: 80px;
     z-index: 20;
@@ -470,11 +470,9 @@ body { margin: 0; font-family: Arial, sans-serif; display: flex; align-items: fl
 @keyframes munculHalus {
     from { 
         opacity: 0; 
-        transform: translateY(10px); 
     }
     to { 
         opacity: 1; 
-        transform: translateY(0); 
     }
 }
 
